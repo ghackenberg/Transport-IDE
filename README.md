@@ -1,4 +1,4 @@
-# TransportIDE
+# Transport-IDE
 
 ![](./images/social_preview.png)
 
