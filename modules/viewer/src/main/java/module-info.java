@@ -5,6 +5,7 @@ module example.viewer {
 	requires transitive example.simulator;
 	requires transitive example.statistics;
 	requires transitive java.desktop;
+	
 	requires docking.frames.core;
 	requires jfreechart;
 	

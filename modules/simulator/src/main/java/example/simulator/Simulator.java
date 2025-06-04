@@ -18,6 +18,7 @@ import example.model.Segment;
 import example.model.Station;
 import example.model.Vehicle;
 import example.simulator.exceptions.CollisionException;
+import example.simulator.exceptions.EmptyException;
 import example.simulator.exceptions.InvalidException;
 import example.simulator.exceptions.InvalidRouteException;
 import example.simulator.exceptions.InvalidSpeedException;
@@ -25,6 +26,8 @@ import example.simulator.exceptions.InvalidTimeoutException;
 import example.statistics.Statistics;
 
 public class Simulator<S extends Statistics> {
+	
+	private static boolean DEBUG = false;
 	
 	private static int COUNT = 0;
 	
@@ -130,24 +133,9 @@ public class Simulator<S extends Statistics> {
 	}
 	
 	public void start() {
-		System.out.println("Simulator.start");
-		
-		model.reset();
-		controller.reset();
-		statistics.reset();
-		
-		declines.clear();
-		model.demands.forEach(demand -> {
-			declines.put(demand, new HashMap<>());
-		});
-		
-		stop = false;
-		
-		Date date = Calendar.getInstance().getTime();
-		String name = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(date);
-		
-		runFolder = new File(runsFolder, name);
-		runFolder.mkdir();
+		if (DEBUG) {
+			System.out.println("Simulator[" + name + "].start");
+		}
 		
 		thread = new Thread(this::loop);
 		thread.setName("Simulator " + number);
@@ -156,7 +144,9 @@ public class Simulator<S extends Statistics> {
 	
 	public void stop() {
 		try {
-			System.out.println("Simulator.stop");
+			if (DEBUG) {
+				System.out.println("Simulator[" + name + "].stop");
+			}
 			
 			stop = true;
 			
@@ -172,13 +162,17 @@ public class Simulator<S extends Statistics> {
 	}
 	
 	public void pause() {
-		System.out.println("Simulator.pause");
+		if (DEBUG) {
+			System.out.println("Simulator[" + name + "].pause");
+		}
 		
 		pause = true;
 	}
 	
 	public void resume() {
-		System.out.println("Simulator.resume");
+		if (DEBUG) {
+			System.out.println("Simulator[" + name + "].resume");
+		}
 		
 		pause = false;
 		
@@ -187,8 +181,23 @@ public class Simulator<S extends Statistics> {
 		}
 	}
 	
+	public void join() {
+		try {
+			if (DEBUG) {
+				System.out.println("Simulator[" + name + "].join");
+			}
+			
+			thread.join();
+			thread = null;
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public void step() {
-		System.out.println("Simulator.step");
+		if (DEBUG) {
+			System.out.println("Simulator[" + name + "].step");
+		}
 		
 		step = true;
 		
@@ -197,7 +206,30 @@ public class Simulator<S extends Statistics> {
 		}
 	}
 	
-	private void loop() {
+	public void loop() {
+		if (DEBUG) {
+			System.out.println("Simulator[" + name + "].loop");
+		}
+		
+		model.reset();
+		controller.reset();
+		statistics.reset();
+		
+		declines.clear();
+		model.demands.forEach(demand -> {
+			declines.put(demand, new HashMap<>());
+		});
+		
+		step = false;
+		stop = false;
+		pause = false;
+		
+		Date date = Calendar.getInstance().getTime();
+		String name = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(date);
+		
+		runFolder = new File(runsFolder, name);
+		runFolder.mkdir();
+		
 		synchronizer.start();
 		
 		try {
@@ -205,7 +237,7 @@ public class Simulator<S extends Statistics> {
 			if (handleUpdated != null) {
 				handleUpdated.run();
 			}
-			while (!stop && !model.isFinished()) {
+			while (!stop && !model.isFinished() && !model.isEmpty()) {
 				update();
 				//synchronizer.beforeUpdateHandler();
 				if (handleUpdated != null) {
@@ -217,6 +249,8 @@ public class Simulator<S extends Statistics> {
 				if (handleFinished != null) {
 					handleFinished.run();
 				}
+			} else if (model.isEmpty()) {
+				throw new EmptyException();
 			} else {
 				if (handleStopped != null) {
 					handleStopped.run();
@@ -274,7 +308,7 @@ public class Simulator<S extends Statistics> {
 		*/
 		
 		// Sleep for the difference in time advances
-		if (!pause) {
+		if (!pause && ratioModelRealTime != -1) {
 			Thread.sleep(Math.max((long) (difference / ratioModelRealTime), 0));
 		}
 		
@@ -400,7 +434,9 @@ public class Simulator<S extends Statistics> {
 											modelTimeStep = 0;
 										}
 									} else {
-										System.out.println("Already declined!");
+										if (DEBUG) {
+											System.out.println("Simulator[" + name + "].calculate - Already declined!");
+										}
 									}
 								}
 							}

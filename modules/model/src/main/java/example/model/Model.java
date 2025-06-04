@@ -53,6 +53,25 @@ public class Model {
 		return true;
 	}
 	
+	public boolean isEmpty() {
+		for (Vehicle vehicle : vehicles) {
+			if (vehicle.batteryLevel != 0) {
+				return false;
+			} else if (vehicle.station != null) {
+				return false;
+			} else {
+				for (Station station : stations) {
+					if (vehicle.location.segment == station.location.segment) {
+						if (vehicle.location.distance == station.location.distance) {
+							return false;
+						}
+					}
+				}
+			}
+		}
+		return true;
+	}
+	
 	public void reset() {
 		time = 0;
 		
