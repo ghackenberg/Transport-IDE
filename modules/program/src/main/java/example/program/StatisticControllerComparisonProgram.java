@@ -14,7 +14,6 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
-import org.jfree.data.xy.DefaultIntervalXYDataset;
 
 import bibliothek.gui.DockController;
 import bibliothek.gui.Dockable;
@@ -433,6 +432,36 @@ public class StatisticControllerComparisonProgram {
 							smartDataset.setValue("Empty", smartEmptyTimes.size());
 							smartDataset.setValue("Collision", smartCollisionTimes.size());
 							smartDataset.setValue("Infinity", smartInfiniteTimes.size());
+							
+							double min = Double.MAX_VALUE;
+							double max = 0;
+							
+							for (double time : randomFinishedTimes) {
+								min = Math.min(time, min);
+								max = Math.max(time, max);
+							}
+							for (double time : greedyFinishedTimes) {
+								min = Math.min(time, min);
+								max = Math.max(time, max);
+							}
+							for (double time : smartFinishedTimes) {
+								min = Math.min(time, min);
+								max = Math.max(time, max);
+							}
+							
+							histogramDataset.clear();
+							
+							histogramDataset.addValue(0, "Random", "0");
+							histogramDataset.addValue(1, "Random", "1");
+							histogramDataset.addValue(2, "Random", "2");
+
+							histogramDataset.addValue(1, "Greedy", "0");
+							histogramDataset.addValue(1, "Greedy", "1");
+							histogramDataset.addValue(1, "Greedy", "2");
+							
+							histogramDataset.addValue(2, "Smart", "0");
+							histogramDataset.addValue(1, "Smart", "1");
+							histogramDataset.addValue(0, "Smart", "2");
 							
 							progress.setValue(++finishedCount);
 							progress.setString(finishedCount + " / " + totalCount + " Simulations");
