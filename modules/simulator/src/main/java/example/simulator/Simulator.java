@@ -238,7 +238,7 @@ public class Simulator<S extends Statistics> {
 			if (handleUpdated != null) {
 				handleUpdated.run();
 			}
-			while (!stop && !model.isFinished() && !model.isEmpty() && Double.isFinite(model.time)) {
+			while (!stop && !model.isFinished()) {
 				update();
 				//synchronizer.beforeUpdateHandler();
 				if (handleUpdated != null) {
@@ -250,10 +250,6 @@ public class Simulator<S extends Statistics> {
 				if (handleFinished != null) {
 					handleFinished.run();
 				}
-			} else if (model.isEmpty()) {
-				throw new EmptyException();
-			} else if (Double.isInfinite(model.time)) {
-				throw new InfinityException();
 			} else {
 				if (handleStopped != null) {
 					handleStopped.run();
@@ -359,7 +355,7 @@ public class Simulator<S extends Statistics> {
 					// Remember station
 					Station station = vehicle.station;
 					// Unassign vehicle
-					vehicle.station.vehicle = null;
+					station.vehicle = null;
 					// Unassign station
 					vehicle.station = null;
 					// Update statistics
@@ -679,47 +675,52 @@ public class Simulator<S extends Statistics> {
 		for (int i = 0; i < model.vehicles.size(); i++) {
 			Vehicle outer = model.vehicles.get(i);
 			
-			double outerBack = outer.location.distance - outer.length / 2;
-			double outerFront = outer.location.distance + outer.length / 2;
+			if (outer.speed > 0) {
 			
-			for (int j = i + 1; j < model.vehicles.size(); j++) {
-				Vehicle inner = model.vehicles.get(j);
+				double outerBack = outer.location.distance - outer.length / 2;
+				double outerFront = outer.location.distance + outer.length / 2;
 				
-				double innerBack = inner.location.distance - inner.length / 2;
-				double innerFront = inner.location.distance + inner.length / 2;
-				
-				// On same segment?
-				if (outer.location.segment == inner.location.segment) {	
-					if (inner.speed < outer.speed) {
-						double speed = (outer.speed - inner.speed) * 1000.0 / 60.0 / 60.0 / 1000.0;
+				for (int j = i + 1; j < model.vehicles.size(); j++) {
+					Vehicle inner = model.vehicles.get(j);
+					
+					if (inner.speed > 0) {
+					
+						double innerBack = inner.location.distance - inner.length / 2;
+						double innerFront = inner.location.distance + inner.length / 2;
 						
-						// Attach
-						if (outerFront < innerBack) {
-							double distance = innerBack - outerFront;
-							double duration = distance / speed;
-							modelTimeStep = Math.min(modelTimeStep, duration);
-						}
-						// Detach
-						if (outerBack < innerFront) {
-							double distance = innerFront - outerBack;
-							double duration = distance / speed;
-							modelTimeStep = Math.min(modelTimeStep, duration);
-						}
-					}
-					if (outer.speed < inner.speed) {
-						double speed = (inner.speed - outer.speed) * 1000.0 / 60.0 / 60.0 / 1000.0;
-						
-						// Attach
-						if (innerFront < outerBack) {
-							double distance = outerBack - innerFront;
-							double duration = distance / speed;
-							modelTimeStep = Math.min(modelTimeStep, duration);
-						}
-						// Detach
-						if (innerBack < outerFront) {
-							double distance = outerFront - innerBack;
-							double duration = distance / speed;
-							modelTimeStep = Math.min(modelTimeStep, duration);
+						// On same segment?
+						if (outer.location.segment == inner.location.segment) {	
+							if (inner.speed < outer.speed) {
+								double speed = (outer.speed - inner.speed) * 1000.0 / 60.0 / 60.0 / 1000.0;
+								
+								// Attach
+								if (outerFront < innerBack) {
+									double distance = innerBack - outerFront;
+									double duration = distance / speed;
+									modelTimeStep = Math.min(modelTimeStep, duration);
+								}
+								// Detach
+								if (outerBack < innerFront) {
+									double distance = innerFront - outerBack;
+									double duration = distance / speed;
+									modelTimeStep = Math.min(modelTimeStep, duration);
+								}
+							} else if (outer.speed < inner.speed) {
+								double speed = (inner.speed - outer.speed) * 1000.0 / 60.0 / 60.0 / 1000.0;
+								
+								// Attach
+								if (innerFront < outerBack) {
+									double distance = outerBack - innerFront;
+									double duration = distance / speed;
+									modelTimeStep = Math.min(modelTimeStep, duration);
+								}
+								// Detach
+								if (innerBack < outerFront) {
+									double distance = outerFront - innerBack;
+									double duration = distance / speed;
+									modelTimeStep = Math.min(modelTimeStep, duration);
+								}
+							}
 						}
 					}
 				}
@@ -757,6 +758,15 @@ public class Simulator<S extends Statistics> {
 		// Update collisions
 		updateCollisions();
 		
+		// Throw infinity exception
+		if (Double.isInfinite(model.time)) {
+			throw new InfinityException();
+		}
+		
+		// Throw empty exception
+		if (model.isEmpty()) {
+			throw new EmptyException();
+		}
 	}
 	
 	private void updateCollisions() throws CollisionException {

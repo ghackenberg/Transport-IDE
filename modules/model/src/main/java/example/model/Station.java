@@ -9,6 +9,10 @@ public class Station {
 	public double speed;
 	public Location location;
 	
+	public void reset() {
+		vehicle = null;
+	}
+	
 	@Override
 	public String toString() {
 		return location.toString();

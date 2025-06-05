@@ -37,33 +37,37 @@ import example.viewer.charts.single.VehicleBatteriesChartViewer;
 public class StatisticControllerComparisonProgram {
 	
 	static final int processorCount = Runtime.getRuntime().availableProcessors() - 1;
-	static final int demandCount = 10;
+	
+	static final double maxModelTimeStep = Double.MAX_VALUE;
+	static final double ratioModelRealTime = -1;
+	
+	static final int demandCount = 1000;
 	
 	static final double maxDemandSize = 1;
 	static final double maxDemandTime = 1000000;
 	static final double maxDemandDuration = 100000;
 	
-	static final int replicationCount = 100;
+	static final int replicationCount = 1000;
 	
 	static int randomReplicationCount = 0;
 	static int greedyReplicationCount = 0;
 	static int smartReplicationCount = 0;
 	
-	static List<Double> randomFinishedTimes = new ArrayList<>();
-	static List<Double> greedyFinishedTimes = new ArrayList<>();
-	static List<Double> smartFinishedTimes = new ArrayList<>();
+	static final List<Double> randomFinishedTimes = new ArrayList<>();
+	static final List<Double> greedyFinishedTimes = new ArrayList<>();
+	static final List<Double> smartFinishedTimes = new ArrayList<>();
 	
-	static List<Double> randomEmptyTimes = new ArrayList<>();
-	static List<Double> greedyEmptyTimes = new ArrayList<>();
-	static List<Double> smartEmptyTimes = new ArrayList<>();
+	static final List<Double> randomEmptyTimes = new ArrayList<>();
+	static final List<Double> greedyEmptyTimes = new ArrayList<>();
+	static final List<Double> smartEmptyTimes = new ArrayList<>();
 	
-	static List<Double> randomCollisionTimes = new ArrayList<>();
-	static List<Double> greedyCollisionTimes = new ArrayList<>();
-	static List<Double> smartCollisionTimes = new ArrayList<>();
+	static final List<Double> randomCollisionTimes = new ArrayList<>();
+	static final List<Double> greedyCollisionTimes = new ArrayList<>();
+	static final List<Double> smartCollisionTimes = new ArrayList<>();
 	
-	static List<Double> randomInfiniteTimes = new ArrayList<>();
-	static List<Double> greedyInfiniteTimes = new ArrayList<>();
-	static List<Double> smartInfiniteTimes = new ArrayList<>();
+	static final List<Double> randomInfiniteTimes = new ArrayList<>();
+	static final List<Double> greedyInfiniteTimes = new ArrayList<>();
+	static final List<Double> smartInfiniteTimes = new ArrayList<>();
 
 	public static void main(String[] args) {
 		try {
@@ -295,11 +299,6 @@ public class StatisticControllerComparisonProgram {
 			frame.setExtendedState(frame.getExtendedState() | JFrame.MAXIMIZED_BOTH);
 			frame.setVisible(true);
 			
-			// Define settings
-			
-			double maxModelTimeStep = Double.MAX_VALUE;
-			double ratioModelRealTime = -1;
-			
 			// Start threads
 			
 			List<Thread> threads = new ArrayList<>();
@@ -375,7 +374,7 @@ public class StatisticControllerComparisonProgram {
 								} else if (ctrl instanceof SmartController) {
 									smartEmptyTimes.add(model.time);
 								}
-							} else if (Double.isInfinite(model.time)) {
+							} else if (Double.isInfinite(model.time)) {								
 								if (ctrl instanceof RandomController) {
 									randomInfiniteTimes.add(model.time);
 								} else if (ctrl instanceof GreedyController) {

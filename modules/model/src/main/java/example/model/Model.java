@@ -77,6 +77,7 @@ public class Model {
 		
 		demands.forEach(demand -> demand.reset());
 		vehicles.forEach(vehicle -> vehicle.reset());
+		stations.forEach(station -> station.reset());
 	}
 	
 }
