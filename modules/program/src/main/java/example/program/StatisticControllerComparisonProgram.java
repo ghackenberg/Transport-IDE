@@ -76,6 +76,14 @@ public class StatisticControllerComparisonProgram {
 	static final List<Double> randomInfiniteTimes = new ArrayList<>();
 	static final List<Double> greedyInfiniteTimes = new ArrayList<>();
 	static final List<Double> smartInfiniteTimes = new ArrayList<>();
+	
+	static final int binCount = 30;
+
+	static final double[] binData = new double[binCount];
+	
+	static final int[] randomData = new int[binCount];
+	static final int[] greedyData = new int[binCount];
+	static final int[] smartData = new int[binCount];
 
 	public static void main(String[] args) {
 		try {
@@ -336,22 +344,17 @@ public class StatisticControllerComparisonProgram {
 			
 			for (int processor = 0; processor < processorCount; processor++) {
 				Thread thread = new Thread(() -> {
-					while (true) {	
-						Model model;
-						
-						ExampleStatistics stat;
-						
-						Viewer viewer;
-						
-						Controller ctrl;
-						
-						String name;
-						
+					Model model;
+					ExampleStatistics stat;
+					Viewer viewer;
+					Controller ctrl;
+					String name;
+					Simulator<ExampleStatistics> simulator;
+					
+					while (true) {
 						synchronized (models) {
 							model = models.removeFirst();
-							
 							stat = stats.removeFirst();
-							
 							viewer = viewers.removeFirst();
 							
 							if (randomReplicationCount++ < replicationCount) {
@@ -371,104 +374,49 @@ public class StatisticControllerComparisonProgram {
 							}
 						}
 						
-						Simulator<ExampleStatistics> simulator = new Simulator<>(name, model, ctrl, stat, maxModelTimeStep, ratioModelRealTime, randomRunsFolder);
-						
+						simulator = new Simulator<>(name, model, ctrl, stat, maxModelTimeStep, ratioModelRealTime, randomRunsFolder);
 						simulator.setHandleUpdated(viewer::update);
-						
 						simulator.loop();
 						
 						synchronized (models) {
 							if (simulator.isFinished()) {
-								if (ctrl instanceof RandomController) {
-									randomFinishedTimes.add(model.time);
-								} else if (ctrl instanceof GreedyController) {
-									greedyFinishedTimes.add(model.time);
-								} else if (ctrl instanceof SmartController) {
-									smartFinishedTimes.add(model.time);
-								}
+								chooseList(ctrl, randomFinishedTimes, greedyFinishedTimes, smartFinishedTimes).add(model.time);
 							} else if (simulator.isEmpty()) {
-								if (ctrl instanceof RandomController) {
-									randomEmptyTimes.add(model.time);
-								} else if (ctrl instanceof GreedyController) {
-									greedyEmptyTimes.add(model.time);
-								} else if (ctrl instanceof SmartController) {
-									smartEmptyTimes.add(model.time);
-								}
-							} else if (Double.isInfinite(model.time)) {								
-								if (ctrl instanceof RandomController) {
-									randomInfiniteTimes.add(model.time);
-								} else if (ctrl instanceof GreedyController) {
-									greedyInfiniteTimes.add(model.time);
-								} else if (ctrl instanceof SmartController) {
-									smartInfiniteTimes.add(model.time);
-								}
+								chooseList(ctrl, randomEmptyTimes, greedyEmptyTimes, smartEmptyTimes).add(model.time);
+							} else if (Double.isInfinite(model.time)) {
+								chooseList(ctrl, randomInfiniteTimes, greedyInfiniteTimes, smartInfiniteTimes).add(model.time);
 							} else {
-								if (ctrl instanceof RandomController) {
-									randomCollisionTimes.add(model.time);
-								} else if (ctrl instanceof GreedyController) {
-									greedyCollisionTimes.add(model.time);
-								} else if (ctrl instanceof SmartController) {
-									smartCollisionTimes.add(model.time);
-								}
+								chooseList(ctrl, randomCollisionTimes, greedyCollisionTimes, smartCollisionTimes).add(model.time);
 							}
 							
 							viewers.add(viewer);
-							
 							stats.add(stat);
-							
 							models.add(model);
 							
-							randomDataset.setValue("Finished", randomFinishedTimes.size());
-							randomDataset.setValue("Empty", randomEmptyTimes.size());
-							randomDataset.setValue("Collision", randomCollisionTimes.size());
-							randomDataset.setValue("Infinity", randomInfiniteTimes.size());
+							updatePieChart(randomDataset, randomFinishedTimes, randomEmptyTimes, randomCollisionTimes, randomInfiniteTimes);
+							updatePieChart(greedyDataset, greedyFinishedTimes, greedyEmptyTimes, greedyCollisionTimes, greedyInfiniteTimes);
+							updatePieChart(smartDataset, smartFinishedTimes, smartEmptyTimes, smartCollisionTimes, smartInfiniteTimes);
 							
-							greedyDataset.setValue("Finished", greedyFinishedTimes.size());
-							greedyDataset.setValue("Empty", greedyEmptyTimes.size());
-							greedyDataset.setValue("Collision", greedyCollisionTimes.size());
-							greedyDataset.setValue("Infinity", greedyInfiniteTimes.size());
+							double min = Math.min(Math.min(computeMin(randomFinishedTimes), computeMin(greedyFinishedTimes)), computeMin(smartFinishedTimes)) - 1;
+							double max = Math.max(Math.max(computeMax(randomFinishedTimes), computeMax(greedyFinishedTimes)), computeMax(smartFinishedTimes)) + 1;
 							
-							smartDataset.setValue("Finished", smartFinishedTimes.size());
-							smartDataset.setValue("Empty", smartEmptyTimes.size());
-							smartDataset.setValue("Collision", smartCollisionTimes.size());
-							smartDataset.setValue("Infinity", smartInfiniteTimes.size());
+							computeHistogramX(min, max, binData);
 							
-							double min = Double.MAX_VALUE;
-							double max = 0;
-							
-							for (double time : randomFinishedTimes) {
-								min = Math.min(time, min);
-								max = Math.max(time, max);
-							}
-							for (double time : greedyFinishedTimes) {
-								min = Math.min(time, min);
-								max = Math.max(time, max);
-							}
-							for (double time : smartFinishedTimes) {
-								min = Math.min(time, min);
-								max = Math.max(time, max);
-							}
+							computeHistogramY(randomFinishedTimes, min, max, randomData);
+							computeHistogramY(greedyFinishedTimes, min, max, greedyData);
+							computeHistogramY(smartFinishedTimes, min, max, smartData);
 							
 							histogramDataset.clear();
 							
-							histogramDataset.addValue(0, "Random", "0");
-							histogramDataset.addValue(1, "Random", "1");
-							histogramDataset.addValue(2, "Random", "2");
-
-							histogramDataset.addValue(1, "Greedy", "0");
-							histogramDataset.addValue(1, "Greedy", "1");
-							histogramDataset.addValue(1, "Greedy", "2");
-							
-							histogramDataset.addValue(2, "Smart", "0");
-							histogramDataset.addValue(1, "Smart", "1");
-							histogramDataset.addValue(0, "Smart", "2");
+							updateHistogram(histogramDataset, "Random", binData, randomData);
+							updateHistogram(histogramDataset, "Greedy", binData, greedyData);
+							updateHistogram(histogramDataset, "Smart", binData, smartData);
 							
 							progress.setValue(++finishedCount);
 							progress.setString(finishedCount + " / " + totalCount + " Simulations");
 						}
 					}
 				});
-				
 				thread.start();
 						
 				threads.add(thread);
@@ -493,6 +441,75 @@ public class StatisticControllerComparisonProgram {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+		}
+	}
+	
+	private static List<Double> chooseList(Controller ctrl, List<Double> random, List<Double> greedy, List<Double> smart) {				
+		if (ctrl instanceof RandomController) {
+			return random;
+		} else if (ctrl instanceof GreedyController) {
+			return greedy;
+		} else if (ctrl instanceof SmartController) {
+			return smart;
+		} else {
+			throw new IllegalStateException();
+		}
+	}
+	
+	private static void updatePieChart(DefaultPieDataset dataset, List<Double> finished, List<Double> empty, List<Double> collision, List<Double> infinite) {
+		dataset.setValue("Finished", finished.size());
+		dataset.setValue("Empty", empty.size());
+		dataset.setValue("Collision", collision.size());
+		dataset.setValue("Infinity", infinite.size());
+	}
+	
+	private static double computeMin(List<Double> data) {
+		double min = Double.MAX_VALUE;
+		
+		for (double time : data) {
+			min = Math.min(time, min);
+		}
+		
+		return min;
+	}
+	
+	private static double computeMax(List<Double> data) {
+		double max = 0;
+		
+		for (double time : data) {
+			max = Math.max(time, max);
+		}
+		
+		return max;
+	}
+	
+	private static void computeHistogramX(double min, double max, double[] bins) {
+		double width = (max - min) / bins.length;
+		
+		for (int bin = 0; bin < bins.length; bin++) {
+			double x = min + width / 2 + bin * width;
+			
+			bins[bin] = x;
+		}
+	}
+	
+	private static void computeHistogramY(List<Double> data, double min, double max, int[] bins) {
+		for (int bin = 0; bin < bins.length; bin++) {
+			bins[bin] = 0;
+		}
+		
+		double width = max - min;
+		
+		for (double item : data) {
+			double bin = (item - min) / width * bins.length;
+			
+			bins[(int) bin]++;
+		}
+	}
+	
+	private static void updateHistogram(DefaultCategoryDataset dataset, String name, double[] x, int[] y) {
+		for (int bin = 0; bin < x.length; bin++) {
+			dataset.addValue(y[bin], name, "" + Math.round(x[bin]));
 		}
 	}
 
