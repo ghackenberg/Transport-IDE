@@ -81,9 +81,9 @@ public class StatisticControllerComparisonProgram {
 
 	static final double[] binData = new double[binCount];
 	
-	static final int[] randomData = new int[binCount];
-	static final int[] greedyData = new int[binCount];
-	static final int[] smartData = new int[binCount];
+	static final double[] randomData = new double[binCount];
+	static final double[] greedyData = new double[binCount];
+	static final double[] smartData = new double[binCount];
 
 	public static void main(String[] args) {
 		try {
@@ -493,7 +493,7 @@ public class StatisticControllerComparisonProgram {
 		}
 	}
 	
-	private static void computeHistogramY(List<Double> data, double min, double max, int[] bins) {
+	private static void computeHistogramY(List<Double> data, double min, double max, double[] bins) {
 		for (int bin = 0; bin < bins.length; bin++) {
 			bins[bin] = 0;
 		}
@@ -505,9 +505,13 @@ public class StatisticControllerComparisonProgram {
 			
 			bins[(int) bin]++;
 		}
+		
+		for (int bin = 0; bin < bins.length; bin++) {
+			bins[bin] /= data.size();
+		}
 	}
 	
-	private static void updateHistogram(DefaultCategoryDataset dataset, String name, double[] x, int[] y) {
+	private static void updateHistogram(DefaultCategoryDataset dataset, String name, double[] x, double[] y) {
 		for (int bin = 0; bin < x.length; bin++) {
 			dataset.addValue(y[bin], name, "" + Math.round(x[bin]));
 		}
