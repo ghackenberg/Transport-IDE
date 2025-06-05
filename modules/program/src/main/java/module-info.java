@@ -9,5 +9,6 @@ module example.program {
 	requires example.viewer;
 	
 	requires docking.frames.core;
+	requires jfreechart;
 	
 }

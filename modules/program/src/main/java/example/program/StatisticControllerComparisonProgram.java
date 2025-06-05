@@ -9,6 +9,13 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.data.xy.DefaultIntervalXYDataset;
+
 import bibliothek.gui.DockController;
 import bibliothek.gui.Dockable;
 import bibliothek.gui.dock.DefaultDockable;
@@ -31,7 +38,6 @@ import example.simulator.Simulator;
 import example.statistics.implementations.ExampleStatistics;
 import example.viewer.ModelViewer;
 import example.viewer.Viewer;
-import example.viewer.charts.single.VehicleBatteriesChartViewer;
 
 public class StatisticControllerComparisonProgram {
 	
@@ -229,33 +235,64 @@ public class StatisticControllerComparisonProgram {
 			
 			// Create viewers
 			
-			List<Viewer> modelViewers = new ArrayList<>();
-			List<Viewer> chartViewers = new ArrayList<>();
+			List<Viewer> viewers = new ArrayList<>();
 			
 			for (int processor = 0; processor < processorCount; processor++) {
 				Model model = models.get(processor);
 				
 				ExampleStatistics stat = stats.get(processor);
 				
-				modelViewers.add(new ModelViewer(model, stat));
-				
-				chartViewers.add(new VehicleBatteriesChartViewer(model, stat));
+				viewers.add(new ModelViewer(model, stat));
 			}
+			
+			// Create datasets
+			
+			DefaultPieDataset randomDataset = new DefaultPieDataset();
+			
+			randomDataset.setValue("Finished", 0);
+			randomDataset.setValue("Empty", 0);
+			randomDataset.setValue("Collision", 0);
+			randomDataset.setValue("Infinity", 0);
+			
+			DefaultPieDataset greedyDataset = new DefaultPieDataset();
+			
+			greedyDataset.setValue("Finished", 0);
+			greedyDataset.setValue("Empty", 0);
+			greedyDataset.setValue("Collision", 0);
+			greedyDataset.setValue("Infinity", 0);
+			
+			DefaultPieDataset smartDataset = new DefaultPieDataset();
+			
+			smartDataset.setValue("Finished", 0);
+			smartDataset.setValue("Empty", 0);
+			smartDataset.setValue("Collision", 0);
+			smartDataset.setValue("Infinity", 0);
+			
+			DefaultCategoryDataset histogramDataset = new DefaultCategoryDataset();
+			
+			// Create charts
+
+			JFreeChart randomChart = ChartFactory.createPieChart("Random", randomDataset);
+			JFreeChart greedyChart = ChartFactory.createPieChart("Greedy", greedyDataset);
+			JFreeChart smartChart = ChartFactory.createPieChart("Smart", smartDataset);
+			JFreeChart histogramChart = ChartFactory.createBarChart("Histogram", "Time", "Count", histogramDataset);
 			
 			// Create grid
 			
 			SplitDockGrid grid = new SplitDockGrid();
 			
 			for (int processor = 0; processor < processorCount; processor++) {
-				Viewer modelViewer = modelViewers.get(processor);
-				Viewer chartViewer = chartViewers.get(processor);
+				Viewer viewer = viewers.get(processor);
 				
-				Dockable modelDockable = new DefaultDockable(modelViewer.getComponent(), modelViewer.getName(), modelViewer.getIcon());
-				Dockable chartDockable = new DefaultDockable(chartViewer.getComponent(), chartViewer.getName(), chartViewer.getIcon());
+				Dockable dockable = new DefaultDockable(viewer.getComponent(), viewer.getName(), viewer.getIcon());
 				
-				grid.addDockable(processor, 0, 1, 1, modelDockable);
-				grid.addDockable(processor, 1, 1, 1, chartDockable);
+				grid.addDockable(processor, 0, 1, 1, dockable);
 			}
+			
+			grid.addDockable(0, 1, 2, 2, new DefaultDockable(new ChartPanel(randomChart), "Chart"));
+			grid.addDockable(2, 1, 2, 2, new DefaultDockable(new ChartPanel(greedyChart), "Chart"));
+			grid.addDockable(4, 1, 2, 2, new DefaultDockable(new ChartPanel(smartChart), "Chart"));
+			grid.addDockable(6, 1, processorCount - 6, 2, new DefaultDockable(new ChartPanel(histogramChart), "Histogram"));
 			
 			// FIXME Remove work around for linux
 			
@@ -305,8 +342,7 @@ public class StatisticControllerComparisonProgram {
 						
 						ExampleStatistics stat;
 						
-						Viewer modelViewer;
-						Viewer chartViewer;
+						Viewer viewer;
 						
 						Controller ctrl;
 						
@@ -317,8 +353,7 @@ public class StatisticControllerComparisonProgram {
 							
 							stat = stats.removeFirst();
 							
-							modelViewer = modelViewers.removeFirst();
-							chartViewer = chartViewers.removeFirst();
+							viewer = viewers.removeFirst();
 							
 							if (randomReplicationCount++ < replicationCount) {
 								System.out.println("Random " + randomReplicationCount);
@@ -339,10 +374,7 @@ public class StatisticControllerComparisonProgram {
 						
 						Simulator<ExampleStatistics> simulator = new Simulator<>(name, model, ctrl, stat, maxModelTimeStep, ratioModelRealTime, randomRunsFolder);
 						
-						simulator.setHandleUpdated(() -> {
-							modelViewer.update();
-							chartViewer.update();
-						});
+						simulator.setHandleUpdated(viewer::update);
 						
 						simulator.loop();
 						
@@ -381,12 +413,26 @@ public class StatisticControllerComparisonProgram {
 								}
 							}
 							
-							chartViewers.add(chartViewer);
-							modelViewers.add(modelViewer);
+							viewers.add(viewer);
 							
 							stats.add(stat);
 							
 							models.add(model);
+							
+							randomDataset.setValue("Finished", randomFinishedTimes.size());
+							randomDataset.setValue("Empty", randomEmptyTimes.size());
+							randomDataset.setValue("Collision", randomCollisionTimes.size());
+							randomDataset.setValue("Infinity", randomInfiniteTimes.size());
+							
+							greedyDataset.setValue("Finished", greedyFinishedTimes.size());
+							greedyDataset.setValue("Empty", greedyEmptyTimes.size());
+							greedyDataset.setValue("Collision", greedyCollisionTimes.size());
+							greedyDataset.setValue("Infinity", greedyInfiniteTimes.size());
+							
+							smartDataset.setValue("Finished", smartFinishedTimes.size());
+							smartDataset.setValue("Empty", smartEmptyTimes.size());
+							smartDataset.setValue("Collision", smartCollisionTimes.size());
+							smartDataset.setValue("Infinity", smartInfiniteTimes.size());
 							
 							progress.setValue(++finishedCount);
 							progress.setString(finishedCount + " / " + totalCount + " Simulations");
