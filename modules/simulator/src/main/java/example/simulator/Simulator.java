@@ -19,6 +19,7 @@ import example.model.Station;
 import example.model.Vehicle;
 import example.simulator.exceptions.CollisionException;
 import example.simulator.exceptions.EmptyException;
+import example.simulator.exceptions.InfinityException;
 import example.simulator.exceptions.InvalidException;
 import example.simulator.exceptions.InvalidRouteException;
 import example.simulator.exceptions.InvalidSpeedException;
@@ -237,7 +238,7 @@ public class Simulator<S extends Statistics> {
 			if (handleUpdated != null) {
 				handleUpdated.run();
 			}
-			while (!stop && !model.isFinished() && !model.isEmpty()) {
+			while (!stop && !model.isFinished() && !model.isEmpty() && Double.isFinite(model.time)) {
 				update();
 				//synchronizer.beforeUpdateHandler();
 				if (handleUpdated != null) {
@@ -251,6 +252,8 @@ public class Simulator<S extends Statistics> {
 				}
 			} else if (model.isEmpty()) {
 				throw new EmptyException();
+			} else if (Double.isInfinite(model.time)) {
+				throw new InfinityException();
 			} else {
 				if (handleStopped != null) {
 					handleStopped.run();

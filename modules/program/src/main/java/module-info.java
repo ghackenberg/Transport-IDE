@@ -8,4 +8,6 @@ module example.program {
 	requires example.simulator;
 	requires example.viewer;
 	
+	requires docking.frames.core;
+	
 }

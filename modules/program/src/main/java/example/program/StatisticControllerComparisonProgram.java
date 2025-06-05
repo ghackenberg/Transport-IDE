@@ -1,9 +1,20 @@
 package example.program;
 
+import java.awt.BorderLayout;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+
+import bibliothek.gui.DockController;
+import bibliothek.gui.Dockable;
+import bibliothek.gui.dock.DefaultDockable;
+import bibliothek.gui.dock.SplitDockStation;
+import bibliothek.gui.dock.station.split.SplitDockGrid;
 import example.controller.Controller;
 import example.controller.implementations.GreedyController;
 import example.controller.implementations.RandomController;
@@ -19,16 +30,20 @@ import example.program.dialogs.ModelOpenDialog;
 import example.program.exceptions.ArgumentsException;
 import example.simulator.Simulator;
 import example.statistics.implementations.ExampleStatistics;
+import example.viewer.ModelViewer;
+import example.viewer.Viewer;
+import example.viewer.charts.single.VehicleBatteriesChartViewer;
 
 public class StatisticControllerComparisonProgram {
 	
+	static final int processorCount = Runtime.getRuntime().availableProcessors() - 1;
 	static final int demandCount = 10;
 	
 	static final double maxDemandSize = 1;
 	static final double maxDemandTime = 1000000;
 	static final double maxDemandDuration = 100000;
 	
-	static final int replicationCount = 4;
+	static final int replicationCount = 100;
 	
 	static int randomReplicationCount = 0;
 	static int greedyReplicationCount = 0;
@@ -45,6 +60,10 @@ public class StatisticControllerComparisonProgram {
 	static List<Double> randomCollisionTimes = new ArrayList<>();
 	static List<Double> greedyCollisionTimes = new ArrayList<>();
 	static List<Double> smartCollisionTimes = new ArrayList<>();
+	
+	static List<Double> randomInfiniteTimes = new ArrayList<>();
+	static List<Double> greedyInfiniteTimes = new ArrayList<>();
+	static List<Double> smartInfiniteTimes = new ArrayList<>();
 
 	public static void main(String[] args) {
 		try {
@@ -106,7 +125,7 @@ public class StatisticControllerComparisonProgram {
 			
 			List<Model> models = new ArrayList<>();
 			
-			for (int processor = 0; processor < Runtime.getRuntime().availableProcessors(); processor++) {
+			for (int processor = 0; processor < processorCount; processor++) {
 				
 				// Parse models
 				
@@ -179,11 +198,102 @@ public class StatisticControllerComparisonProgram {
 				}
 			}
 			
-			// Sort demands
+			// Sort demands and reset model
 			
 			for (Model model : models) {
 				model.demands.sort((first, second) -> (int) Math.signum(first.pickup.time - second.pickup.time));
+				
+				model.reset();
 			}
+			
+			// Create statistics
+			
+			List<ExampleStatistics> stats = new ArrayList<>();
+			
+			for (int processor = 0; processor < processorCount; processor++) {
+				Model model = models.get(processor);
+				
+				ExampleStatistics stat = new ExampleStatistics(model);
+				
+				stat.reset();
+				
+				stats.add(stat);
+			}
+			
+			// Create viewers
+			
+			List<Viewer> modelViewers = new ArrayList<>();
+			List<Viewer> chartViewers = new ArrayList<>();
+			
+			for (int processor = 0; processor < processorCount; processor++) {
+				Model model = models.get(processor);
+				
+				ExampleStatistics stat = stats.get(processor);
+				
+				modelViewers.add(new ModelViewer(model, stat));
+				
+				chartViewers.add(new VehicleBatteriesChartViewer(model, stat));
+			}
+			
+			// Create labels
+			
+			List<JLabel> labels = new ArrayList<>();
+
+			for (int processor = 0; processor < processorCount; processor++) {
+				JLabel label = new JLabel();
+				
+				label.setHorizontalAlignment(SwingConstants.CENTER);
+				
+				labels.add(label);
+			}
+			
+			// Create grid
+			
+			SplitDockGrid grid = new SplitDockGrid();
+			
+			for (int processor = 0; processor < processorCount; processor++) {
+				Viewer modelViewer = modelViewers.get(processor);
+				Viewer chartViewer = chartViewers.get(processor);
+				JLabel label = labels.get(processor);
+				
+				Dockable modelDockable = new DefaultDockable(modelViewer.getComponent(), modelViewer.getName(), modelViewer.getIcon());
+				Dockable chartDockable = new DefaultDockable(chartViewer.getComponent(), chartViewer.getName(), chartViewer.getIcon());
+				Dockable labelDockable = new DefaultDockable(label, "Label");
+				
+				grid.addDockable(processor, 0, 1, 1, modelDockable);
+				grid.addDockable(processor, 1, 1, 1, chartDockable);
+				grid.addDockable(processor, 2, 1, 1, labelDockable);
+			}
+			
+			// FIXME Remove work around for linux
+			
+			System.setProperty("java.version", "13.0.0");
+			
+			// Create station
+			
+			SplitDockStation station = new SplitDockStation();
+			station.dropTree(grid.toTree());
+			
+			// Create controller
+			
+			new DockController().add(station);
+			
+			// Create panel
+			
+			JPanel border = new JPanel();
+			border.setLayout(new BorderLayout(5, 5));
+			border.add(station.getComponent(), BorderLayout.CENTER);
+			
+			// Create frame
+			
+			JFrame frame = new JFrame();
+			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			frame.setSize(600, 600);
+			frame.setResizable(true);
+			frame.setTitle("Multiple Viewer");
+			frame.setContentPane(border);
+			frame.setExtendedState(frame.getExtendedState() | JFrame.MAXIMIZED_BOTH);
+			frame.setVisible(true);
 			
 			// Define settings
 			
@@ -194,67 +304,102 @@ public class StatisticControllerComparisonProgram {
 			
 			List<Thread> threads = new ArrayList<>();
 			
-			for (int processor = 0; processor < Runtime.getRuntime().availableProcessors(); processor++) {
+			for (int processor = 0; processor < processorCount; processor++) {
 				Thread thread = new Thread(() -> {
 					while (true) {	
 						Model model;
 						
-						Controller controller;
+						ExampleStatistics stat;
+						
+						Viewer modelViewer;
+						Viewer chartViewer;
+						
+						JLabel label;
+						
+						Controller ctrl;
 						
 						String name;
 						
 						synchronized (models) {
 							model = models.removeFirst();
 							
+							stat = stats.removeFirst();
+							
+							modelViewer = modelViewers.removeFirst();
+							chartViewer = chartViewers.removeFirst();
+							
+							label = labels.removeFirst();
+							
 							if (randomReplicationCount++ < replicationCount) {
 								System.out.println("Random " + randomReplicationCount);
-								controller = new RandomController();
+								ctrl = new RandomController();
 								name = "Random-" + randomReplicationCount;
 							} else if (greedyReplicationCount++ < replicationCount) {
 								System.out.println("Greedy " + greedyReplicationCount);
-								controller = new GreedyController(model);
-								name = "Greedy-" + randomReplicationCount;
+								ctrl = new GreedyController(model);
+								name = "Greedy-" + greedyReplicationCount;
 							} else if (smartReplicationCount++ < replicationCount) {
 								System.out.println("Smart " + smartReplicationCount);
-								controller = new SmartController(model);
-								name = "Smart-" + randomReplicationCount;
+								ctrl = new SmartController(model);
+								name = "Smart-" + smartReplicationCount;
 							} else {
 								return;
 							}
 						}
 						
-						ExampleStatistics statistics = new ExampleStatistics(model);
+						label.setText(name);
 						
-						Simulator<ExampleStatistics> simulator = new Simulator<>(name, model, controller, statistics, maxModelTimeStep, ratioModelRealTime, randomRunsFolder);
+						Simulator<ExampleStatistics> simulator = new Simulator<>(name, model, ctrl, stat, maxModelTimeStep, ratioModelRealTime, randomRunsFolder);
+						
+						simulator.setHandleUpdated(() -> {
+							modelViewer.update();
+							chartViewer.update();
+						});
 						
 						simulator.loop();
 						
 						synchronized (models) {
 							if (model.isFinished()) {
-								if (controller instanceof RandomController) {
+								if (ctrl instanceof RandomController) {
 									randomFinishedTimes.add(model.time);
-								} else if (controller instanceof GreedyController) {
+								} else if (ctrl instanceof GreedyController) {
 									greedyFinishedTimes.add(model.time);
-								} else if (controller instanceof SmartController) {
+								} else if (ctrl instanceof SmartController) {
 									smartFinishedTimes.add(model.time);
 								}
 							} else if (model.isEmpty()) {
-								if (controller instanceof RandomController) {
+								if (ctrl instanceof RandomController) {
 									randomEmptyTimes.add(model.time);
-								} else if (controller instanceof GreedyController) {
+								} else if (ctrl instanceof GreedyController) {
 									greedyEmptyTimes.add(model.time);
-								} else if (controller instanceof SmartController) {
+								} else if (ctrl instanceof SmartController) {
 									smartEmptyTimes.add(model.time);
 								}
+							} else if (Double.isInfinite(model.time)) {
+								if (ctrl instanceof RandomController) {
+									randomInfiniteTimes.add(model.time);
+								} else if (ctrl instanceof GreedyController) {
+									greedyInfiniteTimes.add(model.time);
+								} else if (ctrl instanceof SmartController) {
+									smartInfiniteTimes.add(model.time);
+								}
 							} else {
-								if (controller instanceof RandomController) {
+								if (ctrl instanceof RandomController) {
 									randomCollisionTimes.add(model.time);
-								} else if (controller instanceof GreedyController) {
+								} else if (ctrl instanceof GreedyController) {
 									greedyCollisionTimes.add(model.time);
-								} else if (controller instanceof SmartController) {
+								} else if (ctrl instanceof SmartController) {
 									smartCollisionTimes.add(model.time);
 								}
 							}
+							
+							labels.add(label);
+							
+							chartViewers.add(chartViewer);
+							modelViewers.add(modelViewer);
+							
+							stats.add(stat);
+							
 							models.add(model);
 						}
 					}
@@ -274,6 +419,7 @@ public class StatisticControllerComparisonProgram {
 			System.out.println("Finished: " + randomFinishedTimes.size() + " / " + greedyFinishedTimes.size() + " / " + smartFinishedTimes.size());
 			System.out.println("Empty: " + randomEmptyTimes.size() + " / " + greedyEmptyTimes.size() + " / " + smartEmptyTimes.size());
 			System.out.println("Collision: " + randomCollisionTimes.size() + " / " + greedyCollisionTimes.size() + " / " + smartCollisionTimes.size());
+			System.out.println("Infinite: " + randomInfiniteTimes.size() + " / " + greedyInfiniteTimes.size() + " / " + smartInfiniteTimes.size());
 			
 		} catch (MissingException e) {
 			e.printStackTrace();

@@ -24,5 +24,12 @@ public abstract class SingleChartViewer extends ChartViewer {
 		this.model = simulators.get(index).getModel();
 		this.statistics = simulators.get(index).getStatistics();
 	}
+	
+	public SingleChartViewer(Model model, ExampleStatistics statistics, String title, String categoryAxisLabel, String valueAxisLabel) {
+		super(title, categoryAxisLabel, valueAxisLabel);
+		
+		this.model = model;
+		this.statistics = statistics;
+	}
 
 }
