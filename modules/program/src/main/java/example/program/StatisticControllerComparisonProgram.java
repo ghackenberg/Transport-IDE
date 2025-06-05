@@ -6,9 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
+import javax.swing.JProgressBar;
 
 import bibliothek.gui.DockController;
 import bibliothek.gui.Dockable;
@@ -49,9 +48,13 @@ public class StatisticControllerComparisonProgram {
 	
 	static final int replicationCount = 1000;
 	
+	static final int totalCount = 3 * replicationCount;
+	
 	static int randomReplicationCount = 0;
 	static int greedyReplicationCount = 0;
 	static int smartReplicationCount = 0;
+	
+	static int finishedCount = 0;
 	
 	static final List<Double> randomFinishedTimes = new ArrayList<>();
 	static final List<Double> greedyFinishedTimes = new ArrayList<>();
@@ -239,18 +242,6 @@ public class StatisticControllerComparisonProgram {
 				chartViewers.add(new VehicleBatteriesChartViewer(model, stat));
 			}
 			
-			// Create labels
-			
-			List<JLabel> labels = new ArrayList<>();
-
-			for (int processor = 0; processor < processorCount; processor++) {
-				JLabel label = new JLabel();
-				
-				label.setHorizontalAlignment(SwingConstants.CENTER);
-				
-				labels.add(label);
-			}
-			
 			// Create grid
 			
 			SplitDockGrid grid = new SplitDockGrid();
@@ -258,15 +249,12 @@ public class StatisticControllerComparisonProgram {
 			for (int processor = 0; processor < processorCount; processor++) {
 				Viewer modelViewer = modelViewers.get(processor);
 				Viewer chartViewer = chartViewers.get(processor);
-				JLabel label = labels.get(processor);
 				
 				Dockable modelDockable = new DefaultDockable(modelViewer.getComponent(), modelViewer.getName(), modelViewer.getIcon());
 				Dockable chartDockable = new DefaultDockable(chartViewer.getComponent(), chartViewer.getName(), chartViewer.getIcon());
-				Dockable labelDockable = new DefaultDockable(label, "Label");
 				
 				grid.addDockable(processor, 0, 1, 1, modelDockable);
 				grid.addDockable(processor, 1, 1, 1, chartDockable);
-				grid.addDockable(processor, 2, 1, 1, labelDockable);
 			}
 			
 			// FIXME Remove work around for linux
@@ -282,10 +270,17 @@ public class StatisticControllerComparisonProgram {
 			
 			new DockController().add(station);
 			
+			// Create progress bar
+			
+			JProgressBar progress = new JProgressBar(0, 3 * replicationCount);
+			progress.setString("0 / " + totalCount + " Simulations");
+			progress.setStringPainted(true);
+			
 			// Create panel
 			
 			JPanel border = new JPanel();
 			border.setLayout(new BorderLayout(5, 5));
+			border.add(progress, BorderLayout.NORTH);
 			border.add(station.getComponent(), BorderLayout.CENTER);
 			
 			// Create frame
@@ -313,8 +308,6 @@ public class StatisticControllerComparisonProgram {
 						Viewer modelViewer;
 						Viewer chartViewer;
 						
-						JLabel label;
-						
 						Controller ctrl;
 						
 						String name;
@@ -326,8 +319,6 @@ public class StatisticControllerComparisonProgram {
 							
 							modelViewer = modelViewers.removeFirst();
 							chartViewer = chartViewers.removeFirst();
-							
-							label = labels.removeFirst();
 							
 							if (randomReplicationCount++ < replicationCount) {
 								System.out.println("Random " + randomReplicationCount);
@@ -346,8 +337,6 @@ public class StatisticControllerComparisonProgram {
 							}
 						}
 						
-						label.setText(name);
-						
 						Simulator<ExampleStatistics> simulator = new Simulator<>(name, model, ctrl, stat, maxModelTimeStep, ratioModelRealTime, randomRunsFolder);
 						
 						simulator.setHandleUpdated(() -> {
@@ -358,7 +347,7 @@ public class StatisticControllerComparisonProgram {
 						simulator.loop();
 						
 						synchronized (models) {
-							if (model.isFinished()) {
+							if (simulator.isFinished()) {
 								if (ctrl instanceof RandomController) {
 									randomFinishedTimes.add(model.time);
 								} else if (ctrl instanceof GreedyController) {
@@ -366,7 +355,7 @@ public class StatisticControllerComparisonProgram {
 								} else if (ctrl instanceof SmartController) {
 									smartFinishedTimes.add(model.time);
 								}
-							} else if (model.isEmpty()) {
+							} else if (simulator.isEmpty()) {
 								if (ctrl instanceof RandomController) {
 									randomEmptyTimes.add(model.time);
 								} else if (ctrl instanceof GreedyController) {
@@ -392,14 +381,15 @@ public class StatisticControllerComparisonProgram {
 								}
 							}
 							
-							labels.add(label);
-							
 							chartViewers.add(chartViewer);
 							modelViewers.add(modelViewer);
 							
 							stats.add(stat);
 							
 							models.add(model);
+							
+							progress.setValue(++finishedCount);
+							progress.setString(finishedCount + " / " + totalCount + " Simulations");
 						}
 					}
 				});
