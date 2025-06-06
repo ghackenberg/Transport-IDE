@@ -1,25 +1,9 @@
 package example.program;
 
-import java.awt.BorderLayout;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
-import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.data.general.DefaultPieDataset;
-
-import bibliothek.gui.DockController;
-import bibliothek.gui.Dockable;
-import bibliothek.gui.dock.DefaultDockable;
-import bibliothek.gui.dock.SplitDockStation;
-import bibliothek.gui.dock.station.split.SplitDockGrid;
 import example.controller.Controller;
 import example.controller.implementations.GreedyController;
 import example.controller.implementations.RandomController;
@@ -31,65 +15,87 @@ import example.model.Station;
 import example.parser.Parser;
 import example.parser.exceptions.DirectoryException;
 import example.parser.exceptions.MissingException;
-import example.program.dialogs.ModelOpenDialog;
 import example.program.exceptions.ArgumentsException;
 import example.simulator.Simulator;
 import example.statistics.implementations.ExampleStatistics;
-import example.viewer.ModelViewer;
-import example.viewer.Viewer;
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.Scene;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.PieChart;
+import javafx.scene.chart.XYChart;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.control.ToolBar;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.RowConstraints;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.Stage;
 
-public class StatisticControllerComparisonProgram {
-	
-	static final int processorCount = Runtime.getRuntime().availableProcessors() - 1;
-	
-	static final double maxModelTimeStep = Double.MAX_VALUE;
-	static final double ratioModelRealTime = -1;
-	
-	static final int demandCount = 1000;
-	
-	static final double maxDemandSize = 1;
-	static final double maxDemandTime = 1000000;
-	static final double maxDemandDuration = 100000;
-	
-	static final int replicationCount = 1000;
-	
-	static final int totalCount = 3 * replicationCount;
-	
-	static int randomReplicationCount = 0;
-	static int greedyReplicationCount = 0;
-	static int smartReplicationCount = 0;
-	
-	static int finishedCount = 0;
-	
-	static final List<Double> randomFinishedTimes = new ArrayList<>();
-	static final List<Double> greedyFinishedTimes = new ArrayList<>();
-	static final List<Double> smartFinishedTimes = new ArrayList<>();
-	
-	static final List<Double> randomEmptyTimes = new ArrayList<>();
-	static final List<Double> greedyEmptyTimes = new ArrayList<>();
-	static final List<Double> smartEmptyTimes = new ArrayList<>();
-	
-	static final List<Double> randomCollisionTimes = new ArrayList<>();
-	static final List<Double> greedyCollisionTimes = new ArrayList<>();
-	static final List<Double> smartCollisionTimes = new ArrayList<>();
-	
-	static final List<Double> randomInfiniteTimes = new ArrayList<>();
-	static final List<Double> greedyInfiniteTimes = new ArrayList<>();
-	static final List<Double> smartInfiniteTimes = new ArrayList<>();
-	
-	static final int binCount = 30;
-
-	static final double[] binData = new double[binCount];
-	
-	static final double[] randomData = new double[binCount];
-	static final double[] greedyData = new double[binCount];
-	static final double[] smartData = new double[binCount];
+public class StatisticControllerComparisonProgram extends Application {
 
 	public static void main(String[] args) {
+		launch(args);
+	}
+	
+	final int processorCount = Runtime.getRuntime().availableProcessors() - 1;
+	
+	final double maxModelTimeStep = Double.MAX_VALUE;
+	final double ratioModelRealTime = -1;
+	
+	final int demandCount = 1000;
+	
+	final double maxDemandSize = 1;
+	final double maxDemandTime = 1000000;
+	final double maxDemandDuration = 100000;
+	
+	final int replicationCount = 2000;
+	
+	final int totalCount = 3 * replicationCount;
+	
+	int randomReplicationCount = 0;
+	int greedyReplicationCount = 0;
+	int smartReplicationCount = 0;
+	
+	int finishedCount = 0;
+	
+	final List<Double> randomFinishedTimes = new ArrayList<>();
+	final List<Double> greedyFinishedTimes = new ArrayList<>();
+	final List<Double> smartFinishedTimes = new ArrayList<>();
+	
+	final List<Double> randomEmptyTimes = new ArrayList<>();
+	final List<Double> greedyEmptyTimes = new ArrayList<>();
+	final List<Double> smartEmptyTimes = new ArrayList<>();
+	
+	final List<Double> randomCollisionTimes = new ArrayList<>();
+	final List<Double> greedyCollisionTimes = new ArrayList<>();
+	final List<Double> smartCollisionTimes = new ArrayList<>();
+	
+	final List<Double> randomInfiniteTimes = new ArrayList<>();
+	final List<Double> greedyInfiniteTimes = new ArrayList<>();
+	final List<Double> smartInfiniteTimes = new ArrayList<>();
+	
+	final int binCount = 30;
+
+	final double[] binData = new double[binCount];
+	
+	final double[] randomData = new double[binCount];
+	final double[] greedyData = new double[binCount];
+	final double[] smartData = new double[binCount];
+
+	@Override
+	public void start(Stage primaryStage) throws Exception {
 		try {
 			// Choose folder
 		
-			File modelFolder = ModelOpenDialog.choose();
+			File modelFolder = new DirectoryChooser().showDialog(primaryStage);
 			
 			if (modelFolder == null) {
 				return;
@@ -240,103 +246,55 @@ public class StatisticControllerComparisonProgram {
 				stats.add(stat);
 			}
 			
-			// Create viewers
+			// Create series
 			
-			List<Viewer> viewers = new ArrayList<>();
+			XYChart.Series<String, Number> randomSeries = new XYChart.Series<>();
+			randomSeries.setName("Random control strategy");
 			
-			for (int processor = 0; processor < processorCount; processor++) {
-				Model model = models.get(processor);
-				
-				ExampleStatistics stat = stats.get(processor);
-				
-				viewers.add(new ModelViewer(model, stat));
-			}
+			XYChart.Series<String, Number> greedySeries = new XYChart.Series<>();
+			greedySeries.setName("Greedy control strategy");
+			
+			XYChart.Series<String, Number> smartSeries = new XYChart.Series<>();
+			smartSeries.setName("Smart control strategy");
 			
 			// Create datasets
 			
-			DefaultPieDataset randomDataset = new DefaultPieDataset();
+			ObservableList<PieChart.Data> randomDataset = createPieDataset();
+			ObservableList<PieChart.Data> greedyDataset = createPieDataset();
+			ObservableList<PieChart.Data> smartDataset = createPieDataset();
 			
-			randomDataset.setValue("Finished", 0);
-			randomDataset.setValue("Empty", 0);
-			randomDataset.setValue("Collision", 0);
-			randomDataset.setValue("Infinity", 0);
+			// Create axes
 			
-			DefaultPieDataset greedyDataset = new DefaultPieDataset();
+			CategoryAxis timeAxis = new CategoryAxis();
+			timeAxis.setLabel("Time");
 			
-			greedyDataset.setValue("Finished", 0);
-			greedyDataset.setValue("Empty", 0);
-			greedyDataset.setValue("Collision", 0);
-			greedyDataset.setValue("Infinity", 0);
-			
-			DefaultPieDataset smartDataset = new DefaultPieDataset();
-			
-			smartDataset.setValue("Finished", 0);
-			smartDataset.setValue("Empty", 0);
-			smartDataset.setValue("Collision", 0);
-			smartDataset.setValue("Infinity", 0);
-			
-			DefaultCategoryDataset histogramDataset = new DefaultCategoryDataset();
+			NumberAxis frequencyAxis = new NumberAxis();
+			frequencyAxis.setLabel("Relative frequency");
 			
 			// Create charts
-
-			JFreeChart randomChart = ChartFactory.createPieChart("Random", randomDataset);
-			JFreeChart greedyChart = ChartFactory.createPieChart("Greedy", greedyDataset);
-			JFreeChart smartChart = ChartFactory.createPieChart("Smart", smartDataset);
-			JFreeChart histogramChart = ChartFactory.createBarChart("Histogram", "Time", "Count", histogramDataset);
 			
-			// Create grid
+			PieChart randomChart = new PieChart(randomDataset);
+			randomChart.setTitle("Random control strategy");
+			randomChart.setAnimated(false);
 			
-			SplitDockGrid grid = new SplitDockGrid();
+			PieChart greedyChart = new PieChart(greedyDataset);
+			greedyChart.setTitle("Greedy control strategy");
+			greedyChart.setAnimated(false);
 			
-			for (int processor = 0; processor < processorCount; processor++) {
-				Viewer viewer = viewers.get(processor);
-				
-				Dockable dockable = new DefaultDockable(viewer.getComponent(), viewer.getName(), viewer.getIcon());
-				
-				grid.addDockable(processor, 0, 1, 1, dockable);
-			}
+			PieChart smartChart = new PieChart(smartDataset);
+			smartChart.setTitle("Smart control strategy");
+			smartChart.setAnimated(false);
 			
-			grid.addDockable(0, 1, 2, 2, new DefaultDockable(new ChartPanel(randomChart), "Chart"));
-			grid.addDockable(2, 1, 2, 2, new DefaultDockable(new ChartPanel(greedyChart), "Chart"));
-			grid.addDockable(4, 1, 2, 2, new DefaultDockable(new ChartPanel(smartChart), "Chart"));
-			grid.addDockable(6, 1, processorCount - 6, 2, new DefaultDockable(new ChartPanel(histogramChart), "Histogram"));
+			BarChart<String, Number> timeChart = new BarChart<>(timeAxis, frequencyAxis);
+			timeChart.setTitle("Distribution of stop time in finished state");
+			timeChart.setAnimated(false);
+			timeChart.getData().add(randomSeries);
+			timeChart.getData().add(greedySeries);
+			timeChart.getData().add(smartSeries);
 			
-			// FIXME Remove work around for linux
+			// Create progress
 			
-			System.setProperty("java.version", "13.0.0");
-			
-			// Create station
-			
-			SplitDockStation station = new SplitDockStation();
-			station.dropTree(grid.toTree());
-			
-			// Create controller
-			
-			new DockController().add(station);
-			
-			// Create progress bar
-			
-			JProgressBar progress = new JProgressBar(0, 3 * replicationCount);
-			progress.setString("0 / " + totalCount + " Simulations");
-			progress.setStringPainted(true);
-			
-			// Create panel
-			
-			JPanel border = new JPanel();
-			border.setLayout(new BorderLayout(5, 5));
-			border.add(progress, BorderLayout.NORTH);
-			border.add(station.getComponent(), BorderLayout.CENTER);
-			
-			// Create frame
-			
-			JFrame frame = new JFrame();
-			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			frame.setSize(600, 600);
-			frame.setResizable(true);
-			frame.setTitle("Multiple Viewer");
-			frame.setContentPane(border);
-			frame.setExtendedState(frame.getExtendedState() | JFrame.MAXIMIZED_BOTH);
-			frame.setVisible(true);
+			ProgressBar progress = new ProgressBar();
 			
 			// Start threads
 			
@@ -346,7 +304,6 @@ public class StatisticControllerComparisonProgram {
 				Thread thread = new Thread(() -> {
 					Model model;
 					ExampleStatistics stat;
-					Viewer viewer;
 					Controller ctrl;
 					String name;
 					Simulator<ExampleStatistics> simulator;
@@ -355,18 +312,14 @@ public class StatisticControllerComparisonProgram {
 						synchronized (models) {
 							model = models.removeFirst();
 							stat = stats.removeFirst();
-							viewer = viewers.removeFirst();
 							
 							if (randomReplicationCount++ < replicationCount) {
-								System.out.println("Random " + randomReplicationCount);
 								ctrl = new RandomController();
 								name = "Random-" + randomReplicationCount;
 							} else if (greedyReplicationCount++ < replicationCount) {
-								System.out.println("Greedy " + greedyReplicationCount);
 								ctrl = new GreedyController(model);
 								name = "Greedy-" + greedyReplicationCount;
 							} else if (smartReplicationCount++ < replicationCount) {
-								System.out.println("Smart " + smartReplicationCount);
 								ctrl = new SmartController(model);
 								name = "Smart-" + smartReplicationCount;
 							} else {
@@ -375,7 +328,6 @@ public class StatisticControllerComparisonProgram {
 						}
 						
 						simulator = new Simulator<>(name, model, ctrl, stat, maxModelTimeStep, ratioModelRealTime, randomRunsFolder);
-						simulator.setHandleUpdated(viewer::update);
 						simulator.loop();
 						
 						synchronized (models) {
@@ -389,7 +341,6 @@ public class StatisticControllerComparisonProgram {
 								chooseList(ctrl, randomCollisionTimes, greedyCollisionTimes, smartCollisionTimes).add(model.time);
 							}
 							
-							viewers.add(viewer);
 							stats.add(stat);
 							models.add(model);
 							
@@ -406,14 +357,19 @@ public class StatisticControllerComparisonProgram {
 							computeHistogramY(greedyFinishedTimes, min, max, greedyData);
 							computeHistogramY(smartFinishedTimes, min, max, smartData);
 							
-							histogramDataset.clear();
+							XYChart.Series<String, Number> randomSeriesNew = createHistogramSeries("Random control strategy", binData, randomData);
+							XYChart.Series<String, Number> greedySeriesNew = createHistogramSeries("Greedy control strategy", binData, greedyData);
+							XYChart.Series<String, Number> smartSeriesNew = createHistogramSeries("Smart control strategy", binData, smartData);
 							
-							updateHistogram(histogramDataset, "Random", binData, randomData);
-							updateHistogram(histogramDataset, "Greedy", binData, greedyData);
-							updateHistogram(histogramDataset, "Smart", binData, smartData);
-							
-							progress.setValue(++finishedCount);
-							progress.setString(finishedCount + " / " + totalCount + " Simulations");
+							Platform.runLater(() -> {
+								timeChart.getData().clear();
+								
+								timeChart.getData().add(randomSeriesNew);
+								timeChart.getData().add(greedySeriesNew);
+								timeChart.getData().add(smartSeriesNew);
+								
+								progress.setProgress(++finishedCount / (double) totalCount);
+							});
 						}
 					}
 				});
@@ -422,24 +378,50 @@ public class StatisticControllerComparisonProgram {
 				threads.add(thread);
 			}
 			
-			// Join threads
+			// Create window
 			
-			for (Thread thread : threads) {
-				thread.join();
-			}
+			ToolBar tool = new ToolBar(new Label("Progress:"), progress);
 			
-			System.out.println("Finished: " + randomFinishedTimes.size() + " / " + greedyFinishedTimes.size() + " / " + smartFinishedTimes.size());
-			System.out.println("Empty: " + randomEmptyTimes.size() + " / " + greedyEmptyTimes.size() + " / " + smartEmptyTimes.size());
-			System.out.println("Collision: " + randomCollisionTimes.size() + " / " + greedyCollisionTimes.size() + " / " + smartCollisionTimes.size());
-			System.out.println("Infinite: " + randomInfiniteTimes.size() + " / " + greedyInfiniteTimes.size() + " / " + smartInfiniteTimes.size());
+			GridPane grid = new GridPane();
+			
+			grid.getColumnConstraints().add(new ColumnConstraints());
+			grid.getColumnConstraints().add(new ColumnConstraints());
+			grid.getColumnConstraints().add(new ColumnConstraints());
+			
+			grid.getColumnConstraints().get(0).setHgrow(Priority.ALWAYS);
+			grid.getColumnConstraints().get(1).setHgrow(Priority.ALWAYS);
+			grid.getColumnConstraints().get(2).setHgrow(Priority.ALWAYS);
+			
+			grid.getRowConstraints().add(new RowConstraints());
+			grid.getRowConstraints().add(new RowConstraints());
+			
+			grid.getRowConstraints().get(0).setVgrow(Priority.ALWAYS);
+			grid.getRowConstraints().get(1).setVgrow(Priority.ALWAYS);
+			
+			grid.add(progress, 0, 0, 3, 1);
+			grid.add(randomChart, 0, 1);
+			grid.add(greedyChart, 1, 1);
+			grid.add(smartChart, 2, 1);
+			grid.add(timeChart, 0, 2, 3, 1);
+			
+			ToolBar status = new ToolBar(new Label("(c) 2025 Dr. Georg Hackenberg, Professor for Industrial Informatics, FH Upper Austria."));
+			
+			BorderPane border = new BorderPane();
+			border.setTop(tool);
+			border.setCenter(grid);
+			border.setBottom(status);
+			
+			Scene scene = new Scene(border, 640, 480);
+			
+			primaryStage.setScene(scene);
+			primaryStage.setTitle("Transport-IDE Monte-Carlo Experiment");
+			primaryStage.show();
 			
 		} catch (MissingException e) {
 			e.printStackTrace();
 		} catch (DirectoryException e) {
 			e.printStackTrace();
 		} catch (ArgumentsException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
@@ -456,11 +438,22 @@ public class StatisticControllerComparisonProgram {
 		}
 	}
 	
-	private static void updatePieChart(DefaultPieDataset dataset, List<Double> finished, List<Double> empty, List<Double> collision, List<Double> infinite) {
-		dataset.setValue("Finished", finished.size());
-		dataset.setValue("Empty", empty.size());
-		dataset.setValue("Collision", collision.size());
-		dataset.setValue("Infinity", infinite.size());
+	private static ObservableList<PieChart.Data> createPieDataset() {
+		return FXCollections.observableArrayList(
+			new PieChart.Data("Finished", 0),
+			new PieChart.Data("Empty", 0),
+			new PieChart.Data("Collision", 0),
+			new PieChart.Data("Infinite", 0)
+		);
+	}
+	
+	private static void updatePieChart(ObservableList<PieChart.Data> dataset, List<Double> finished, List<Double> empty, List<Double> collision, List<Double> infinite) {
+		Platform.runLater(() -> {
+			dataset.get(0).setPieValue(finished.size());
+			dataset.get(1).setPieValue(empty.size());
+			dataset.get(2).setPieValue(collision.size());
+			dataset.get(3).setPieValue(infinite.size());
+		});
 	}
 	
 	private static double computeMin(List<Double> data) {
@@ -506,15 +499,23 @@ public class StatisticControllerComparisonProgram {
 			bins[(int) bin]++;
 		}
 		
-		for (int bin = 0; bin < bins.length; bin++) {
-			bins[bin] /= data.size();
+		if (data.size() > 0) {
+			for (int bin = 0; bin < bins.length; bin++) {
+				bins[bin] /= data.size();
+			}	
 		}
 	}
 	
-	private static void updateHistogram(DefaultCategoryDataset dataset, String name, double[] x, double[] y) {
+	private static XYChart.Series<String, Number> createHistogramSeries(String name, double[] x, double[] y) {
+		XYChart.Series<String, Number> series = new XYChart.Series<>();
+		
+		series.setName(name);
+		
 		for (int bin = 0; bin < x.length; bin++) {
-			dataset.addValue(y[bin], name, "" + Math.round(x[bin]));
+			series.getData().add(new XYChart.Data<String, Number>("" + Math.round(x[bin]), y[bin]));
 		}
+		
+		return series;
 	}
 
 }

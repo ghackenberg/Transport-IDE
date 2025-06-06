@@ -46,6 +46,11 @@
 			<artifactId>${project.parent.artifactId}.viewer</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-controls</artifactId>
+			<version>21.0.5</version>
+		</dependency>
 	</dependencies>
 	
 </project>

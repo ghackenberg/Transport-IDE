@@ -8,7 +8,9 @@ module example.program {
 	requires example.simulator;
 	requires example.viewer;
 	
-	requires docking.frames.core;
-	requires jfreechart;
+	requires transitive javafx.graphics;
+	requires javafx.controls;
+	
+	exports example.program;
 	
 }
