@@ -22,9 +22,12 @@ public class Location {
 		
 		Coordinate coordinate = new Coordinate();
 		
-		coordinate.latitude = start.latitude + (end.latitude - start.latitude) * distance / segment.getLength();
-		coordinate.longitude = start.longitude + (end.longitude - start.longitude) * distance / segment.getLength();
-		coordinate.elevation = start.elevation + (end.elevation - start.elevation) * distance / segment.getLength();
+		double len = segment.getLength();
+		double prg = distance / len; 
+		
+		coordinate.latitude = start.latitude + (end.latitude - start.latitude) * prg;
+		coordinate.longitude = start.longitude + (end.longitude - start.longitude) * prg;
+		coordinate.elevation = start.elevation + (end.elevation - start.elevation) * prg;
 		
 		return coordinate;
 		

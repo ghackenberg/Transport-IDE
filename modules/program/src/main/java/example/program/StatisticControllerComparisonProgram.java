@@ -16,12 +16,15 @@ import example.parser.Parser;
 import example.parser.exceptions.DirectoryException;
 import example.parser.exceptions.MissingException;
 import example.program.exceptions.ArgumentsException;
+import example.program.viewers.ModelViewer;
 import example.simulator.Simulator;
 import example.statistics.implementations.ExampleStatistics;
+import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
@@ -34,7 +37,6 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
@@ -246,6 +248,28 @@ public class StatisticControllerComparisonProgram extends Application {
 				stats.add(stat);
 			}
 			
+			// Create viewers
+			
+			List<ModelViewer> viewers = new ArrayList<ModelViewer>();
+			
+			for (int processor = 0; processor < processorCount; processor++) {
+				ModelViewer viewer = new ModelViewer(models.get(processor));
+				
+				viewers.add(viewer);
+			}
+			
+			// Update viewers
+			
+			AnimationTimer animation = new AnimationTimer() {
+				@Override
+				public void handle(long now) {
+					for (ModelViewer viewer : viewers) {
+						viewer.update();
+					}
+				}
+			};
+			animation.start();
+			
 			// Create series
 			
 			XYChart.Series<String, Number> randomSeries = new XYChart.Series<>();
@@ -274,18 +298,22 @@ public class StatisticControllerComparisonProgram extends Application {
 			// Create charts
 			
 			PieChart randomChart = new PieChart(randomDataset);
+			randomChart.setStyle("-fx-background-color: white;");
 			randomChart.setTitle("Random control strategy");
 			randomChart.setAnimated(false);
 			
 			PieChart greedyChart = new PieChart(greedyDataset);
+			greedyChart.setStyle("-fx-background-color: white;");
 			greedyChart.setTitle("Greedy control strategy");
 			greedyChart.setAnimated(false);
 			
 			PieChart smartChart = new PieChart(smartDataset);
+			smartChart.setStyle("-fx-background-color: white;");
 			smartChart.setTitle("Smart control strategy");
 			smartChart.setAnimated(false);
 			
 			BarChart<String, Number> timeChart = new BarChart<>(timeAxis, frequencyAxis);
+			timeChart.setStyle("-fx-background-color: white;");
 			timeChart.setTitle("Distribution of stop time in finished state");
 			timeChart.setAnimated(false);
 			timeChart.getData().add(randomSeries);
@@ -295,6 +323,40 @@ public class StatisticControllerComparisonProgram extends Application {
 			// Create progress
 			
 			ProgressBar progress = new ProgressBar();
+			
+			// Model grid
+			
+			GridPane modelGrid = new GridPane();
+			
+			modelGrid.setHgap(10);
+			modelGrid.setVgap(10);
+			
+			for (int processor = 0; processor < processorCount; processor++) {
+				modelGrid.getColumnConstraints().add(createColumnConstraints(100. / processorCount));
+			}
+			
+			modelGrid.getRowConstraints().add(createRowConstraints(100));
+
+			for (int processor = 0; processor < processorCount; processor++) {
+				modelGrid.add(viewers.get(processor), processor, 0);
+			}
+			
+			// Chart grid
+			
+			GridPane chartGrid = new GridPane();
+			
+			chartGrid.setHgap(10);
+			chartGrid.setVgap(10);
+			
+			chartGrid.getColumnConstraints().add(createColumnConstraints(100 / 3.));
+			chartGrid.getColumnConstraints().add(createColumnConstraints(100 / 3.));
+			chartGrid.getColumnConstraints().add(createColumnConstraints(100 / 3.));
+			
+			chartGrid.getRowConstraints().add(createRowConstraints(100));
+			
+			chartGrid.add(randomChart, 0, 0);
+			chartGrid.add(greedyChart, 1, 0);
+			chartGrid.add(smartChart, 2, 0);
 			
 			// Start threads
 			
@@ -378,40 +440,43 @@ public class StatisticControllerComparisonProgram extends Application {
 				threads.add(thread);
 			}
 			
-			// Create window
+			// Center grid
 			
-			ToolBar tool = new ToolBar(new Label("Progress:"), progress);
+			GridPane center = new GridPane();
 			
-			GridPane grid = new GridPane();
+			center.setHgap(10);
+			center.setVgap(10);
 			
-			grid.getColumnConstraints().add(new ColumnConstraints());
-			grid.getColumnConstraints().add(new ColumnConstraints());
-			grid.getColumnConstraints().add(new ColumnConstraints());
+			center.setPadding(new Insets(10));
 			
-			grid.getColumnConstraints().get(0).setHgrow(Priority.ALWAYS);
-			grid.getColumnConstraints().get(1).setHgrow(Priority.ALWAYS);
-			grid.getColumnConstraints().get(2).setHgrow(Priority.ALWAYS);
+			center.getColumnConstraints().add(createColumnConstraints(100));
 			
-			grid.getRowConstraints().add(new RowConstraints());
-			grid.getRowConstraints().add(new RowConstraints());
+			center.getRowConstraints().add(createRowConstraints(100 / 3.));
+			center.getRowConstraints().add(createRowConstraints(100 / 3.));
+			center.getRowConstraints().add(createRowConstraints(100 / 3.));
 			
-			grid.getRowConstraints().get(0).setVgrow(Priority.ALWAYS);
-			grid.getRowConstraints().get(1).setVgrow(Priority.ALWAYS);
+			center.add(modelGrid, 0, 0);
+			center.add(chartGrid, 0, 1);
+			center.add(timeChart, 0, 2);
 			
-			grid.add(progress, 0, 0, 3, 1);
-			grid.add(randomChart, 0, 1);
-			grid.add(greedyChart, 1, 1);
-			grid.add(smartChart, 2, 1);
-			grid.add(timeChart, 0, 2, 3, 1);
+			// Toolbars
 			
-			ToolBar status = new ToolBar(new Label("(c) 2025 Dr. Georg Hackenberg, Professor for Industrial Informatics, FH Upper Austria."));
+			ToolBar top = new ToolBar(new Label("Progress:"), progress);
+			
+			ToolBar bottom = new ToolBar(new Label("(c) 2025 Dr. Georg Hackenberg, Professor for Industrial Informatics, FH Upper Austria."));
+			
+			// Border
 			
 			BorderPane border = new BorderPane();
-			border.setTop(tool);
-			border.setCenter(grid);
-			border.setBottom(status);
+			border.setTop(top);
+			border.setCenter(center);
+			border.setBottom(bottom);
+			
+			// Scene
 			
 			Scene scene = new Scene(border, 640, 480);
+			
+			// Stage
 			
 			primaryStage.setScene(scene);
 			primaryStage.setTitle("Transport-IDE Monte-Carlo Experiment");
@@ -516,6 +581,24 @@ public class StatisticControllerComparisonProgram extends Application {
 		}
 		
 		return series;
+	}
+	
+	private static ColumnConstraints createColumnConstraints(double percentage) {
+		ColumnConstraints constraints = new ColumnConstraints();
+		
+		constraints.setPercentWidth(percentage);
+		//constraints.setHgrow(Priority.ALWAYS);
+		
+		return constraints;
+	}
+	
+	private static RowConstraints createRowConstraints(double percentage) {
+		RowConstraints constraints = new RowConstraints();
+		
+		constraints.setPercentHeight(percentage);
+		//constraints.setVgrow(Priority.ALWAYS);
+		
+		return constraints;
 	}
 
 }
