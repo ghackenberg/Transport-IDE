@@ -36,6 +36,9 @@ public class ModelViewer extends Pane {
 	public ModelViewer(Model model) {
 		setStyle("-fx-background-color: white;");
 		
+		setPrefWidth(200);
+		setPrefHeight(200);
+		
 		widthProperty().addListener(event -> zoom());
 		heightProperty().addListener(event -> zoom());
 		
@@ -137,11 +140,13 @@ public class ModelViewer extends Pane {
 		double width = getWidth() - 20;
 		double height = getHeight() - 20;
 		
-		innerTranslate.setTranslateX(-minLat - deltaLat / 2);
-		innerTranslate.setTranslateY(-minLng - deltaLng / 2);
+		double factor = Math.min(width / deltaLat, height / deltaLng);
 		
-		scale.setScaleX(width / (maxLat - minLat));
-		scale.setScaleY(height / (maxLng - minLng));
+		innerTranslate.setTranslateX(0 - minLat - deltaLat / 2);
+		innerTranslate.setTranslateY(0 - minLng - deltaLng / 2);
+		
+		scale.setScaleX(factor);
+		scale.setScaleY(factor);
 		
 		outerTranslate.setTranslateX(getWidth() / 2);
 		outerTranslate.setTranslateY(getHeight() / 2);

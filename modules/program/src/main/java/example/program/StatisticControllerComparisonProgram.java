@@ -33,9 +33,12 @@ import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
 import javafx.stage.DirectoryChooser;
@@ -50,7 +53,7 @@ public class StatisticControllerComparisonProgram extends Application {
 	final int processorCount = Runtime.getRuntime().availableProcessors() - 1;
 	
 	final double maxModelTimeStep = Double.MAX_VALUE;
-	final double ratioModelRealTime = -1;
+	final double ratioModelRealTime = 100; //-1;
 	
 	final int demandCount = 1000;
 	
@@ -326,37 +329,14 @@ public class StatisticControllerComparisonProgram extends Application {
 			
 			// Model grid
 			
-			GridPane modelGrid = new GridPane();
-			
-			modelGrid.setHgap(10);
-			modelGrid.setVgap(10);
-			
-			for (int processor = 0; processor < processorCount; processor++) {
-				modelGrid.getColumnConstraints().add(createColumnConstraints(100. / processorCount));
-			}
-			
-			modelGrid.getRowConstraints().add(createRowConstraints(100));
+			FlowPane modelPane = new FlowPane();
+
+			modelPane.setHgap(10);
+			modelPane.setVgap(10);
 
 			for (int processor = 0; processor < processorCount; processor++) {
-				modelGrid.add(viewers.get(processor), processor, 0);
+				modelPane.getChildren().add(viewers.get(processor));
 			}
-			
-			// Chart grid
-			
-			GridPane chartGrid = new GridPane();
-			
-			chartGrid.setHgap(10);
-			chartGrid.setVgap(10);
-			
-			chartGrid.getColumnConstraints().add(createColumnConstraints(100 / 3.));
-			chartGrid.getColumnConstraints().add(createColumnConstraints(100 / 3.));
-			chartGrid.getColumnConstraints().add(createColumnConstraints(100 / 3.));
-			
-			chartGrid.getRowConstraints().add(createRowConstraints(100));
-			
-			chartGrid.add(randomChart, 0, 0);
-			chartGrid.add(greedyChart, 1, 0);
-			chartGrid.add(smartChart, 2, 0);
 			
 			// Start threads
 			
@@ -442,22 +422,31 @@ public class StatisticControllerComparisonProgram extends Application {
 			
 			// Center grid
 			
-			GridPane center = new GridPane();
+			GridPane chartPane = new GridPane();
 			
-			center.setHgap(10);
-			center.setVgap(10);
+			chartPane.setHgap(10);
+			chartPane.setVgap(10);
 			
-			center.setPadding(new Insets(10));
+			chartPane.setPadding(new Insets(10));
+
+			chartPane.getColumnConstraints().add(createColumnConstraints(100 / 3.));
+			chartPane.getColumnConstraints().add(createColumnConstraints(100 / 3.));
+			chartPane.getColumnConstraints().add(createColumnConstraints(100 / 3.));
 			
-			center.getColumnConstraints().add(createColumnConstraints(100));
+			chartPane.getRowConstraints().add(createRowConstraints(100 / 2.));
+			chartPane.getRowConstraints().add(createRowConstraints(100 / 2.));
 			
-			center.getRowConstraints().add(createRowConstraints(100 / 3.));
-			center.getRowConstraints().add(createRowConstraints(100 / 3.));
-			center.getRowConstraints().add(createRowConstraints(100 / 3.));
+			chartPane.add(randomChart, 0, 0);
+			chartPane.add(greedyChart, 1, 0);
+			chartPane.add(smartChart, 2, 0);
+			chartPane.add(timeChart, 0, 1, 3, 1);
 			
-			center.add(modelGrid, 0, 0);
-			center.add(chartGrid, 0, 1);
-			center.add(timeChart, 0, 2);
+			// Tabs
+			
+			TabPane tabs = new TabPane();
+			
+			tabs.getTabs().add(new Tab("Charts", chartPane));
+			tabs.getTabs().add(new Tab("Simulators", modelPane));
 			
 			// Toolbars
 			
@@ -469,7 +458,7 @@ public class StatisticControllerComparisonProgram extends Application {
 			
 			BorderPane border = new BorderPane();
 			border.setTop(top);
-			border.setCenter(center);
+			border.setCenter(tabs);
 			border.setBottom(bottom);
 			
 			// Scene
