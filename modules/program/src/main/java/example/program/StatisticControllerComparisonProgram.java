@@ -32,13 +32,13 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
 import javafx.stage.DirectoryChooser;
@@ -53,7 +53,7 @@ public class StatisticControllerComparisonProgram extends Application {
 	final int processorCount = Runtime.getRuntime().availableProcessors() - 1;
 	
 	final double maxModelTimeStep = Double.MAX_VALUE;
-	final double ratioModelRealTime = 100; //-1;
+	final double ratioModelRealTime = -1;
 	
 	final int demandCount = 1000;
 	
@@ -94,6 +94,13 @@ public class StatisticControllerComparisonProgram extends Application {
 	final double[] randomData = new double[binCount];
 	final double[] greedyData = new double[binCount];
 	final double[] smartData = new double[binCount];
+	
+	private AnimationTimer animation;
+	
+	private BorderPane modelPane;
+	private GridPane chartPane;
+	private TabPane mainPane;
+	private BorderPane rootPane;
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -263,7 +270,7 @@ public class StatisticControllerComparisonProgram extends Application {
 			
 			// Update viewers
 			
-			AnimationTimer animation = new AnimationTimer() {
+			animation = new AnimationTimer() {
 				@Override
 				public void handle(long now) {
 					for (ModelViewer viewer : viewers) {
@@ -329,14 +336,23 @@ public class StatisticControllerComparisonProgram extends Application {
 			
 			// Model grid
 			
-			FlowPane modelPane = new FlowPane();
-
-			modelPane.setHgap(10);
-			modelPane.setVgap(10);
-
+			ObservableList<String> modelPaneListItems = FXCollections.observableArrayList();
+			
 			for (int processor = 0; processor < processorCount; processor++) {
-				modelPane.getChildren().add(viewers.get(processor));
+				modelPaneListItems.add("Model " + processor);
 			}
+			
+			ListView<String> modelPaneList = new ListView<>(modelPaneListItems);
+			
+			modelPaneList.getSelectionModel().selectedIndexProperty().addListener(event -> {
+				int index = modelPaneList.getSelectionModel().getSelectedIndex();
+				ModelViewer viewer = viewers.get(index);
+				modelPane.setCenter(viewer);
+			});
+			
+			modelPane = new BorderPane();
+			
+			modelPane.setLeft(modelPaneList);
 			
 			// Start threads
 			
@@ -422,7 +438,7 @@ public class StatisticControllerComparisonProgram extends Application {
 			
 			// Center grid
 			
-			GridPane chartPane = new GridPane();
+			chartPane = new GridPane();
 			
 			chartPane.setHgap(10);
 			chartPane.setVgap(10);
@@ -443,10 +459,18 @@ public class StatisticControllerComparisonProgram extends Application {
 			
 			// Tabs
 			
-			TabPane tabs = new TabPane();
+			Tab chartsTab = new Tab("Charts", chartPane);
 			
-			tabs.getTabs().add(new Tab("Charts", chartPane));
-			tabs.getTabs().add(new Tab("Simulators", modelPane));
+			chartsTab.setClosable(false);
+			
+			Tab simulatorsTab = new Tab("Simulators", modelPane);
+			
+			simulatorsTab.setClosable(false);
+			
+			mainPane = new TabPane();
+			
+			mainPane.getTabs().add(chartsTab);
+			mainPane.getTabs().add(simulatorsTab);
 			
 			// Toolbars
 			
@@ -456,14 +480,14 @@ public class StatisticControllerComparisonProgram extends Application {
 			
 			// Border
 			
-			BorderPane border = new BorderPane();
-			border.setTop(top);
-			border.setCenter(tabs);
-			border.setBottom(bottom);
+			rootPane = new BorderPane();
+			rootPane.setTop(top);
+			rootPane.setCenter(mainPane);
+			rootPane.setBottom(bottom);
 			
 			// Scene
 			
-			Scene scene = new Scene(border, 640, 480);
+			Scene scene = new Scene(rootPane, 640, 480);
 			
 			// Stage
 			
