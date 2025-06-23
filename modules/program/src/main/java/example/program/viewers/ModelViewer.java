@@ -34,6 +34,10 @@ public class ModelViewer extends Pane {
 	private List<VehicleViewer> vehicles = new ArrayList<>();
 	
 	public ModelViewer(Model model) {
+		this(model, true);
+	}
+	
+	public ModelViewer(Model model, boolean showDemands) {
 		setStyle("-fx-background-color: white;");
 		
 		setPrefWidth(200);
@@ -99,12 +103,14 @@ public class ModelViewer extends Pane {
 		
 		// Demands
 		
-		for (Demand demand : model.demands) {
-			DemandViewer viewer = new DemandViewer(model, demand);
-			
-			innerTranslate.getChildren().add(viewer);
-			
-			demands.add(viewer);
+		if (showDemands) {
+			for (Demand demand : model.demands) {
+				DemandViewer viewer = new DemandViewer(model, demand);
+				
+				innerTranslate.getChildren().add(viewer);
+				
+				demands.add(viewer);
+			}
 		}
 		
 		// Vehicles

@@ -90,13 +90,11 @@ public class StatisticComparisonProgram extends Application {
 	final List<List<ObservableList<PieChart.Data>>> pieData = new ArrayList<>();
 	final List<List<PieChart>> pieCharts = new ArrayList<>();
 	
-	final int histBinCount = 30;
+	final int histBinCount = 10;
 	final double[] histBinX = new double[histBinCount];
 	final List<List<double[]>> histBinY = new ArrayList<>();
 	final List<List<XYChart.Series<String, Number>>> histSeries = new ArrayList<>();
-	final CategoryAxis histAxisX = new CategoryAxis();
-	final NumberAxis histAxisY = new NumberAxis();
-	final BarChart<String, Number> histChart = new BarChart<>(histAxisX, histAxisY);
+	final List<BarChart<String, Number>> histCharts = new ArrayList<>();
 	
 	final ProgressBar progress = new ProgressBar();
 
@@ -124,11 +122,16 @@ public class StatisticComparisonProgram extends Application {
 		
 		// Parse models
 		
+		File modelFolder = null;
+		
 		do {
 			
 			// Choose folder
+
+			DirectoryChooser chooser = new DirectoryChooser();
+			chooser.setInitialDirectory(modelFolder != null ? modelFolder.getParentFile() : null);
 			
-			File modelFolder = new DirectoryChooser().showDialog(primaryStage);
+			modelFolder = chooser.showDialog(primaryStage);
 			
 			if (modelFolder == null) {
 				break;
@@ -368,12 +371,20 @@ public class StatisticComparisonProgram extends Application {
 		
 		// Create histogram chart
 		
-		histAxisX.setLabel("Time");
-		histAxisY.setLabel("Relative frequency");
-		
 		for (String name : names) {
 			List<double[]> ctrlBinY = new ArrayList<>();
 			List<XYChart.Series<String, Number>> ctrlSeries = new ArrayList<>();
+			
+			CategoryAxis histAxisX = new CategoryAxis();
+			histAxisX.setLabel("Time");
+			
+			NumberAxis histAxisY = new NumberAxis();
+			histAxisY.setLabel("Relative frequency");
+			
+			BarChart<String, Number> histChart = new BarChart<String, Number>(histAxisX, histAxisY);
+			histChart.setStyle("-fx-background-color: white;");
+			histChart.setTitle("Distribution of stop time in finished state");
+			histChart.setAnimated(false);
 			
 			for (Class<? extends Controller> controllerClass : controllerClasses) {
 				ctrlBinY.add(new double[histBinCount]);
@@ -388,11 +399,8 @@ public class StatisticComparisonProgram extends Application {
 			
 			histBinY.add(ctrlBinY);
 			histSeries.add(ctrlSeries);
+			histCharts.add(histChart);
 		}
-		
-		histChart.setStyle("-fx-background-color: white;");
-		histChart.setTitle("Distribution of stop time in finished state");
-		histChart.setAnimated(false);
 		
 		// Chart pane
 		
@@ -405,13 +413,15 @@ public class StatisticComparisonProgram extends Application {
 		}
 		chartPane.getRowConstraints().add(createRowConstraints(100 / 2.));
 		chartPane.getRowConstraints().add(createRowConstraints(100 / 2.));
+		chartPane.getRowConstraints().add(createRowConstraints(100 / 2.));
 		
 		for (int i = 0; i < models.size(); i++) {
+			chartPane.add(new ModelViewer(models.get(i).get(0), false), i * controllerClasses.size(), 0, controllerClasses.size(), 1);	
 			for (int j = 0; j < controllerClasses.size(); j++) {
-				chartPane.add(pieCharts.get(i).get(j), i * controllerClasses.size() + j, 0);	
+				chartPane.add(pieCharts.get(i).get(j), i * controllerClasses.size() + j, 1);	
 			}
+			chartPane.add(histCharts.get(i), i * controllerClasses.size(), 2, controllerClasses.size(), 1);
 		}
-		chartPane.add(histChart, 0, 1, models.size() * controllerClasses.size(), 1);
 		
 		// Tabs
 		
@@ -542,7 +552,9 @@ public class StatisticComparisonProgram extends Application {
 				
 			// Histogram chart
 			
-			histChart.getData().clear();
+			for (BarChart<String, Number> histChart : histCharts) {
+				histChart.getData().clear();
+			}
 			
 			double min = computeMin(finishedTimes.get(0).get(0)) - 1;
 			double max = computeMax(finishedTimes.get(0).get(0)) + 1;
@@ -562,7 +574,7 @@ public class StatisticComparisonProgram extends Application {
 					
 					XYChart.Series<String, Number> seriesNew = createHistogramSeries(names.get(i) + "-" + controllerClasses.get(j).getSimpleName(), histBinX, histBinY.get(i).get(j));
 					
-					histChart.getData().add(seriesNew);
+					histCharts.get(i).getData().add(seriesNew);
 				}
 			}
 			
