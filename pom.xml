@@ -13,15 +13,6 @@
 	</properties>
 
 	<modules>
-		<module>modules/model</module>
-		<module>modules/parser</module>
-		<module>modules/controller</module>
-		<module>modules/statistics</module>
-		<module>modules/exporter</module>
-		<module>modules/simulator</module>
-		<module>modules/editor</module>
-		<module>modules/viewer</module>
-		<module>modules/program</module>
 		<module>modules/core</module>
 		<module>modules/swing</module>
 		<module>modules/fx</module>
@@ -31,18 +22,10 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
+				<version>3.14.0</version>
 				<configuration>
 					<source>21</source>
 					<target>21</target>
-				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-checkstyle-plugin</artifactId>
-				<version>3.1.1</version>
-				<configuration>
-					<configLocation>checkstyle.xml</configLocation>
-					<excludes>**/module-info.java</excludes>
 				</configuration>
 			</plugin>
 		</plugins>
