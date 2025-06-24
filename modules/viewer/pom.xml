@@ -3,12 +3,12 @@
 	<modelVersion>4.0.0</modelVersion>
 	
 	<parent>
-		<groupId>at.fhooe.wels</groupId>
-		<artifactId>transport-ide</artifactId>
+		<groupId>io.github.ghackenberg</groupId>
+		<artifactId>mbse.transport</artifactId>
 		<version>1.0.0</version>
 	</parent>
 	
-	<artifactId>transport-ide.viewer</artifactId>
+	<artifactId>mbse.transport.viewer</artifactId>
 	
 	<dependencies>
 		<dependency>
