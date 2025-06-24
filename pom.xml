@@ -22,6 +22,9 @@
 		<module>modules/editor</module>
 		<module>modules/viewer</module>
 		<module>modules/program</module>
+		<module>modules/core</module>
+		<module>modules/swing</module>
+		<module>modules/fx</module>
 	</modules>
 
 	<build>
