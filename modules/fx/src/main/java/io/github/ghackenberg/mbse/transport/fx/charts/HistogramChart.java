@@ -1,4 +1,4 @@
-package io.github.ghackenberg.mbse.transport.fx.viewers;
+package io.github.ghackenberg.mbse.transport.fx.charts;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +9,7 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.layout.BorderPane;
 
-public class HistogramViewer extends BorderPane {
+public class HistogramChart extends BorderPane {
 	
 	private List<String> names = new ArrayList<>();
 	private List<List<Double>> values = new ArrayList<>();
@@ -24,7 +24,7 @@ public class HistogramViewer extends BorderPane {
 	
 	private AreaChart<String, Number> chart = new AreaChart<String, Number>(xAxis, yAxis);
 
-	public HistogramViewer(String title, String label) {
+	public HistogramChart(String title, String label) {
 		xAxis.setLabel(label);
 		
 		yAxis.setLabel("Probability (in %)");

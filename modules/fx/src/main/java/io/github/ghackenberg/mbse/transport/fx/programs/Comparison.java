@@ -16,9 +16,9 @@ import io.github.ghackenberg.mbse.transport.core.entities.Demand;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
 import io.github.ghackenberg.mbse.transport.core.entities.Station;
 import io.github.ghackenberg.mbse.transport.core.exceptions.ArgumentsException;
-import io.github.ghackenberg.mbse.transport.fx.viewers.HistogramViewer;
+import io.github.ghackenberg.mbse.transport.fx.charts.HistogramChart;
+import io.github.ghackenberg.mbse.transport.fx.charts.PercentageChart;
 import io.github.ghackenberg.mbse.transport.fx.viewers.ModelViewer;
-import io.github.ghackenberg.mbse.transport.fx.viewers.PercentageViewer;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -73,8 +73,8 @@ public class Comparison extends Application {
 	final List<List<Integer>> replicationCounts = new ArrayList<>(); 
 	
 	final List<List<ModelViewer>> modelViewers = new ArrayList<>();
-	final List<List<PercentageViewer>> percentageViewers = new ArrayList<>();
-	final List<List<HistogramViewer>> histogramViewers = new ArrayList<>();
+	final List<List<PercentageChart>> percentageViewers = new ArrayList<>();
+	final List<List<HistogramChart>> histogramViewers = new ArrayList<>();
 	
 	AnimationTimer animation;
 	
@@ -314,10 +314,10 @@ public class Comparison extends Application {
 		// Create pie charts
 		
 		for (String name : names) {
-			List<PercentageViewer> controllerCharts = new ArrayList<>();
+			List<PercentageChart> controllerCharts = new ArrayList<>();
 			
 			for (Class<? extends Controller> controllerClass : controllerClasses) {
-				controllerCharts.add(new PercentageViewer(name + " + " + controllerClass.getSimpleName()));
+				controllerCharts.add(new PercentageChart(name + " + " + controllerClass.getSimpleName()));
 			}
 			
 			percentageViewers.add(controllerCharts);
@@ -326,10 +326,10 @@ public class Comparison extends Application {
 		// Create histogram chart
 		
 		for (String name : names) {
-			List<HistogramViewer> controllerCharts = new ArrayList<>();
+			List<HistogramChart> controllerCharts = new ArrayList<>();
 			
 			for (Class<? extends Controller> controllerClass : controllerClasses) {
-				controllerCharts.add(new HistogramViewer(name + " + " + controllerClass.getSimpleName(), "Finished time (in min)"));
+				controllerCharts.add(new HistogramChart(name + " + " + controllerClass.getSimpleName(), "Finished time (in min)"));
 			}
 			
 			histogramViewers.add(controllerCharts);
@@ -489,15 +489,15 @@ public class Comparison extends Application {
 			double min = +Double.MAX_VALUE;
 			double max = -Double.MAX_VALUE;
 			
-			for (List<HistogramViewer> ctrlViewers : histogramViewers) {
-				for (HistogramViewer ctrlViewer : ctrlViewers) {
+			for (List<HistogramChart> ctrlViewers : histogramViewers) {
+				for (HistogramChart ctrlViewer : ctrlViewers) {
 					min = Math.min(min, ctrlViewer.getMin());
 					max = Math.max(max, ctrlViewer.getMax());
 				}
 			}
 
-			for (List<HistogramViewer> ctrlViewers : histogramViewers) {
-				for (HistogramViewer ctrlViewer : ctrlViewers) {
+			for (List<HistogramChart> ctrlViewers : histogramViewers) {
+				for (HistogramChart ctrlViewer : ctrlViewers) {
 					ctrlViewer.update(min, max);
 				}
 			}

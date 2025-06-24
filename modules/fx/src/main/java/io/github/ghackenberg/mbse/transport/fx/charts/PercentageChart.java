@@ -1,4 +1,4 @@
-package io.github.ghackenberg.mbse.transport.fx.viewers;
+package io.github.ghackenberg.mbse.transport.fx.charts;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,14 +6,14 @@ import java.util.List;
 import javafx.scene.chart.PieChart;
 import javafx.scene.layout.BorderPane;
 
-public class PercentageViewer extends BorderPane {
+public class PercentageChart extends BorderPane {
 
 	private List<String> names = new ArrayList<>();
 	private List<Integer> counts = new ArrayList<>();
 	
 	private PieChart chart = new PieChart();
 	
-	public PercentageViewer(String title) {
+	public PercentageChart(String title) {
 		chart.setStyle("-fx-background-color: white;");
 		chart.setTitle(title);
 		chart.setAnimated(false);
