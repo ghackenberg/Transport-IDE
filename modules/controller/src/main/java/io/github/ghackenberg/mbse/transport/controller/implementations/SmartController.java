@@ -1,4 +1,4 @@
-package example.controller.implementations;
+package io.github.ghackenberg.mbse.transport.controller.implementations;
 
 import java.util.List;
 
@@ -8,15 +8,15 @@ import org.jgrapht.alg.interfaces.ShortestPathAlgorithm;
 import org.jgrapht.alg.interfaces.ShortestPathAlgorithm.SingleSourcePaths;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 
-import example.controller.Controller;
-import example.controller.adapters.GraphAdapter;
-import example.model.Demand;
-import example.model.Intersection;
-import example.model.Location;
-import example.model.Model;
-import example.model.Segment;
-import example.model.Station;
-import example.model.Vehicle;
+import io.github.ghackenberg.mbse.transport.controller.Controller;
+import io.github.ghackenberg.mbse.transport.controller.adapters.GraphAdapter;
+import io.github.ghackenberg.mbse.transport.model.Demand;
+import io.github.ghackenberg.mbse.transport.model.Intersection;
+import io.github.ghackenberg.mbse.transport.model.Location;
+import io.github.ghackenberg.mbse.transport.model.Model;
+import io.github.ghackenberg.mbse.transport.model.Segment;
+import io.github.ghackenberg.mbse.transport.model.Station;
+import io.github.ghackenberg.mbse.transport.model.Vehicle;
 
 public class SmartController implements Controller {
 	

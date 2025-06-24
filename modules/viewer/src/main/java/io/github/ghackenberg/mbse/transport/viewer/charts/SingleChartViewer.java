@@ -1,11 +1,11 @@
-package example.viewer.charts;
+package io.github.ghackenberg.mbse.transport.viewer.charts;
 
 import java.util.List;
 
-import example.model.Model;
-import example.simulator.Simulator;
-import example.statistics.Statistics;
-import example.viewer.ChartViewer;
+import io.github.ghackenberg.mbse.transport.model.Model;
+import io.github.ghackenberg.mbse.transport.simulator.Simulator;
+import io.github.ghackenberg.mbse.transport.statistics.Statistics;
+import io.github.ghackenberg.mbse.transport.viewer.ChartViewer;
 
 public abstract class SingleChartViewer extends ChartViewer {
 

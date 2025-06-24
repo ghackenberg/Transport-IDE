@@ -1,4 +1,4 @@
-package example.viewer;
+package io.github.ghackenberg.mbse.transport.viewer;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -25,9 +25,9 @@ import bibliothek.gui.DockController;
 import bibliothek.gui.dock.DefaultDockable;
 import bibliothek.gui.dock.SplitDockStation;
 import bibliothek.gui.dock.station.split.SplitDockGrid;
-import example.controller.Controller;
-import example.controller.implementations.SwitchableController;
-import example.simulator.Simulator;
+import io.github.ghackenberg.mbse.transport.controller.Controller;
+import io.github.ghackenberg.mbse.transport.controller.implementations.SwitchableController;
+import io.github.ghackenberg.mbse.transport.simulator.Simulator;
 
 public class SingleViewer {
 

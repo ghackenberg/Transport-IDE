@@ -5,7 +5,7 @@ module example.controller {
 	requires org.jgrapht.core;
 	requires org.jheaps;
 	
-	exports example.controller;	
-	exports example.controller.implementations;
+	exports io.github.ghackenberg.mbse.transport.controller;	
+	exports io.github.ghackenberg.mbse.transport.controller.implementations;
 	
 }

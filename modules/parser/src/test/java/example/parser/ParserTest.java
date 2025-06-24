@@ -7,10 +7,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import example.model.Coordinate;
-import example.model.Intersection;
-import example.model.Model;
-import example.model.Segment;
+import io.github.ghackenberg.mbse.transport.model.Coordinate;
+import io.github.ghackenberg.mbse.transport.model.Intersection;
+import io.github.ghackenberg.mbse.transport.model.Model;
+import io.github.ghackenberg.mbse.transport.model.Segment;
+import io.github.ghackenberg.mbse.transport.parser.Parser;
 
 public class ParserTest {
 

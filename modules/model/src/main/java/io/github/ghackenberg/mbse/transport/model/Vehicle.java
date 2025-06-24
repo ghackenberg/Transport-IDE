@@ -1,4 +1,4 @@
-package example.model;
+package io.github.ghackenberg.mbse.transport.model;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -4,7 +4,7 @@ module example.simulator {
 	requires transitive example.controller;
 	requires transitive example.statistics;
 	
-	exports example.simulator;
-	exports example.simulator.exceptions;
+	exports io.github.ghackenberg.mbse.transport.simulator;
+	exports io.github.ghackenberg.mbse.transport.simulator.exceptions;
 	
 }

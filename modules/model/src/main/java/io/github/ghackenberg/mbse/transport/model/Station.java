@@ -1,4 +1,4 @@
-package example.model;
+package io.github.ghackenberg.mbse.transport.model;
 
 public class Station {
 	

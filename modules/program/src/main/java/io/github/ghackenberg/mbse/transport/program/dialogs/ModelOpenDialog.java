@@ -1,4 +1,4 @@
-package example.program.dialogs;
+package io.github.ghackenberg.mbse.transport.program.dialogs;
 
 import java.io.BufferedReader;
 import java.io.File;

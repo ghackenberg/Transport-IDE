@@ -1,13 +1,13 @@
-package example.viewer.charts.multiple;
+package io.github.ghackenberg.mbse.transport.viewer.charts.multiple;
 
 import java.awt.Color;
 import java.util.List;
 
-import example.model.Demand;
-import example.model.Model;
-import example.simulator.Simulator;
-import example.statistics.Statistics;
-import example.viewer.charts.MultipleChartViewer;
+import io.github.ghackenberg.mbse.transport.model.Demand;
+import io.github.ghackenberg.mbse.transport.model.Model;
+import io.github.ghackenberg.mbse.transport.simulator.Simulator;
+import io.github.ghackenberg.mbse.transport.statistics.Statistics;
+import io.github.ghackenberg.mbse.transport.viewer.charts.MultipleChartViewer;
 
 public class DemandTimesChartViewer extends MultipleChartViewer {
 

@@ -1,7 +1,7 @@
-package example.exporter;
+package io.github.ghackenberg.mbse.transport.exporter;
 
-import example.model.Model;
-import example.statistics.Statistics;
+import io.github.ghackenberg.mbse.transport.model.Model;
+import io.github.ghackenberg.mbse.transport.statistics.Statistics;
 
 public interface Exporter {
 

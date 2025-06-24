@@ -1,4 +1,4 @@
-package example.parser;
+package io.github.ghackenberg.mbse.transport.parser;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -6,17 +6,17 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
-import example.model.Coordinate;
-import example.model.Demand;
-import example.model.Intersection;
-import example.model.Location;
-import example.model.LocationTime;
-import example.model.Model;
-import example.model.Segment;
-import example.model.Station;
-import example.model.Vehicle;
-import example.parser.exceptions.DirectoryException;
-import example.parser.exceptions.MissingException;
+import io.github.ghackenberg.mbse.transport.model.Coordinate;
+import io.github.ghackenberg.mbse.transport.model.Demand;
+import io.github.ghackenberg.mbse.transport.model.Intersection;
+import io.github.ghackenberg.mbse.transport.model.Location;
+import io.github.ghackenberg.mbse.transport.model.LocationTime;
+import io.github.ghackenberg.mbse.transport.model.Model;
+import io.github.ghackenberg.mbse.transport.model.Segment;
+import io.github.ghackenberg.mbse.transport.model.Station;
+import io.github.ghackenberg.mbse.transport.model.Vehicle;
+import io.github.ghackenberg.mbse.transport.parser.exceptions.DirectoryException;
+import io.github.ghackenberg.mbse.transport.parser.exceptions.MissingException;
 
 public class Parser {
 	

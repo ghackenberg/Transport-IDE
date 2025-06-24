@@ -1,15 +1,15 @@
-package example.editor;
+package io.github.ghackenberg.mbse.transport.editor;
 
 import java.io.File;
 
-import example.model.Intersection;
-import example.model.Model;
-import example.model.Segment;
-import example.model.Station;
-import example.model.Vehicle;
-import example.parser.Parser;
-import example.parser.exceptions.DirectoryException;
-import example.parser.exceptions.MissingException;
+import io.github.ghackenberg.mbse.transport.model.Intersection;
+import io.github.ghackenberg.mbse.transport.model.Model;
+import io.github.ghackenberg.mbse.transport.model.Segment;
+import io.github.ghackenberg.mbse.transport.model.Station;
+import io.github.ghackenberg.mbse.transport.model.Vehicle;
+import io.github.ghackenberg.mbse.transport.parser.Parser;
+import io.github.ghackenberg.mbse.transport.parser.exceptions.DirectoryException;
+import io.github.ghackenberg.mbse.transport.parser.exceptions.MissingException;
 import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.Scene;

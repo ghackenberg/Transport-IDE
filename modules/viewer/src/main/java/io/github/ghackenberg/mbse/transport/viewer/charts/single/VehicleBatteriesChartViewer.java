@@ -1,13 +1,13 @@
-package example.viewer.charts.single;
+package io.github.ghackenberg.mbse.transport.viewer.charts.single;
 
 import java.awt.Color;
 import java.util.List;
 
-import example.model.Model;
-import example.model.Vehicle;
-import example.simulator.Simulator;
-import example.statistics.Statistics;
-import example.viewer.charts.SingleChartViewer;
+import io.github.ghackenberg.mbse.transport.model.Model;
+import io.github.ghackenberg.mbse.transport.model.Vehicle;
+import io.github.ghackenberg.mbse.transport.simulator.Simulator;
+import io.github.ghackenberg.mbse.transport.statistics.Statistics;
+import io.github.ghackenberg.mbse.transport.viewer.charts.SingleChartViewer;
 
 public class VehicleBatteriesChartViewer extends SingleChartViewer {
 

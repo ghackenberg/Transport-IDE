@@ -1,4 +1,4 @@
-package example.viewer;
+package io.github.ghackenberg.mbse.transport.viewer;
 
 import java.awt.BorderLayout;
 import java.util.ArrayList;
@@ -12,8 +12,8 @@ import bibliothek.gui.DockController;
 import bibliothek.gui.dock.DefaultDockable;
 import bibliothek.gui.dock.SplitDockStation;
 import bibliothek.gui.dock.station.split.SplitDockGrid;
-import example.simulator.Simulator;
-import example.viewer.charts.multiple.DemandTimesChartViewer;
+import io.github.ghackenberg.mbse.transport.simulator.Simulator;
+import io.github.ghackenberg.mbse.transport.viewer.charts.multiple.DemandTimesChartViewer;
 
 public class MultipleViewer {
 	

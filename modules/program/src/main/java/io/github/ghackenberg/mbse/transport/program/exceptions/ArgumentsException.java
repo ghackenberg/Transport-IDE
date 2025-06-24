@@ -1,4 +1,4 @@
-package example.program.exceptions;
+package io.github.ghackenberg.mbse.transport.program.exceptions;
 
 public class ArgumentsException extends Exception {
 

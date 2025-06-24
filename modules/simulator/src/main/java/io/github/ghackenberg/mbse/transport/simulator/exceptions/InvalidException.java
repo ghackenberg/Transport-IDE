@@ -1,4 +1,4 @@
-package example.simulator.exceptions;
+package io.github.ghackenberg.mbse.transport.simulator.exceptions;
 
 public abstract class InvalidException extends Exception {
 	

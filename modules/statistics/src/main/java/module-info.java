@@ -2,7 +2,6 @@ module example.statistics {
 	
 	requires transitive example.model;
 	
-	exports example.statistics;
-	exports example.statistics.implementations;
+	exports io.github.ghackenberg.mbse.transport.statistics;
 	
 }

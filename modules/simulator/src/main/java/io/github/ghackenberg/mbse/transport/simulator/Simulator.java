@@ -1,4 +1,4 @@
-package example.simulator;
+package io.github.ghackenberg.mbse.transport.simulator;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -11,20 +11,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import example.controller.Controller;
-import example.model.Demand;
-import example.model.Model;
-import example.model.Segment;
-import example.model.Station;
-import example.model.Vehicle;
-import example.simulator.exceptions.CollisionException;
-import example.simulator.exceptions.EmptyException;
-import example.simulator.exceptions.InfinityException;
-import example.simulator.exceptions.InvalidException;
-import example.simulator.exceptions.InvalidRouteException;
-import example.simulator.exceptions.InvalidSpeedException;
-import example.simulator.exceptions.InvalidTimeoutException;
-import example.statistics.Statistics;
+import io.github.ghackenberg.mbse.transport.controller.Controller;
+import io.github.ghackenberg.mbse.transport.model.Demand;
+import io.github.ghackenberg.mbse.transport.model.Model;
+import io.github.ghackenberg.mbse.transport.model.Segment;
+import io.github.ghackenberg.mbse.transport.model.Station;
+import io.github.ghackenberg.mbse.transport.model.Vehicle;
+import io.github.ghackenberg.mbse.transport.simulator.exceptions.CollisionException;
+import io.github.ghackenberg.mbse.transport.simulator.exceptions.EmptyException;
+import io.github.ghackenberg.mbse.transport.simulator.exceptions.InfinityException;
+import io.github.ghackenberg.mbse.transport.simulator.exceptions.InvalidException;
+import io.github.ghackenberg.mbse.transport.simulator.exceptions.InvalidRouteException;
+import io.github.ghackenberg.mbse.transport.simulator.exceptions.InvalidSpeedException;
+import io.github.ghackenberg.mbse.transport.simulator.exceptions.InvalidTimeoutException;
+import io.github.ghackenberg.mbse.transport.statistics.Statistics;
 
 public class Simulator {
 	

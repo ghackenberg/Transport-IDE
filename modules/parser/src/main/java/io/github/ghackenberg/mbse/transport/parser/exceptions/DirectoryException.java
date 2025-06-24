@@ -1,4 +1,4 @@
-package example.parser.exceptions;
+package io.github.ghackenberg.mbse.transport.parser.exceptions;
 
 public class DirectoryException extends Exception {
 	

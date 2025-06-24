@@ -1,10 +1,10 @@
-package example.program.viewers;
+package io.github.ghackenberg.mbse.transport.program.viewers;
 
-import example.model.Coordinate;
-import example.model.Demand;
-import example.model.LocationTime;
-import example.model.Model;
-import example.model.Vehicle;
+import io.github.ghackenberg.mbse.transport.model.Coordinate;
+import io.github.ghackenberg.mbse.transport.model.Demand;
+import io.github.ghackenberg.mbse.transport.model.LocationTime;
+import io.github.ghackenberg.mbse.transport.model.Model;
+import io.github.ghackenberg.mbse.transport.model.Vehicle;
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;

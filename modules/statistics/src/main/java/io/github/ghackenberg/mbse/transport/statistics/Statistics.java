@@ -1,14 +1,14 @@
-package example.statistics;
+package io.github.ghackenberg.mbse.transport.statistics;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import example.model.Demand;
-import example.model.Intersection;
-import example.model.Model;
-import example.model.Segment;
-import example.model.Station;
-import example.model.Vehicle;
+import io.github.ghackenberg.mbse.transport.model.Demand;
+import io.github.ghackenberg.mbse.transport.model.Intersection;
+import io.github.ghackenberg.mbse.transport.model.Model;
+import io.github.ghackenberg.mbse.transport.model.Segment;
+import io.github.ghackenberg.mbse.transport.model.Station;
+import io.github.ghackenberg.mbse.transport.model.Vehicle;
 
 public class Statistics {
 	

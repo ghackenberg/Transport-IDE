@@ -1,7 +1,7 @@
-package example.program.viewers;
+package io.github.ghackenberg.mbse.transport.program.viewers;
 
-import example.model.Model;
-import example.model.Segment;
+import io.github.ghackenberg.mbse.transport.model.Model;
+import io.github.ghackenberg.mbse.transport.model.Segment;
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;

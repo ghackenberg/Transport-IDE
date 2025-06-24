@@ -1,17 +1,17 @@
-package example.exporter.implementations;
+package io.github.ghackenberg.mbse.transport.exporter.implementations;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 
-import example.exporter.Exporter;
-import example.model.Demand;
-import example.model.Intersection;
-import example.model.Model;
-import example.model.Segment;
-import example.model.Vehicle;
-import example.statistics.Statistics;
+import io.github.ghackenberg.mbse.transport.exporter.Exporter;
+import io.github.ghackenberg.mbse.transport.model.Demand;
+import io.github.ghackenberg.mbse.transport.model.Intersection;
+import io.github.ghackenberg.mbse.transport.model.Model;
+import io.github.ghackenberg.mbse.transport.model.Segment;
+import io.github.ghackenberg.mbse.transport.model.Vehicle;
+import io.github.ghackenberg.mbse.transport.statistics.Statistics;
 
 public class CSVExporter implements Exporter {
 

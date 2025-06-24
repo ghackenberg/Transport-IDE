@@ -1,9 +1,9 @@
-package example.viewer.charts;
+package io.github.ghackenberg.mbse.transport.viewer.charts;
 
 import java.util.List;
 
-import example.simulator.Simulator;
-import example.viewer.ChartViewer;
+import io.github.ghackenberg.mbse.transport.simulator.Simulator;
+import io.github.ghackenberg.mbse.transport.viewer.ChartViewer;
 
 public abstract class MultipleChartViewer extends ChartViewer {
 	

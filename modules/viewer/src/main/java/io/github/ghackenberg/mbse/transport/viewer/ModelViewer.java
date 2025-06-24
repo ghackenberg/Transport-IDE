@@ -1,4 +1,4 @@
-package example.viewer;
+package io.github.ghackenberg.mbse.transport.viewer;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -19,14 +19,14 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
-import example.model.Coordinate;
-import example.model.Demand;
-import example.model.Intersection;
-import example.model.Model;
-import example.model.Segment;
-import example.model.Station;
-import example.model.Vehicle;
-import example.statistics.Statistics;
+import io.github.ghackenberg.mbse.transport.model.Coordinate;
+import io.github.ghackenberg.mbse.transport.model.Demand;
+import io.github.ghackenberg.mbse.transport.model.Intersection;
+import io.github.ghackenberg.mbse.transport.model.Model;
+import io.github.ghackenberg.mbse.transport.model.Segment;
+import io.github.ghackenberg.mbse.transport.model.Station;
+import io.github.ghackenberg.mbse.transport.model.Vehicle;
+import io.github.ghackenberg.mbse.transport.statistics.Statistics;
 
 public class ModelViewer implements Viewer {
 	

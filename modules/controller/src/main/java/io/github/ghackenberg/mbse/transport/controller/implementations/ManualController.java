@@ -1,14 +1,14 @@
-package example.controller.implementations;
+package io.github.ghackenberg.mbse.transport.controller.implementations;
 
 import java.util.List;
 
 import javax.swing.JOptionPane;
 
-import example.controller.Controller;
-import example.model.Demand;
-import example.model.Segment;
-import example.model.Station;
-import example.model.Vehicle;
+import io.github.ghackenberg.mbse.transport.controller.Controller;
+import io.github.ghackenberg.mbse.transport.model.Demand;
+import io.github.ghackenberg.mbse.transport.model.Segment;
+import io.github.ghackenberg.mbse.transport.model.Station;
+import io.github.ghackenberg.mbse.transport.model.Vehicle;
 
 public class ManualController implements Controller {
 	

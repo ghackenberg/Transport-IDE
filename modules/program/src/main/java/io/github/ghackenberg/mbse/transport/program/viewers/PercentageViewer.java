@@ -1,4 +1,4 @@
-package example.program.viewers;
+package io.github.ghackenberg.mbse.transport.program.viewers;
 
 import java.util.ArrayList;
 import java.util.List;

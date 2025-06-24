@@ -1,32 +1,32 @@
-package example.program;
+package io.github.ghackenberg.mbse.transport.program;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import example.controller.implementations.GreedyController;
-import example.controller.implementations.ManualController;
-import example.controller.implementations.RandomController;
-import example.controller.implementations.SmartController;
-import example.controller.implementations.SwitchableController;
-import example.exporter.Exporter;
-import example.exporter.implementations.CSVExporter;
-import example.model.Model;
-import example.parser.Parser;
-import example.parser.exceptions.DirectoryException;
-import example.parser.exceptions.MissingException;
-import example.program.dialogs.ModelOpenDialog;
-import example.program.exceptions.ArgumentsException;
-import example.simulator.Simulator;
-import example.statistics.Statistics;
-import example.viewer.ModelViewer;
-import example.viewer.SingleViewer;
-import example.viewer.charts.single.DemandDistancesChartViewer;
-import example.viewer.charts.single.DemandTimesChartViewer;
-import example.viewer.charts.single.IntersectionCrossingsChartViewer;
-import example.viewer.charts.single.SegmentTraversalsChartViewer;
-import example.viewer.charts.single.VehicleBatteriesChartViewer;
-import example.viewer.charts.single.VehicleDistancesChartViewer;
+import io.github.ghackenberg.mbse.transport.controller.implementations.GreedyController;
+import io.github.ghackenberg.mbse.transport.controller.implementations.ManualController;
+import io.github.ghackenberg.mbse.transport.controller.implementations.RandomController;
+import io.github.ghackenberg.mbse.transport.controller.implementations.SmartController;
+import io.github.ghackenberg.mbse.transport.controller.implementations.SwitchableController;
+import io.github.ghackenberg.mbse.transport.exporter.Exporter;
+import io.github.ghackenberg.mbse.transport.exporter.implementations.CSVExporter;
+import io.github.ghackenberg.mbse.transport.model.Model;
+import io.github.ghackenberg.mbse.transport.parser.Parser;
+import io.github.ghackenberg.mbse.transport.parser.exceptions.DirectoryException;
+import io.github.ghackenberg.mbse.transport.parser.exceptions.MissingException;
+import io.github.ghackenberg.mbse.transport.program.dialogs.ModelOpenDialog;
+import io.github.ghackenberg.mbse.transport.program.exceptions.ArgumentsException;
+import io.github.ghackenberg.mbse.transport.simulator.Simulator;
+import io.github.ghackenberg.mbse.transport.statistics.Statistics;
+import io.github.ghackenberg.mbse.transport.viewer.ModelViewer;
+import io.github.ghackenberg.mbse.transport.viewer.SingleViewer;
+import io.github.ghackenberg.mbse.transport.viewer.charts.single.DemandDistancesChartViewer;
+import io.github.ghackenberg.mbse.transport.viewer.charts.single.DemandTimesChartViewer;
+import io.github.ghackenberg.mbse.transport.viewer.charts.single.IntersectionCrossingsChartViewer;
+import io.github.ghackenberg.mbse.transport.viewer.charts.single.SegmentTraversalsChartViewer;
+import io.github.ghackenberg.mbse.transport.viewer.charts.single.VehicleBatteriesChartViewer;
+import io.github.ghackenberg.mbse.transport.viewer.charts.single.VehicleDistancesChartViewer;
 
 public class StaticProgram {
 

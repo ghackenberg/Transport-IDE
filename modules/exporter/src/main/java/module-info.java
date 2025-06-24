@@ -3,7 +3,7 @@ module example.exporter {
 	requires transitive example.model;
 	requires transitive example.statistics;
 	
-	exports example.exporter;
-	exports example.exporter.implementations;
+	exports io.github.ghackenberg.mbse.transport.exporter;
+	exports io.github.ghackenberg.mbse.transport.exporter.implementations;
 	
 }

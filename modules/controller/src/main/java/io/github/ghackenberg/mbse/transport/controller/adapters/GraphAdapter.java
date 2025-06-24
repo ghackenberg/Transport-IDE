@@ -1,4 +1,4 @@
-package example.controller.adapters;
+package io.github.ghackenberg.mbse.transport.controller.adapters;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -9,9 +9,9 @@ import org.jgrapht.Graph;
 import org.jgrapht.GraphType;
 import org.jgrapht.graph.builder.GraphTypeBuilder;
 
-import example.model.Intersection;
-import example.model.Model;
-import example.model.Segment;
+import io.github.ghackenberg.mbse.transport.model.Intersection;
+import io.github.ghackenberg.mbse.transport.model.Model;
+import io.github.ghackenberg.mbse.transport.model.Segment;
 
 public class GraphAdapter implements Graph<Intersection, Segment> {
 	

@@ -1,9 +1,9 @@
-package example.controller;
+package io.github.ghackenberg.mbse.transport.controller;
 
-import example.model.Demand;
-import example.model.Segment;
-import example.model.Station;
-import example.model.Vehicle;
+import io.github.ghackenberg.mbse.transport.model.Demand;
+import io.github.ghackenberg.mbse.transport.model.Segment;
+import io.github.ghackenberg.mbse.transport.model.Station;
+import io.github.ghackenberg.mbse.transport.model.Vehicle;
 
 public interface Controller {
 

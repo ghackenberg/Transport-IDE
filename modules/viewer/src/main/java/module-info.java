@@ -9,9 +9,9 @@ module example.viewer {
 	requires docking.frames.core;
 	requires jfreechart;
 	
-	exports example.viewer;
-	exports example.viewer.charts;
-	exports example.viewer.charts.multiple;
-	exports example.viewer.charts.single;
+	exports io.github.ghackenberg.mbse.transport.viewer;
+	exports io.github.ghackenberg.mbse.transport.viewer.charts;
+	exports io.github.ghackenberg.mbse.transport.viewer.charts.multiple;
+	exports io.github.ghackenberg.mbse.transport.viewer.charts.single;
 	
 }

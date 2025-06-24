@@ -1,7 +1,7 @@
-package example.simulator.exceptions;
+package io.github.ghackenberg.mbse.transport.simulator.exceptions;
 
-import example.model.Segment;
-import example.model.Vehicle;
+import io.github.ghackenberg.mbse.transport.model.Segment;
+import io.github.ghackenberg.mbse.transport.model.Vehicle;
 
 public class InvalidRouteException extends InvalidException {
 

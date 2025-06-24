@@ -1,6 +1,6 @@
-package example.simulator.exceptions;
+package io.github.ghackenberg.mbse.transport.simulator.exceptions;
 
-import example.model.Vehicle;
+import io.github.ghackenberg.mbse.transport.model.Vehicle;
 
 public class InvalidTimeoutException extends InvalidException {
 

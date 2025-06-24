@@ -1,14 +1,14 @@
-package example.program.viewers;
+package io.github.ghackenberg.mbse.transport.program.viewers;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import example.model.Demand;
-import example.model.Intersection;
-import example.model.Model;
-import example.model.Segment;
-import example.model.Station;
-import example.model.Vehicle;
+import io.github.ghackenberg.mbse.transport.model.Demand;
+import io.github.ghackenberg.mbse.transport.model.Intersection;
+import io.github.ghackenberg.mbse.transport.model.Model;
+import io.github.ghackenberg.mbse.transport.model.Segment;
+import io.github.ghackenberg.mbse.transport.model.Station;
+import io.github.ghackenberg.mbse.transport.model.Vehicle;
 import javafx.scene.Group;
 import javafx.scene.layout.Pane;
 

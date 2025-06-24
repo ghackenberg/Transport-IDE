@@ -1,7 +1,7 @@
-package example.program.viewers;
+package io.github.ghackenberg.mbse.transport.program.viewers;
 
-import example.model.Coordinate;
-import example.model.Station;
+import io.github.ghackenberg.mbse.transport.model.Coordinate;
+import io.github.ghackenberg.mbse.transport.model.Station;
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;

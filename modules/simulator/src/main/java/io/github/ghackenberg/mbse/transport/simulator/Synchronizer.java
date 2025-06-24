@@ -1,4 +1,4 @@
-package example.simulator;
+package io.github.ghackenberg.mbse.transport.simulator;
 
 import java.util.ArrayList;
 import java.util.List;

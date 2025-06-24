@@ -11,6 +11,6 @@ module example.program {
 	requires transitive javafx.graphics;
 	requires javafx.controls;
 	
-	exports example.program;
+	exports io.github.ghackenberg.mbse.transport.program;
 	
 }

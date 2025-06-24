@@ -4,6 +4,6 @@ module example.editor {
 	requires javafx.controls;
 	requires example.parser;
 	
-	exports example.editor;
+	exports io.github.ghackenberg.mbse.transport.editor;
 	
 }
