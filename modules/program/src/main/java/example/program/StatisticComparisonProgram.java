@@ -14,7 +14,9 @@ import example.model.Segment;
 import example.model.Station;
 import example.parser.Parser;
 import example.program.exceptions.ArgumentsException;
+import example.program.viewers.HistogramViewer;
 import example.program.viewers.ModelViewer;
+import example.program.viewers.PercentageViewer;
 import example.simulator.Simulator;
 import example.statistics.implementations.ExampleStatistics;
 import javafx.animation.AnimationTimer;
@@ -24,11 +26,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.chart.BarChart;
-import javafx.scene.chart.CategoryAxis;
-import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.PieChart;
-import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressBar;
@@ -61,7 +58,7 @@ public class StatisticComparisonProgram extends Application {
 	final double maxDemandTime = 1000000;
 	final double maxDemandDuration = 100000;
 	
-	final int replicationCount = 200;
+	final int replicationCount = 1000;
 	
 	final List<Class<? extends Controller>> controllerClasses = new ArrayList<>();
 	
@@ -75,26 +72,15 @@ public class StatisticComparisonProgram extends Application {
 	
 	final List<List<Integer>> replicationCounts = new ArrayList<>(); 
 	
-	final List<List<ModelViewer>> viewers = new ArrayList<>();
-	final ObservableList<String> modelPaneListItems = FXCollections.observableArrayList();
-	final ListView<String> modelPaneList = new ListView<>(modelPaneListItems);
-	final BorderPane modelPane = new BorderPane();
+	final List<List<ModelViewer>> modelViewers = new ArrayList<>();
+	final List<List<PercentageViewer>> percentageViewers = new ArrayList<>();
+	final List<List<HistogramViewer>> histogramViewers = new ArrayList<>();
 	
 	AnimationTimer animation;
 	
-	final List<List<List<Double>>> finishedTimes = new ArrayList<>();
-	final List<List<List<Double>>> emptyTimes = new ArrayList<>();
-	final List<List<List<Double>>> collisionTimes = new ArrayList<>();
-	final List<List<List<Double>>> infiniteTimes = new ArrayList<>();
-	
-	final List<List<ObservableList<PieChart.Data>>> pieData = new ArrayList<>();
-	final List<List<PieChart>> pieCharts = new ArrayList<>();
-	
-	final int histBinCount = 10;
-	final double[] histBinX = new double[histBinCount];
-	final List<List<double[]>> histBinY = new ArrayList<>();
-	final List<List<XYChart.Series<String, Number>>> histSeries = new ArrayList<>();
-	final List<BarChart<String, Number>> histCharts = new ArrayList<>();
+	final ObservableList<String> modelPaneListItems = FXCollections.observableArrayList();
+	final ListView<String> modelPaneList = new ListView<>(modelPaneListItems);
+	final BorderPane modelPane = new BorderPane();
 	
 	final ProgressBar progress = new ProgressBar();
 
@@ -280,7 +266,7 @@ public class StatisticComparisonProgram extends Application {
 				procViewers.add(new ModelViewer(model));
 			}
 			
-			viewers.add(procViewers);
+			modelViewers.add(procViewers);
 		}
 		
 		// Model pane
@@ -302,7 +288,7 @@ public class StatisticComparisonProgram extends Application {
 		animation = new AnimationTimer() {
 			@Override
 			public void handle(long now) {
-				for (List<ModelViewer> procViewers : viewers) {
+				for (List<ModelViewer> procViewers : modelViewers) {
 					for (ModelViewer viewer : procViewers) {
 						viewer.update();
 					}
@@ -325,81 +311,28 @@ public class StatisticComparisonProgram extends Application {
 			replicationCounts.add(controllerCounts);
 		}
 		
-		// Initialize times
-		
-		for (int i = 0; i < models.size(); i++) {
-			List<List<Double>> ctrlFinishedTimes = new ArrayList<>();
-			List<List<Double>> ctrlEmptyTimes = new ArrayList<>();
-			List<List<Double>> ctrlCollisionTimes = new ArrayList<>();
-			List<List<Double>> ctrlInfiniteTimes = new ArrayList<>();
-			
-			for (int j = 0; j < controllerClasses.size(); j++) {
-				ctrlFinishedTimes.add(new ArrayList<>());
-				ctrlEmptyTimes.add(new ArrayList<>());
-				ctrlCollisionTimes.add(new ArrayList<>());
-				ctrlInfiniteTimes.add(new ArrayList<>());
-			}
-			
-			finishedTimes.add(ctrlFinishedTimes);
-			emptyTimes.add(ctrlEmptyTimes);
-			collisionTimes.add(ctrlCollisionTimes);
-			infiniteTimes.add(ctrlInfiniteTimes);
-		}
-		
 		// Create pie charts
 		
 		for (String name : names) {
-			List<ObservableList<PieChart.Data>> controllerData = new ArrayList<>();
-			List<PieChart> controllerCharts = new ArrayList<>();
+			List<PercentageViewer> controllerCharts = new ArrayList<>();
 			
 			for (Class<? extends Controller> controllerClass : controllerClasses) {
-				ObservableList<PieChart.Data> data = createPieDataset();
-				
-				controllerData.add(data);
-				
-				PieChart chart = new PieChart(data);
-				chart.setStyle("-fx-background-color: white;");
-				chart.setTitle(name + "-" + controllerClass.getSimpleName());
-				chart.setAnimated(false);
-				
-				controllerCharts.add(chart);
+				controllerCharts.add(new PercentageViewer(name + " + " + controllerClass.getSimpleName()));
 			}
 			
-			pieData.add(controllerData);
-			pieCharts.add(controllerCharts);
+			percentageViewers.add(controllerCharts);
 		}
 		
 		// Create histogram chart
 		
 		for (String name : names) {
-			List<double[]> ctrlBinY = new ArrayList<>();
-			List<XYChart.Series<String, Number>> ctrlSeries = new ArrayList<>();
-			
-			CategoryAxis histAxisX = new CategoryAxis();
-			histAxisX.setLabel("Time");
-			
-			NumberAxis histAxisY = new NumberAxis();
-			histAxisY.setLabel("Relative frequency");
-			
-			BarChart<String, Number> histChart = new BarChart<String, Number>(histAxisX, histAxisY);
-			histChart.setStyle("-fx-background-color: white;");
-			histChart.setTitle("Distribution of stop time in finished state");
-			histChart.setAnimated(false);
+			List<HistogramViewer> controllerCharts = new ArrayList<>();
 			
 			for (Class<? extends Controller> controllerClass : controllerClasses) {
-				ctrlBinY.add(new double[histBinCount]);
-				
-				XYChart.Series<String, Number> series = new XYChart.Series<>();
-				series.setName(name + "-" + controllerClass.getSimpleName());
-				
-				ctrlSeries.add(series);
-				
-				histChart.getData().add(series);
+				controllerCharts.add(new HistogramViewer(name + " + " + controllerClass.getSimpleName(), "Finished time (in min)"));
 			}
 			
-			histBinY.add(ctrlBinY);
-			histSeries.add(ctrlSeries);
-			histCharts.add(histChart);
+			histogramViewers.add(controllerCharts);
 		}
 		
 		// Chart pane
@@ -418,9 +351,9 @@ public class StatisticComparisonProgram extends Application {
 		for (int i = 0; i < models.size(); i++) {
 			chartPane.add(new ModelViewer(models.get(i).get(0), false), i * controllerClasses.size(), 0, controllerClasses.size(), 1);	
 			for (int j = 0; j < controllerClasses.size(); j++) {
-				chartPane.add(pieCharts.get(i).get(j), i * controllerClasses.size() + j, 1);	
+				chartPane.add(percentageViewers.get(i).get(j), i * controllerClasses.size() + j, 1);
+				chartPane.add(histogramViewers.get(i).get(j), i * controllerClasses.size() + j, 2);	
 			}
-			chartPane.add(histCharts.get(i), i * controllerClasses.size(), 2, controllerClasses.size(), 1);
 		}
 		
 		// Tabs
@@ -513,13 +446,14 @@ public class StatisticComparisonProgram extends Application {
 					
 					synchronized (replicationCounts) {
 						if (simulator.isFinished()) {
-							finishedTimes.get(modelIndex).get(controllerIndex).add(model.time);
+							percentageViewers.get(modelIndex).get(controllerIndex).increment("Finished");
+							histogramViewers.get(modelIndex).get(controllerIndex).add(controllerClass.getSimpleName(), model.time / 1000 / 60);
 						} else if (simulator.isEmpty()) {
-							emptyTimes.get(modelIndex).get(controllerIndex).add(model.time);
+							percentageViewers.get(modelIndex).get(controllerIndex).increment("Empty");
 						} else if (Double.isInfinite(model.time)) {
-							infiniteTimes.get(modelIndex).get(controllerIndex).add(model.time);
+							percentageViewers.get(modelIndex).get(controllerIndex).increment("Infinite");
 						} else {
-							collisionTimes.get(modelIndex).get(controllerIndex).add(model.time);
+							percentageViewers.get(modelIndex).get(controllerIndex).increment("Collision");
 						}
 						
 						models.get(modelIndex).add(model);
@@ -548,33 +482,23 @@ public class StatisticComparisonProgram extends Application {
 		synchronized (replicationCounts) {
 			// Pie chart
 			
-			updatePieChart(modelIndex, controllerIndex);
+			percentageViewers.get(modelIndex).get(controllerIndex).update();
 				
 			// Histogram chart
 			
-			for (BarChart<String, Number> histChart : histCharts) {
-				histChart.getData().clear();
-			}
+			double min = +Double.MAX_VALUE;
+			double max = -Double.MAX_VALUE;
 			
-			double min = computeMin(finishedTimes.get(0).get(0)) - 1;
-			double max = computeMax(finishedTimes.get(0).get(0)) + 1;
-			
-			for (int i = 0; i < models.size(); i++) {
-				for (int j = 0; j < controllerClasses.size(); j++ ) {
-					min = Math.min(min, computeMin(finishedTimes.get(i).get(j)) - 1);
-					max = Math.max(max, computeMax(finishedTimes.get(i).get(j)) + 1);
+			for (List<HistogramViewer> ctrlViewers : histogramViewers) {
+				for (HistogramViewer ctrlViewer : ctrlViewers) {
+					min = Math.min(min, ctrlViewer.getMin());
+					max = Math.max(max, ctrlViewer.getMax());
 				}
 			}
-			
-			computeHistogramX(min, max, histBinX);
-			
-			for (int i = 0; i < models.size(); i++) {
-				for (int j = 0; j < controllerClasses.size(); j++) {
-					computeHistogramY(finishedTimes.get(i).get(j), min, max, histBinY.get(i).get(j));
-					
-					XYChart.Series<String, Number> seriesNew = createHistogramSeries(names.get(i) + "-" + controllerClasses.get(j).getSimpleName(), histBinX, histBinY.get(i).get(j));
-					
-					histCharts.get(i).getData().add(seriesNew);
+
+			for (List<HistogramViewer> ctrlViewers : histogramViewers) {
+				for (HistogramViewer ctrlViewer : ctrlViewers) {
+					ctrlViewer.update(min, max);
 				}
 			}
 			
@@ -600,84 +524,6 @@ public class StatisticComparisonProgram extends Application {
 		//constraints.setVgrow(Priority.ALWAYS);
 		
 		return constraints;
-	}
-	
-	private ObservableList<PieChart.Data> createPieDataset() {
-		return FXCollections.observableArrayList(
-			new PieChart.Data("Finished", 0),
-			new PieChart.Data("Empty", 0),
-			new PieChart.Data("Collision", 0),
-			new PieChart.Data("Infinite", 0)
-		);
-	}
-	
-	private void updatePieChart(int modelIndex, int controllerIndex) {
-		pieData.get(modelIndex).get(controllerIndex).get(0).setPieValue(finishedTimes.get(modelIndex).get(controllerIndex).size());
-		pieData.get(modelIndex).get(controllerIndex).get(1).setPieValue(emptyTimes.get(modelIndex).get(controllerIndex).size());
-		pieData.get(modelIndex).get(controllerIndex).get(2).setPieValue(collisionTimes.get(modelIndex).get(controllerIndex).size());
-		pieData.get(modelIndex).get(controllerIndex).get(3).setPieValue(infiniteTimes.get(modelIndex).get(controllerIndex).size());
-	}
-	
-	private double computeMin(List<Double> data) {
-		double min = Double.MAX_VALUE;
-		
-		for (double time : data) {
-			min = Math.min(time, min);
-		}
-		
-		return min;
-	}
-	
-	private double computeMax(List<Double> data) {
-		double max = 0;
-		
-		for (double time : data) {
-			max = Math.max(time, max);
-		}
-		
-		return max;
-	}
-	
-	private void computeHistogramX(double min, double max, double[] bins) {
-		double width = (max - min) / bins.length;
-		
-		for (int bin = 0; bin < bins.length; bin++) {
-			double x = min + width / 2 + bin * width;
-			
-			bins[bin] = x;
-		}
-	}
-	
-	private void computeHistogramY(List<Double> data, double min, double max, double[] bins) {
-		for (int bin = 0; bin < bins.length; bin++) {
-			bins[bin] = 0;
-		}
-		
-		double width = max - min;
-		
-		for (double item : data) {
-			double bin = (item - min) / width * bins.length;
-			
-			bins[(int) bin]++;
-		}
-		
-		if (data.size() > 0) {
-			for (int bin = 0; bin < bins.length; bin++) {
-				bins[bin] /= data.size();
-			}	
-		}
-	}
-	
-	private XYChart.Series<String, Number> createHistogramSeries(String name, double[] x, double[] y) {
-		XYChart.Series<String, Number> series = new XYChart.Series<>();
-		
-		series.setName(name);
-		
-		for (int bin = 0; bin < x.length; bin++) {
-			series.getData().add(new XYChart.Data<String, Number>("" + Math.round(x[bin]), y[bin]));
-		}
-		
-		return series;
 	}
 
 }
