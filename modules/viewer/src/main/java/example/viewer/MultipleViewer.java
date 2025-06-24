@@ -13,7 +13,6 @@ import bibliothek.gui.dock.DefaultDockable;
 import bibliothek.gui.dock.SplitDockStation;
 import bibliothek.gui.dock.station.split.SplitDockGrid;
 import example.simulator.Simulator;
-import example.statistics.implementations.ExampleStatistics;
 import example.viewer.charts.multiple.DemandTimesChartViewer;
 
 public class MultipleViewer {
@@ -28,9 +27,9 @@ public class MultipleViewer {
 	
 	private final List<Viewer> viewers = new ArrayList<>();
 	
-	private List<Simulator<ExampleStatistics>> simulators;
+	private List<Simulator> simulators;
 	
-	public MultipleViewer(List<Simulator<ExampleStatistics>> simulators) {
+	public MultipleViewer(List<Simulator> simulators) {
 		this.simulators = simulators;
 		
 		// Create grid
@@ -65,7 +64,7 @@ public class MultipleViewer {
 		// Process simulators
 		int index = 0;
 		
-		for (Simulator<ExampleStatistics> simulator : simulators) {
+		for (Simulator simulator : simulators) {
 			final int number = index;
 			
 			addViewer(number, 0, 1, 1, new ModelViewer(simulator.getModel(), simulator.getStatistics()));

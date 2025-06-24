@@ -6,12 +6,12 @@ import java.util.List;
 import example.model.Demand;
 import example.model.Model;
 import example.simulator.Simulator;
-import example.statistics.implementations.ExampleStatistics;
+import example.statistics.Statistics;
 import example.viewer.charts.SingleChartViewer;
 
 public class DemandTimesChartViewer extends SingleChartViewer {
 
-	public DemandTimesChartViewer(List<Simulator<ExampleStatistics>> simulators, int index) {
+	public DemandTimesChartViewer(List<Simulator> simulators, int index) {
 		super(simulators, index, "Demand times", "Demands", "Time (in s)");
 		
 		renderer.setSeriesPaint(0, Color.GRAY);
@@ -66,9 +66,9 @@ public class DemandTimesChartViewer extends SingleChartViewer {
 		
 		double max = 0;
 		
-		for (Simulator<ExampleStatistics> simulator : simulators) {
+		for (Simulator simulator : simulators) {
 			Model model = simulator.getModel();
-			ExampleStatistics statistics = simulator.getStatistics();
+			Statistics statistics = simulator.getStatistics();
 			for (Demand demand : model.demands) {
 				if (demand.pickup.time < model.time) {
 					double dropoff = model.time;

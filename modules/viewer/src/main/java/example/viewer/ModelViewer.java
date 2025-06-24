@@ -26,7 +26,7 @@ import example.model.Model;
 import example.model.Segment;
 import example.model.Station;
 import example.model.Vehicle;
-import example.statistics.implementations.ExampleStatistics;
+import example.statistics.Statistics;
 
 public class ModelViewer implements Viewer {
 	
@@ -55,7 +55,7 @@ public class ModelViewer implements Viewer {
 	private static final Color DEMAND_OVERDUE_COLOR = Color.RED;
 	
 	private final Model model;
-	private final ExampleStatistics statistics;
+	private final Statistics statistics;
 	
 	private double minLatitude = Double.MAX_VALUE;
 	private double minLongitude = Double.MAX_VALUE;
@@ -75,7 +75,7 @@ public class ModelViewer implements Viewer {
 	
 	private JPanel panel;
 	
-	public ModelViewer(Model model, ExampleStatistics statistics) {
+	public ModelViewer(Model model, Statistics statistics) {
 		this.model = model;
 		this.statistics = statistics;
 		

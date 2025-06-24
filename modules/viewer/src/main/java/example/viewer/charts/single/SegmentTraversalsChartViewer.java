@@ -5,12 +5,11 @@ import java.util.List;
 
 import example.model.Segment;
 import example.simulator.Simulator;
-import example.statistics.implementations.ExampleStatistics;
 import example.viewer.charts.SingleChartViewer;
 
 public class SegmentTraversalsChartViewer extends SingleChartViewer {
 
-	public SegmentTraversalsChartViewer(List<Simulator<ExampleStatistics>> simulators, int index) {
+	public SegmentTraversalsChartViewer(List<Simulator> simulators, int index) {
 		super(simulators, index, "Segment traversals", "Segments", "Count");
 		
 		renderer.setSeriesPaint(0, Color.GREEN);
@@ -29,7 +28,7 @@ public class SegmentTraversalsChartViewer extends SingleChartViewer {
 		
 		double max = 0;
 		
-		for (Simulator<ExampleStatistics> simulator : simulators) {
+		for (Simulator simulator : simulators) {
 			for (int traversals : simulator.getStatistics().segmentTraversals.values()) {
 				max = Math.max(traversals, max);
 			}

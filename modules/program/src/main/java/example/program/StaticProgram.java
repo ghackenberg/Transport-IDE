@@ -18,7 +18,7 @@ import example.parser.exceptions.MissingException;
 import example.program.dialogs.ModelOpenDialog;
 import example.program.exceptions.ArgumentsException;
 import example.simulator.Simulator;
-import example.statistics.implementations.ExampleStatistics;
+import example.statistics.Statistics;
 import example.viewer.ModelViewer;
 import example.viewer.SingleViewer;
 import example.viewer.charts.single.DemandDistancesChartViewer;
@@ -61,17 +61,17 @@ public class StaticProgram {
 			controller.addController(new SmartController(model));
 			controller.reset();
 			// Create statistics
-			ExampleStatistics statistics = new ExampleStatistics(model);
+			Statistics statistics = new Statistics(model);
 			statistics.reset();
 			// Create simulator
-			Simulator<ExampleStatistics> simulator = new Simulator<>("Static", model, controller, statistics, 1000.0 / 30.0, 1.0, runsFolder);
+			Simulator simulator = new Simulator("Static", model, controller, statistics, 1000.0 / 30.0, 1.0, runsFolder);
 			// Create simulators
-			List<Simulator<ExampleStatistics>> simulators = new ArrayList<>();
+			List<Simulator> simulators = new ArrayList<>();
 			simulators.add(simulator);
 			// Create exporter
-			Exporter<ExampleStatistics> exporter = new CSVExporter(".");
+			Exporter exporter = new CSVExporter(".");
 			// Create viewer
-			SingleViewer<ExampleStatistics> viewer = new SingleViewer<>(simulator, controller);
+			SingleViewer viewer = new SingleViewer(simulator, controller);
 			viewer.addViewer(0, 0, 1, 2, new ModelViewer(model, statistics));
 			viewer.addViewer(1, 0, 1, 1, new VehicleBatteriesChartViewer(simulators, 0));
 			viewer.addViewer(1, 1, 1, 1, new VehicleDistancesChartViewer(simulators, 0));

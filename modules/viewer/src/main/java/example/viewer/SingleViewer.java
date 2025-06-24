@@ -28,14 +28,13 @@ import bibliothek.gui.dock.station.split.SplitDockGrid;
 import example.controller.Controller;
 import example.controller.implementations.SwitchableController;
 import example.simulator.Simulator;
-import example.statistics.Statistics;
 
-public class SingleViewer<S extends Statistics> {
+public class SingleViewer {
 
 	private static final int GAP = 10;
 	private final List<Viewer> viewers = new ArrayList<>();
 	
-	private final Simulator<S> simulator;
+	private final Simulator simulator;
 	
 	private final JFrame frame;
 	private final JPanel border;
@@ -55,7 +54,7 @@ public class SingleViewer<S extends Statistics> {
 	
 	private int counter = 0;
 	
-	public SingleViewer(Simulator<S> simulator, SwitchableController switcher) {
+	public SingleViewer(Simulator simulator, SwitchableController switcher) {
 		this.simulator = simulator;
 		
 		// Create buttons

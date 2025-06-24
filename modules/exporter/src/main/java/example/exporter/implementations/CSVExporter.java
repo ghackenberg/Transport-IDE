@@ -11,9 +11,9 @@ import example.model.Intersection;
 import example.model.Model;
 import example.model.Segment;
 import example.model.Vehicle;
-import example.statistics.implementations.ExampleStatistics;
+import example.statistics.Statistics;
 
-public class CSVExporter implements Exporter<ExampleStatistics> {
+public class CSVExporter implements Exporter {
 
 	private File demands;
 	private File vehicles;
@@ -50,14 +50,14 @@ public class CSVExporter implements Exporter<ExampleStatistics> {
 	}
 	
 	@Override
-	public void export(Model model, ExampleStatistics statistics) {
+	public void export(Model model, Statistics statistics) {
 		exportDemands(model, statistics);
 		exportVehicles(model, statistics);
 		exportSegments(model, statistics);
 		exportIntersections(model, statistics);
 	}
 	
-	private void exportDemands(Model model, ExampleStatistics statistics) {
+	private void exportDemands(Model model, Statistics statistics) {
 		try (Writer writer = new FileWriter(demands)) {
 			// Write header
 			writer.write("Size;Earliest Pickup;Latest Dropoff;Actual Pickup;Actual Dropoff;Distance");
@@ -71,7 +71,7 @@ public class CSVExporter implements Exporter<ExampleStatistics> {
 		}
 	}
 	
-	private void exportVehicles(Model model, ExampleStatistics statistics) {
+	private void exportVehicles(Model model, Statistics statistics) {
 		try (Writer writer = new FileWriter(vehicles)) {
 			// Write header
 			writer.write("Name;Capacity;Distance");
@@ -85,7 +85,7 @@ public class CSVExporter implements Exporter<ExampleStatistics> {
 		}
 	}
 
-	private void exportSegments(Model model, ExampleStatistics statistics) {
+	private void exportSegments(Model model, Statistics statistics) {
 		try (Writer writer = new FileWriter(segments)) {
 			// Write header
 			writer.write("Identifier;Lanes;Speed;Traversals");
@@ -99,7 +99,7 @@ public class CSVExporter implements Exporter<ExampleStatistics> {
 		}
 	}
 
-	private void exportIntersections(Model model, ExampleStatistics statistics) {
+	private void exportIntersections(Model model, Statistics statistics) {
 		try (Writer writer = new FileWriter(intersections)) {
 			// Write header
 			writer.write("Name;Crossings");

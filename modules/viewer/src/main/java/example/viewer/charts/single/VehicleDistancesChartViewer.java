@@ -5,12 +5,11 @@ import java.util.List;
 
 import example.model.Vehicle;
 import example.simulator.Simulator;
-import example.statistics.implementations.ExampleStatistics;
 import example.viewer.charts.SingleChartViewer;
 
 public class VehicleDistancesChartViewer extends SingleChartViewer {
 
-	public VehicleDistancesChartViewer(List<Simulator<ExampleStatistics>> simulators, int index) {
+	public VehicleDistancesChartViewer(List<Simulator> simulators, int index) {
 		super(simulators, index, "Vehicle distances", "Vehicles", "Distance");
 		
 		renderer.setSeriesPaint(0, Color.BLUE);
@@ -29,7 +28,7 @@ public class VehicleDistancesChartViewer extends SingleChartViewer {
 		
 		double max = 0;
 		
-		for (Simulator<ExampleStatistics> simulator : simulators) {
+		for (Simulator simulator : simulators) {
 			for (double distance : simulator.getStatistics().vehicleDistances.values()) {
 				max = Math.max(distance, max);
 			}

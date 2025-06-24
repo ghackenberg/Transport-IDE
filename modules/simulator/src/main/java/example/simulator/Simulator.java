@@ -26,7 +26,7 @@ import example.simulator.exceptions.InvalidSpeedException;
 import example.simulator.exceptions.InvalidTimeoutException;
 import example.statistics.Statistics;
 
-public class Simulator<S extends Statistics> {
+public class Simulator {
 	
 	private static boolean DEBUG = false;
 	
@@ -41,7 +41,7 @@ public class Simulator<S extends Statistics> {
 	private String name;
 	private Model model;
 	private Controller controller;
-	private S statistics;
+	private Statistics statistics;
 	private double maxModelTimeStep;
 	private double ratioModelRealTime;
 	
@@ -66,11 +66,11 @@ public class Simulator<S extends Statistics> {
 	
 	private Thread thread;
 	
-	public Simulator(String name, Model model, Controller controller, S statistics, double maxModelTimeStep, double ratioModelRealTime, File runsFolder) {
+	public Simulator(String name, Model model, Controller controller, Statistics statistics, double maxModelTimeStep, double ratioModelRealTime, File runsFolder) {
 		this(name, model, controller, statistics, maxModelTimeStep, ratioModelRealTime, runsFolder, new Synchronizer(1));
 	}
 	
-	public Simulator(String name, Model model, Controller controller, S statistics, double maxModelTimeStep, double ratioModelRealTime, File runsFolder, Synchronizer synchronizer) {
+	public Simulator(String name, Model model, Controller controller, Statistics statistics, double maxModelTimeStep, double ratioModelRealTime, File runsFolder, Synchronizer synchronizer) {
 		this.name = name;
 		this.model = model;
 		this.controller = controller;
@@ -89,7 +89,7 @@ public class Simulator<S extends Statistics> {
 		return model;
 	}
 	
-	public S getStatistics() {
+	public Statistics getStatistics() {
 		return statistics;
 	}
 	

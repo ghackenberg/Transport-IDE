@@ -19,7 +19,7 @@ import example.program.dialogs.ModelOpenDialog;
 import example.program.exceptions.ArgumentsException;
 import example.simulator.Simulator;
 import example.simulator.Synchronizer;
-import example.statistics.implementations.ExampleStatistics;
+import example.statistics.Statistics;
 import example.viewer.MultipleViewer;
 
 public class ControllerComparisonProgram {
@@ -172,9 +172,9 @@ public class ControllerComparisonProgram {
 			
 			// Create statistics
 			
-			ExampleStatistics statistics1 = new ExampleStatistics(model1);
-			ExampleStatistics statistics2 = new ExampleStatistics(model2);
-			ExampleStatistics statistics3 = new ExampleStatistics(model3);
+			Statistics statistics1 = new Statistics(model1);
+			Statistics statistics2 = new Statistics(model2);
+			Statistics statistics3 = new Statistics(model3);
 			
 			statistics1.reset();
 			statistics2.reset();
@@ -191,13 +191,13 @@ public class ControllerComparisonProgram {
 			
 			// Create simulators
 			
-			Simulator<ExampleStatistics> simulator1 = new Simulator<>("Random", model1, controller1, statistics1, maxModelTimeStep, ratioModelRealTime, randomRunsFolder, synchronizer);
-			Simulator<ExampleStatistics> simulator2 = new Simulator<>("Greedy", model2, controller2, statistics2, maxModelTimeStep, ratioModelRealTime, greedyRunsFolder, synchronizer);
-			Simulator<ExampleStatistics> simulator3 = new Simulator<>("Smart", model3, controller3, statistics3, maxModelTimeStep, ratioModelRealTime, smartRunsFolder, synchronizer);
+			Simulator simulator1 = new Simulator("Random", model1, controller1, statistics1, maxModelTimeStep, ratioModelRealTime, randomRunsFolder, synchronizer);
+			Simulator simulator2 = new Simulator("Greedy", model2, controller2, statistics2, maxModelTimeStep, ratioModelRealTime, greedyRunsFolder, synchronizer);
+			Simulator simulator3 = new Simulator("Smart", model3, controller3, statistics3, maxModelTimeStep, ratioModelRealTime, smartRunsFolder, synchronizer);
 			
 			// List simulators
 			
-			List<Simulator<ExampleStatistics>> simulators = new ArrayList<>();
+			List<Simulator> simulators = new ArrayList<>();
 			
 			simulators.add(simulator1);
 			simulators.add(simulator2);

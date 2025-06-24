@@ -17,7 +17,7 @@ import example.program.dialogs.ModelOpenDialog;
 import example.program.exceptions.ArgumentsException;
 import example.simulator.Simulator;
 import example.simulator.Synchronizer;
-import example.statistics.implementations.ExampleStatistics;
+import example.statistics.Statistics;
 import example.viewer.MultipleViewer;
 
 public class ModelComparisonProgram {
@@ -151,9 +151,9 @@ public class ModelComparisonProgram {
 			
 			List<Controller> controllers = new ArrayList<>();
 			
-			List<ExampleStatistics> statistics = new ArrayList<>();
+			List<Statistics> statistics = new ArrayList<>();
 			
-			List<Simulator<ExampleStatistics>> simulators = new ArrayList<>();
+			List<Simulator> simulators = new ArrayList<>();
 			
 			for (int index = 0; index < models.size(); index++) {
 				File runsFolder = folders.get(index);
@@ -169,14 +169,14 @@ public class ModelComparisonProgram {
 				
 				// Statistics
 
-				ExampleStatistics statistic = new ExampleStatistics(model);
+				Statistics statistic = new Statistics(model);
 				statistic.reset();
 				
 				statistics.add(statistic);
 				
 				// Simulator
 				
-				Simulator<ExampleStatistics> simulator = new Simulator<>(model.name, model, controller, statistic, maxModelTimeStep, ratioModelRealTime, runsFolder, synchronizer);
+				Simulator simulator = new Simulator(model.name, model, controller, statistic, maxModelTimeStep, ratioModelRealTime, runsFolder, synchronizer);
 				
 				simulators.add(simulator);
 			}
@@ -187,7 +187,7 @@ public class ModelComparisonProgram {
 			
 			// Start simulators
 			
-			for (Simulator<ExampleStatistics> simulator : simulators) {
+			for (Simulator simulator : simulators) {
 				simulator.start();
 			}
 		} catch (MissingException e) {

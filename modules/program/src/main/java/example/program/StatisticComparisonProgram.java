@@ -18,7 +18,7 @@ import example.program.viewers.HistogramViewer;
 import example.program.viewers.ModelViewer;
 import example.program.viewers.PercentageViewer;
 import example.simulator.Simulator;
-import example.statistics.implementations.ExampleStatistics;
+import example.statistics.Statistics;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -68,7 +68,7 @@ public class StatisticComparisonProgram extends Application {
 	final List<String> names = new ArrayList<>();
 	final List<File> folders = new ArrayList<>();
 	final List<List<Model>> models = new ArrayList<>();
-	final List<List<ExampleStatistics>> statistics = new ArrayList<>();
+	final List<List<Statistics>> statistics = new ArrayList<>();
 	
 	final List<List<Integer>> replicationCounts = new ArrayList<>(); 
 	
@@ -245,10 +245,10 @@ public class StatisticComparisonProgram extends Application {
 		
 		for (List<Model> procModels : models) {
 			
-			List<ExampleStatistics> procStatistics = new ArrayList<>();
+			List<Statistics> procStatistics = new ArrayList<>();
 			
 			for (Model model : procModels) {
-				ExampleStatistics statistic = new ExampleStatistics(model);
+				Statistics statistic = new Statistics(model);
 				statistic.reset();
 				
 				procStatistics.add(statistic);
@@ -390,12 +390,12 @@ public class StatisticComparisonProgram extends Application {
 					File folder = null;
 					
 					Model model = null;
-					ExampleStatistics statistic = null;
+					Statistics statistic = null;
 
 					Class<? extends Controller> controllerClass = null;
 					Controller controller = null;
 					
-					Simulator<ExampleStatistics> simulator = null;
+					Simulator simulator = null;
 					
 					synchronized (replicationCounts) {
 						for (int i = 0; i < models.size(); i++) {
@@ -441,7 +441,7 @@ public class StatisticComparisonProgram extends Application {
 						}
 					}
 					
-					simulator = new Simulator<>(name + "-" + controllerClass.getSimpleName() + "-" + repCount, model, controller, statistic, maxModelTimeStep, ratioModelRealTime, folder);
+					simulator = new Simulator(name + "-" + controllerClass.getSimpleName() + "-" + repCount, model, controller, statistic, maxModelTimeStep, ratioModelRealTime, folder);
 					simulator.loop();
 					
 					synchronized (replicationCounts) {

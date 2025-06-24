@@ -6,18 +6,18 @@ import java.util.List;
 import example.model.Model;
 import example.model.Vehicle;
 import example.simulator.Simulator;
-import example.statistics.implementations.ExampleStatistics;
+import example.statistics.Statistics;
 import example.viewer.charts.SingleChartViewer;
 
 public class VehicleBatteriesChartViewer extends SingleChartViewer {
 
-	public VehicleBatteriesChartViewer(List<Simulator<ExampleStatistics>> simulators, int index) {
+	public VehicleBatteriesChartViewer(List<Simulator> simulators, int index) {
 		super(simulators, index, "Vehicle batteries", "Vehicles", "Energy");
 		
 		renderer.setSeriesPaint(0, Color.BLUE);
 	}
 
-	public VehicleBatteriesChartViewer(Model model, ExampleStatistics statistics) {
+	public VehicleBatteriesChartViewer(Model model, Statistics statistics) {
 		super(model, statistics, "Vehicle batteries", "Vehicles", "Energy");
 		
 		renderer.setSeriesPaint(0, Color.BLUE);

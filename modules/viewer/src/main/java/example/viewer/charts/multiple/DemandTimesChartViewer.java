@@ -6,12 +6,12 @@ import java.util.List;
 import example.model.Demand;
 import example.model.Model;
 import example.simulator.Simulator;
-import example.statistics.implementations.ExampleStatistics;
+import example.statistics.Statistics;
 import example.viewer.charts.MultipleChartViewer;
 
 public class DemandTimesChartViewer extends MultipleChartViewer {
 
-	public DemandTimesChartViewer(List<Simulator<ExampleStatistics>> simulators) {
+	public DemandTimesChartViewer(List<Simulator> simulators) {
 		super(simulators, "Demand times", "Simulators", "Time (in s)");
 		
 		renderer.setSeriesPaint(0, Color.GRAY);
@@ -23,11 +23,11 @@ public class DemandTimesChartViewer extends MultipleChartViewer {
 	@Override
 	public void update() {
 		
-		for (Simulator<ExampleStatistics> simulator : simulators) {
+		for (Simulator simulator : simulators) {
 			
 			Model model = simulator.getModel();
 			
-			ExampleStatistics stats = simulator.getStatistics();
+			Statistics stats = simulator.getStatistics();
 			
 			double underdueWait = 0;
 			double underdueRide = 0;

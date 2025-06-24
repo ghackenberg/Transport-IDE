@@ -5,12 +5,11 @@ import java.util.List;
 
 import example.model.Intersection;
 import example.simulator.Simulator;
-import example.statistics.implementations.ExampleStatistics;
 import example.viewer.charts.SingleChartViewer;
 
 public class IntersectionCrossingsChartViewer extends SingleChartViewer {
 
-	public IntersectionCrossingsChartViewer(List<Simulator<ExampleStatistics>> simulators, int index) {
+	public IntersectionCrossingsChartViewer(List<Simulator> simulators, int index) {
 		super(simulators, index, "Intersection crossings", "Intersections", "Count");
 		
 		renderer.setSeriesPaint(0, Color.GREEN);
@@ -29,7 +28,7 @@ public class IntersectionCrossingsChartViewer extends SingleChartViewer {
 		
 		double max = 1;
 		
-		for (Simulator<ExampleStatistics> simulator : simulators) {
+		for (Simulator simulator : simulators) {
 			for (int traversals : simulator.getStatistics().intersectionCrossings.values()) {
 				max = Math.max(traversals, max);
 			}

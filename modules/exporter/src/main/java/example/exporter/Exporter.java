@@ -3,8 +3,8 @@ package example.exporter;
 import example.model.Model;
 import example.statistics.Statistics;
 
-public interface Exporter<T extends Statistics> {
+public interface Exporter {
 
-	public void export(Model model, T statistics);
+	public void export(Model model, Statistics statistics);
 	
 }
