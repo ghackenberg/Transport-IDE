@@ -35,8 +35,8 @@ public class Demand {
 		
 		done = false;
 		
-		pickup.location.segment = initialPickup.location.segment;
-		pickup.location.distance = initialPickup.location.distance;
+		pickup.location.setSegment(initialPickup.location.getSegment());
+		pickup.location.setDistance(initialPickup.location.getDistance());
 	}
 	
 	@Override

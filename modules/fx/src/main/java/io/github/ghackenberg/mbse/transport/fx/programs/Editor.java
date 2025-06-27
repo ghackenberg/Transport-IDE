@@ -4,29 +4,22 @@ import java.io.File;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.Parser;
-import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
-import io.github.ghackenberg.mbse.transport.core.entities.Segment;
-import io.github.ghackenberg.mbse.transport.core.entities.Station;
-import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
 import io.github.ghackenberg.mbse.transport.core.exceptions.DirectoryException;
 import io.github.ghackenberg.mbse.transport.core.exceptions.MissingException;
+import io.github.ghackenberg.mbse.transport.fx.viewers.ModelViewer;
 import javafx.application.Application;
-import javafx.beans.property.SimpleStringProperty;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
+import javafx.scene.layout.GridPane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
@@ -38,11 +31,11 @@ public class Editor extends Application {
 	
 	private Model model;
 	
-	private ListView<String> list;
+	private ModelViewer viewer;
 	
-	private TableView<String> table;
+	private GridPane grid;
 	
-	private Pane pane;
+	private BorderPane root;
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -50,7 +43,7 @@ public class Editor extends Application {
 		// Menü
 		
 		MenuItem open = new MenuItem("Open");
-		open.setOnAction(event -> {			
+		open.setOnAction(menuEvent -> {			
 			DirectoryChooser chooser = new DirectoryChooser();
 			chooser.setInitialDirectory(new File("."));
 			
@@ -65,8 +58,56 @@ public class Editor extends Application {
 				
 				try {
 					model = new Parser().parse(intersections, segments, stations, vehicles, demands);
+					model.reset();
 					
-					paintModel();
+					viewer = new ModelViewer(model);
+					viewer.setOnIntersectionSelected(entityEvent -> {
+						TextField name = new TextField(entityEvent.getEntity().getName());
+						entityEvent.getEntity().nameProperty().bind(name.textProperty());
+						
+						TextField x = new TextField("" + entityEvent.getEntity().getCoordinate().getX());
+						x.setOnAction(event -> {
+							entityEvent.getEntity().getCoordinate().setX(Double.parseDouble(x.getText()));
+						});
+						
+						TextField y = new TextField("" + entityEvent.getEntity().getCoordinate().getY());
+						y.setOnAction(event -> {
+							entityEvent.getEntity().getCoordinate().setY(Double.parseDouble(y.getText()));
+						});
+						
+						TextField z = new TextField("" + entityEvent.getEntity().getCoordinate().getZ());
+						z.setOnAction(event -> {
+							entityEvent.getEntity().getCoordinate().setZ(Double.parseDouble(z.getText()));
+						});
+						
+						grid.getChildren().clear();
+						
+						grid.add(new Label("Name"), 0, 0);
+						grid.add(name, 1, 0);
+						
+						grid.add(new Label("X"), 0, 1);
+						grid.add(x, 1, 1);
+						
+						grid.add(new Label("Y"), 0, 2);
+						grid.add(y, 1, 2);
+						
+						grid.add(new Label("Z"), 0, 3);
+						grid.add(z, 1, 3);
+					});
+					viewer.setOnSegmentSelected(e -> {
+						// TODO
+					});
+					viewer.setOnStationSelected(e -> {
+						// TODO
+					});
+					viewer.setOnVehicleSelected(e -> {
+						// TODO
+					});
+					viewer.setOnDemandSelected(e -> {
+						// TODO
+					});
+					
+					root.setCenter(viewer);
 				} catch (MissingException e) {
 					e.printStackTrace();
 				} catch (DirectoryException e) {
@@ -99,33 +140,14 @@ public class Editor extends Application {
 		menu.getMenus().add(edit);
 		menu.getMenus().add(help);
 		
-		// Links
-		
-		list = new ListView<>();
-		list.getItems().add("Intersection");
-		list.getItems().add("Segment");
-		list.getItems().add("Station");
-		list.getItems().add("Demand");
-		list.getItems().add("Vehicle");
-		
 		// Rechts
 		
-		TableColumn<String, String> nameCol = new TableColumn<>("Name");
-		nameCol.setCellValueFactory(row -> new SimpleStringProperty(row.getValue()));
+		grid = new GridPane();
 		
-		TableColumn<String, String> valueCol = new TableColumn<>("Value");
-		valueCol.setCellValueFactory(row -> new SimpleStringProperty("Dummy"));
+		grid.setPadding(new Insets(10));
 		
-		table = new TableView<>();
-		table.getColumns().add(nameCol);
-		table.getColumns().add(valueCol);
-		table.getItems().add("X");
-		table.getItems().add("Y");
-		table.getItems().add("Z");
-		
-		// Mitte
-		
-		pane = new Pane();
+		grid.setHgap(10);
+		grid.setVgap(10);
 		
 		// Unten
 		
@@ -133,11 +155,9 @@ public class Editor extends Application {
 		
 		// Haupt
 		
-		BorderPane root = new BorderPane();
+		root = new BorderPane();
 		root.setTop(menu);
-		root.setLeft(list);
-		root.setRight(table);
-		root.setCenter(pane);
+		root.setRight(grid);
 		root.setBottom(tool);
 		
 		Scene scene = new Scene(root, 640, 480);
@@ -145,87 +165,6 @@ public class Editor extends Application {
 		primaryStage.setScene(scene);
 		primaryStage.setTitle("Transport-IDE Editor");
 		primaryStage.show();
-	}
-	
-	private void paintModel() {
-		pane.getChildren().clear();
-		
-		for (Segment segment : model.segments) {
-			paintSegment(segment);
-		}
-		for (Intersection intersection : model.intersections) {
-			paintIntersection(intersection);
-		}
-		for (Station station : model.stations) {
-			paintStation(station);
-		}
-		for (Vehicle vehicle : model.vehicles) {
-			paintVehicle(vehicle);
-		}
-	}
-	
-	private void paintSegment(Segment segment)  {
-		// TODO implement
-		
-		Circle circle = new Circle();
-		
-		circle.setFill(Color.GREEN);
-		circle.setStroke(Color.RED);
-		
-		circle.centerXProperty().bind(pane.widthProperty().divide(2));
-		circle.centerYProperty().bind(pane.heightProperty().divide(2));
-		circle.radiusProperty().bind(pane.widthProperty().divide(10));
-		circle.strokeWidthProperty().bind(pane.widthProperty().divide(20));
-		
-		pane.getChildren().add(circle);
-	}
-	
-	private void paintIntersection(Intersection intersection) {
-		// TODO implement
-		
-		Circle circle = new Circle();
-		
-		circle.setFill(Color.GREEN);
-		circle.setStroke(Color.RED);
-		
-		circle.centerXProperty().bind(pane.widthProperty().divide(2));
-		circle.centerYProperty().bind(pane.heightProperty().divide(2));
-		circle.radiusProperty().bind(pane.widthProperty().divide(10));
-		circle.strokeWidthProperty().bind(pane.widthProperty().divide(20));
-		
-		pane.getChildren().add(circle);
-	}
-	
-	private void paintStation(Station station) {
-		// TODO implement
-		
-		Circle circle = new Circle();
-		
-		circle.setFill(Color.GREEN);
-		circle.setStroke(Color.RED);
-		
-		circle.centerXProperty().bind(pane.widthProperty().divide(2));
-		circle.centerYProperty().bind(pane.heightProperty().divide(2));
-		circle.radiusProperty().bind(pane.widthProperty().divide(10));
-		circle.strokeWidthProperty().bind(pane.widthProperty().divide(20));
-		
-		pane.getChildren().add(circle);
-	}
-	
-	private void paintVehicle(Vehicle vehicle) {
-		// TODO implement
-		
-		Circle circle = new Circle();
-		
-		circle.setFill(Color.GREEN);
-		circle.setStroke(Color.RED);
-		
-		circle.centerXProperty().bind(pane.widthProperty().divide(2));
-		circle.centerYProperty().bind(pane.heightProperty().divide(2));
-		circle.radiusProperty().bind(pane.widthProperty().divide(10));
-		circle.strokeWidthProperty().bind(pane.widthProperty().divide(20));
-		
-		pane.getChildren().add(circle);
 	}
 
 }

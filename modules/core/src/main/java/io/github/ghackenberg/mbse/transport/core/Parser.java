@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
-import io.github.ghackenberg.mbse.transport.core.entities.Coordinate;
 import io.github.ghackenberg.mbse.transport.core.entities.Demand;
 import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
 import io.github.ghackenberg.mbse.transport.core.entities.Location;
@@ -110,16 +109,12 @@ public class Parser {
 		if (parts.length != 4)
 			throw new IllegalArgumentException(line);
 		
-		Coordinate coordinate = new Coordinate();
-		
-		coordinate.latitude = Double.parseDouble(parts[1]);
-		coordinate.longitude = Double.parseDouble(parts[2]);
-		coordinate.elevation = Double.parseDouble(parts[3]);
-		
 		Intersection intersection = new Intersection();
 		
-		intersection.name = parts[0];
-		intersection.coordinate = coordinate;
+		intersection.setName(parts[0]);
+		intersection.getCoordinate().setX(Double.parseDouble(parts[1]));
+		intersection.getCoordinate().setY(Double.parseDouble(parts[2]));
+		intersection.getCoordinate().setZ(Double.parseDouble(parts[3]));
 		
 		model.intersections.add(intersection);
 		
@@ -249,8 +244,8 @@ public class Parser {
 		
 		Location location = new Location();
 		
-		location.segment = resolveSegment(model, parts[0]);
-		location.distance = location.segment.getLength() * Double.parseDouble(parts[1]) / 100.0;
+		location.setSegment(resolveSegment(model, parts[0]));
+		location.setDistance(location.getSegment().getLength() * Double.parseDouble(parts[1]) / 100.0);
 		
 		return location;
 		

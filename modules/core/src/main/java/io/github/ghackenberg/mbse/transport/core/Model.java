@@ -25,7 +25,7 @@ public class Model {
 	
 	public Intersection getIntersection(String name) {
 		for (Intersection intersection : intersections) {
-			if (intersection.name.equals(name)) {
+			if (intersection.getName().equals(name)) {
 				return intersection;
 			}
 		}

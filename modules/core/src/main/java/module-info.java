@@ -3,6 +3,7 @@ module mbse.transport.core {
 	requires java.desktop;
 	
 	requires transitive org.jgrapht.core;
+	requires transitive javafx.base;
 	
 	exports io.github.ghackenberg.mbse.transport.core;
 	exports io.github.ghackenberg.mbse.transport.core.entities;

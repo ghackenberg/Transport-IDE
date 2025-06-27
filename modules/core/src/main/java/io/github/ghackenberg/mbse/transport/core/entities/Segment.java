@@ -15,15 +15,15 @@ public class Segment {
 	public double speed;
 	
 	public Coordinate getCenter() {
-		double dx = end.coordinate.latitude - start.coordinate.latitude;
-		double dy = end.coordinate.longitude - start.coordinate.longitude;
-		double dz = end.coordinate.elevation - start.coordinate.elevation;
+		double dx = end.getCoordinate().getX() - start.getCoordinate().getX();
+		double dy = end.getCoordinate().getY() - start.getCoordinate().getY();
+		double dz = end.getCoordinate().getZ() - start.getCoordinate().getZ();
 		
 		Coordinate coord = new Coordinate();
 		
-		coord.latitude = start.coordinate.latitude + dx / 2;
-		coord.longitude = start.coordinate.longitude + dy / 2;
-		coord.elevation = start.coordinate.elevation + dz / 2;
+		coord.setX(start.getCoordinate().getX() + dx / 2);
+		coord.setY(start.getCoordinate().getY() + dy / 2);
+		coord.setZ(start.getCoordinate().getZ() + dz / 2);
 		
 		return coord;
 	}
@@ -31,8 +31,8 @@ public class Segment {
 	public double getAngle() {
 		double len = getLength();
 		
-		double dx = end.coordinate.latitude - start.coordinate.latitude;
-		double dy = end.coordinate.longitude - start.coordinate.longitude;
+		double dx = end.getCoordinate().getX() - start.getCoordinate().getX();
+		double dy = end.getCoordinate().getY() - start.getCoordinate().getY();
 		
 		dx /= len;
 		dy /= len;
@@ -41,16 +41,16 @@ public class Segment {
 	}
 	
 	public double getLength() {
-		double dx = end.coordinate.latitude - start.coordinate.latitude;
-		double dy = end.coordinate.longitude - start.coordinate.longitude;
-		double dz = end.coordinate.elevation - start.coordinate.elevation;
+		double dx = end.getCoordinate().getX() - start.getCoordinate().getX();
+		double dy = end.getCoordinate().getY() - start.getCoordinate().getY();
+		double dz = end.getCoordinate().getZ() - start.getCoordinate().getZ();
 		
 		return Math.sqrt(dx * dx + dy * dy + dz * dz);
 	}
 	
 	@Override
 	public String toString() {
-		return start.name + "->" + end.name;
+		return start.getName() + "->" + end.getName();
 	}
 
 }

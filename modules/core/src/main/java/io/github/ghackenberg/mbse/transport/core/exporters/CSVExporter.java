@@ -106,7 +106,7 @@ public class CSVExporter implements Exporter {
 			// Process intersections
 			for (Intersection intersection : model.intersections) {
 				// Write row
-				writer.write("\n" + intersection.name + ";" + statistics.intersectionCrossings.get(intersection));
+				writer.write("\n" + intersection.getName() + ";" + statistics.intersectionCrossings.get(intersection));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

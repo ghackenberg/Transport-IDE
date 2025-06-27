@@ -3,24 +3,26 @@ package io.github.ghackenberg.mbse.transport.fx.viewers;
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Coordinate;
 import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
-import javafx.scene.Group;
+import io.github.ghackenberg.mbse.transport.fx.events.VehicleEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
-public class VehicleViewer extends Group {
+public class VehicleViewer extends EntityViewer<Vehicle, VehicleEvent> {
 
 	private Vehicle vehicle;
 	
 	private Rectangle rectangle;
 	
 	public VehicleViewer(Model model, Vehicle vehicle) {
+		super(vehicle);
+		
 		this.vehicle = vehicle;
 		
 		setManaged(false);
 		
-		Coordinate location = vehicle.location.toCoordinate();
+		Coordinate location = vehicle.location.getCoordinate();
 		
-		double angle = vehicle.location.segment.getAngle();
+		double angle = vehicle.location.getSegment().getAngle();
 		
 		// Rectangle
 		
@@ -29,8 +31,8 @@ public class VehicleViewer extends Group {
 		rectangle.setWidth(vehicle.length);
 		rectangle.setHeight(1);
 		
-		rectangle.setX(location.latitude - vehicle.length / 2);
-		rectangle.setY(location.longitude - 1 / 2.);
+		rectangle.xProperty().bind(location.xProperty().subtract(vehicle.length / 2));
+		rectangle.yProperty().bind(location.yProperty().subtract(1 / 2.));
 		
 		rectangle.setRotate(angle / Math.PI * 180);
 		
@@ -40,12 +42,7 @@ public class VehicleViewer extends Group {
 	}
 	
 	public void update() {
-		Coordinate location = vehicle.location.toCoordinate();
-		
-		double angle = vehicle.location.segment.getAngle();
-		
-		rectangle.setX(location.latitude - vehicle.length / 2);
-		rectangle.setY(location.longitude - 1 / 2.);
+		double angle = vehicle.location.getSegment().getAngle();
 		
 		rectangle.setRotate(angle / Math.PI * 180);
 	}

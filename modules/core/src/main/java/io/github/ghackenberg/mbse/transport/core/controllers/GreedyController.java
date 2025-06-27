@@ -35,7 +35,7 @@ public class GreedyController implements Controller {
 
 	@Override
 	public double selectSpeed(Vehicle vehicle) {
-		return vehicle.location.segment.speed;
+		return vehicle.location.getSegment().speed;
 	}
 
 	@Override
@@ -56,8 +56,8 @@ public class GreedyController implements Controller {
 			
 			for (Station station : model.stations)  {
 				if (station.vehicle == null) {
-					if (vehicle.location.segment.end.outgoing.contains(station.location.segment)) {
-						charge.add(station.location.segment);
+					if (vehicle.location.getSegment().end.outgoing.contains(station.location.getSegment())) {
+						charge.add(station.location.getSegment());
 					}
 				}
 			}
@@ -71,8 +71,8 @@ public class GreedyController implements Controller {
 		List<Segment> dropoff = new ArrayList<>();
 		
 		for (Demand demand : vehicle.demands) {
-			if (vehicle.location.segment.end.outgoing.contains(demand.dropoff.location.segment)) {
-				dropoff.add(demand.dropoff.location.segment);
+			if (vehicle.location.getSegment().end.outgoing.contains(demand.dropoff.location.getSegment())) {
+				dropoff.add(demand.dropoff.location.getSegment());
 			}
 		}
 		
@@ -86,9 +86,9 @@ public class GreedyController implements Controller {
 			
 			for (Demand demand : model.demands) {
 				if (demand.done == false && demand.vehicle == null && demand.pickup.time <= model.time) {
-					if (vehicle.location.segment.end.outgoing.contains(demand.pickup.location.segment)) {
+					if (vehicle.location.getSegment().end.outgoing.contains(demand.pickup.location.getSegment())) {
 						if (vehicle.loadLevel + demand.size <= vehicle.loadCapacity) {
-							pickup.add(demand.pickup.location.segment);
+							pickup.add(demand.pickup.location.getSegment());
 						}
 					}
 				}
@@ -100,7 +100,7 @@ public class GreedyController implements Controller {
 		}
 		
 		// Try random
-		List<Segment> outgoing = vehicle.location.segment.end.outgoing;
+		List<Segment> outgoing = vehicle.location.getSegment().end.outgoing;
 		
 		return outgoing.get((int) (Math.random() * outgoing.size()));
 	}

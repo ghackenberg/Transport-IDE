@@ -66,8 +66,8 @@ public class SmartController implements Controller {
 		}
 		
 		for (Station station : model.stations) {
-			if (vehicle.location.segment == station.location.segment) {
-				if (vehicle.location.distance == station.location.distance) {
+			if (vehicle.location.getSegment() == station.location.getSegment()) {
+				if (vehicle.location.getDistance() == station.location.getDistance()) {
 					if (vehicle.batteryLevel < minimumDistance) {
 						return 0;
 					}
@@ -75,7 +75,7 @@ public class SmartController implements Controller {
 			}
 		}
 		
-		return vehicle.location.segment.speed;
+		return vehicle.location.getSegment().speed;
 	}
 
 	@Override
@@ -140,7 +140,7 @@ public class SmartController implements Controller {
 		if (minimumSegment == null) {
 			// Select random segment
 			
-			List<Segment> candidates = vehicle.location.segment.end.outgoing;
+			List<Segment> candidates = vehicle.location.getSegment().end.outgoing;
 			
 			minimumSegment = candidates.get((int) (Math.random() * candidates.size()));
 		}
@@ -153,21 +153,21 @@ public class SmartController implements Controller {
 	}
 	
 	private double getDistance(Location a, Location b, Reference<Segment> next) {
-		if (a.segment == b.segment && a.distance < b.distance) {
-			return b.distance - a.distance;
-		} else if (a.segment.end == b.segment.start) {
+		if (a.getSegment() == b.getSegment() && a.getDistance() < b.getDistance()) {
+			return b.getDistance() - a.getDistance();
+		} else if (a.getSegment().end == b.getSegment().start) {
 			if (next != null) {
-				next.value = b.segment;
+				next.value = b.getSegment();
 			}
-			return a.segment.getLength() - a.distance + b.distance;
+			return a.getSegment().getLength() - a.getDistance() + b.getDistance();
 		} else {
-			SingleSourcePaths<Intersection, Segment> paths = algorithm.getPaths(a.segment.end);
-			GraphPath<Intersection, Segment> path = paths.getPath(b.segment.start);
+			SingleSourcePaths<Intersection, Segment> paths = algorithm.getPaths(a.getSegment().end);
+			GraphPath<Intersection, Segment> path = paths.getPath(b.getSegment().start);
 			if (path.getLength() > 0) {
 				if (next != null) {
 					next.value = path.getEdgeList().get(0);
 				}
-				return a.segment.getLength() - a.distance + path.getWeight() + b.distance;
+				return a.getSegment().getLength() - a.getDistance() + path.getWeight() + b.getDistance();
 			} else {
 				return Double.MAX_VALUE;
 			}
@@ -177,7 +177,7 @@ public class SmartController implements Controller {
 	private double getMinimumStationDistance(Location a) {
 		double minimumDistance = Double.MAX_VALUE;
 		for (Station station : model.stations) {
-			if (station.location.segment == a.segment && station.location.distance == a.distance) {
+			if (station.location.getSegment() == a.getSegment() && station.location.getDistance() == a.getDistance()) {
 				return 0;
 			} else {
 				double distance = getDistance(a, station.location, null);

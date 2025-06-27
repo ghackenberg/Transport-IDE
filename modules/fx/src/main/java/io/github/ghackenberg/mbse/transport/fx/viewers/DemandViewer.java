@@ -3,17 +3,14 @@ package io.github.ghackenberg.mbse.transport.fx.viewers;
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Coordinate;
 import io.github.ghackenberg.mbse.transport.core.entities.Demand;
-import io.github.ghackenberg.mbse.transport.core.entities.LocationTime;
-import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
-import javafx.scene.Group;
+import io.github.ghackenberg.mbse.transport.fx.events.DemandEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 
-public class DemandViewer extends Group {
+public class DemandViewer extends EntityViewer<Demand, DemandEvent> {
 
 	private Model model;
-	private Demand demand;
 	
 	private Line line;
 	
@@ -21,23 +18,24 @@ public class DemandViewer extends Group {
 	private Circle target;
 	
 	public DemandViewer(Model model, Demand demand) {
+		super(demand);
+		
 		this.model = model;
-		this.demand = demand;
 		
 		setManaged(false);
 		
-		Coordinate start = demand.pickup.location.toCoordinate();
-		Coordinate end = demand.dropoff.location.toCoordinate();
+		Coordinate start = demand.pickup.location.getCoordinate();
+		Coordinate end = demand.dropoff.location.getCoordinate();
 		
 		// Line
 		
 		line = new Line();
 		
-		line.setStartX(start.latitude);
-		line.setStartY(start.longitude);
+		line.startXProperty().bind(start.xProperty());
+		line.startYProperty().bind(start.yProperty());
 		
-		line.setEndX(end.latitude);
-		line.setEndY(end.longitude);
+		line.endXProperty().bind(end.xProperty());
+		line.endYProperty().bind(end.yProperty());
 		
 		line.setStroke(Color.GREEN);
 		
@@ -49,8 +47,8 @@ public class DemandViewer extends Group {
 		
 		source.setRadius(demand.size);
 		
-		source.setCenterX(start.latitude);
-		source.setCenterY(start.longitude);
+		source.centerXProperty().bind(start.xProperty());
+		source.centerYProperty().bind(start.yProperty());
 		
 		source.setFill(Color.GREEN);
 		
@@ -62,8 +60,8 @@ public class DemandViewer extends Group {
 		
 		target.setRadius(demand.size);
 		
-		target.setCenterX(end.latitude);
-		target.setCenterY(end.longitude);
+		target.centerXProperty().bind(end.xProperty());
+		target.centerYProperty().bind(end.yProperty());
 		
 		target.setFill(Color.GREEN);
 		
@@ -71,22 +69,10 @@ public class DemandViewer extends Group {
 	}
 	
 	public void update() {
-		Vehicle vehicle = demand.vehicle;
-		
-		LocationTime pickup = demand.pickup;
-		
-		Coordinate start = vehicle != null ? vehicle.location.toCoordinate() : pickup.location.toCoordinate();
-		
-		if (!demand.done && model.time >= demand.pickup.time) {
+		if (!getEntity().done && model.time >= getEntity().pickup.time) {
 			setVisible(true);
 			
-			line.setStartX(start.latitude);
-			line.setStartY(start.longitude);
-			
-			source.setCenterX(start.latitude);
-			source.setCenterY(start.longitude);
-			
-			if (model.time > demand.dropoff.time) {
+			if (model.time > getEntity().dropoff.time) {
 				line.setStroke(Color.RED);
 				
 				source.setFill(Color.RED);

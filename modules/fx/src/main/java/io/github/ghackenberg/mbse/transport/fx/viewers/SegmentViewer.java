@@ -2,15 +2,16 @@ package io.github.ghackenberg.mbse.transport.fx.viewers;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
-import javafx.scene.Group;
+import io.github.ghackenberg.mbse.transport.fx.events.SegmentEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 
-public class SegmentViewer extends Group {
+public class SegmentViewer extends EntityViewer<Segment, SegmentEvent> {
 	
 	private Line line;
 	
 	public SegmentViewer(Model model, Segment segment) {
+		super(segment);
 		
 		setManaged(false);
 		
@@ -18,14 +19,18 @@ public class SegmentViewer extends Group {
 		
 		line = new Line();
 		
-		line.setStartX(segment.start.coordinate.latitude);
-		line.setStartY(segment.start.coordinate.longitude);
+		line.startXProperty().bind(segment.start.getCoordinate().xProperty());
+		line.startYProperty().bind(segment.start.getCoordinate().yProperty());
 		
-		line.setEndX(segment.end.coordinate.latitude);
-		line.setEndY(segment.end.coordinate.longitude);
+		line.endXProperty().bind(segment.end.getCoordinate().xProperty());
+		line.endYProperty().bind(segment.end.getCoordinate().yProperty());
 		
 		line.setStrokeWidth(segment.lanes);
 		line.setStroke(Color.LIGHTGRAY);
+		
+		line.setOnMouseClicked(event -> {
+			// TODO
+		});
 		
 		getChildren().add(line);
 	}

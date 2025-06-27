@@ -31,8 +31,8 @@ public class Vehicle {
 		batteryLevel = initialBatteryLevel;
 		speed = initialSpeed;
 		lane = -1;
-		location.segment = initialLocation.segment;
-		location.distance = initialLocation.distance;
+		location.setSegment(initialLocation.getSegment());
+		location.setDistance(initialLocation.getDistance());
 		station = null;
 	}
 	

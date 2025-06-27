@@ -9,23 +9,35 @@ import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
 import io.github.ghackenberg.mbse.transport.core.entities.Station;
 import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
+import io.github.ghackenberg.mbse.transport.fx.events.DemandEvent;
+import io.github.ghackenberg.mbse.transport.fx.events.IntersectionEvent;
+import io.github.ghackenberg.mbse.transport.fx.events.SegmentEvent;
+import io.github.ghackenberg.mbse.transport.fx.events.StationEvent;
+import io.github.ghackenberg.mbse.transport.fx.events.VehicleEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.layout.Pane;
 
 public class ModelViewer extends Pane {
 	
-	private double minLat = Double.MAX_VALUE;
-	private double maxLat = -Double.MAX_VALUE;
+	private double minX = Double.MAX_VALUE;
+	private double maxX = -Double.MAX_VALUE;
 	
-	private double minLng = Double.MAX_VALUE;
-	private double maxLng = -Double.MAX_VALUE;
+	private double minY = Double.MAX_VALUE;
+	private double maxY = -Double.MAX_VALUE;
 	
-	private double deltaLat;
-	private double deltaLng;
+	private double deltaX;
+	private double deltaY;
 
 	private Group innerTranslate;
 	private Group outerTranslate;
 	private Group scale;
+	
+	private EventHandler<IntersectionEvent> onIntersectionSelected;
+	private EventHandler<SegmentEvent> onSegmentSelected;
+	private EventHandler<StationEvent> onStationSelected;
+	private EventHandler<VehicleEvent> onVehicleSelected;
+	private EventHandler<DemandEvent> onDemandSelected;
 
 	private List<SegmentViewer> segments = new ArrayList<>();
 	private List<IntersectionViewer> intersections = new ArrayList<>();
@@ -46,18 +58,20 @@ public class ModelViewer extends Pane {
 		widthProperty().addListener(event -> zoom());
 		heightProperty().addListener(event -> zoom());
 		
+		// TODO
+		
 		for (Intersection intersection : model.intersections) {
-			minLat = Math.min(minLat, intersection.coordinate.latitude);
-			maxLat = Math.max(maxLat, intersection.coordinate.latitude);
+			minX = Math.min(minX, intersection.getCoordinate().getX());
+			maxX = Math.max(maxX, intersection.getCoordinate().getX());
 		}
 		
 		for (Intersection intersection : model.intersections) {
-			minLng = Math.min(minLng, intersection.coordinate.longitude);
-			maxLng = Math.max(maxLng, intersection.coordinate.longitude);
+			minY = Math.min(minY, intersection.getCoordinate().getY());
+			maxY = Math.max(maxY, intersection.getCoordinate().getY());
 		}
 		
-		deltaLat = maxLat - minLat;
-		deltaLng = maxLng - minLng;
+		deltaX = maxX - minX;
+		deltaY = maxY - minY;
 		
 		// Group
 		
@@ -75,6 +89,11 @@ public class ModelViewer extends Pane {
 		
 		for (Segment segment : model.segments) {
 			SegmentViewer viewer = new SegmentViewer(model, segment);
+			viewer.setOnSelected(event -> {
+				if (onSegmentSelected != null) {
+					onSegmentSelected.handle(event);
+				}
+			});
 			
 			innerTranslate.getChildren().add(viewer);
 			
@@ -85,6 +104,11 @@ public class ModelViewer extends Pane {
 		
 		for (Intersection intersection : model.intersections) {
 			IntersectionViewer viewer = new IntersectionViewer(model, intersection);
+			viewer.setOnSelected(event -> {
+				if (onIntersectionSelected != null) {
+					onIntersectionSelected.handle(event);
+				}
+			});
 			
 			innerTranslate.getChildren().add(viewer);
 			
@@ -95,6 +119,11 @@ public class ModelViewer extends Pane {
 		
 		for (Station station : model.stations) {
 			StationViewer viewer = new StationViewer(station);
+			viewer.setOnSelected(event -> {
+				if (onStationSelected != null) {
+					onStationSelected.handle(event);
+				}
+			});
 			
 			innerTranslate.getChildren().add(viewer);
 			
@@ -106,6 +135,11 @@ public class ModelViewer extends Pane {
 		if (showDemands) {
 			for (Demand demand : model.demands) {
 				DemandViewer viewer = new DemandViewer(model, demand);
+				viewer.setOnSelected(event -> {
+					if (onDemandSelected != null) {
+						onDemandSelected.handle(event);
+					}
+				});
 				
 				innerTranslate.getChildren().add(viewer);
 				
@@ -117,11 +151,36 @@ public class ModelViewer extends Pane {
 		
 		for (Vehicle vehicle : model.vehicles) {
 			VehicleViewer viewer = new VehicleViewer(model, vehicle);
+			viewer.setOnSelected(event -> {
+				if (onVehicleSelected != null) {
+					onVehicleSelected.handle(event);
+				}
+			});
 			
 			innerTranslate.getChildren().add(viewer);
 			
 			vehicles.add(viewer);
 		}
+	}
+	
+	public void setOnIntersectionSelected(EventHandler<IntersectionEvent> handler) {
+		onIntersectionSelected = handler;
+	}
+	
+	public void setOnSegmentSelected(EventHandler<SegmentEvent> handler)  {
+		onSegmentSelected = handler;
+	}
+	
+	public void setOnStationSelected(EventHandler<StationEvent> handler) {
+		onStationSelected = handler;
+	}
+	
+	public void setOnVehicleSelected(EventHandler<VehicleEvent> handler) {
+		onVehicleSelected = handler;
+	}
+	
+	public void setOnDemandSelected(EventHandler<DemandEvent> handler) {
+		onDemandSelected = handler;
 	}
 	
 	public void update() {
@@ -146,10 +205,10 @@ public class ModelViewer extends Pane {
 		double width = getWidth() - 20;
 		double height = getHeight() - 20;
 		
-		double factor = Math.min(width / deltaLat, height / deltaLng);
+		double factor = Math.min(width / deltaX, height / deltaY);
 		
-		innerTranslate.setTranslateX(0 - minLat - deltaLat / 2);
-		innerTranslate.setTranslateY(0 - minLng - deltaLng / 2);
+		innerTranslate.setTranslateX(0 - minX - deltaX / 2);
+		innerTranslate.setTranslateY(0 - minY - deltaY / 2);
 		
 		scale.setScaleX(factor);
 		scale.setScaleY(factor);
