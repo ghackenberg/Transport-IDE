@@ -100,9 +100,9 @@ public class ModelComparison {
 				
 				for (Model model : models) {
 					for (Station station : model.stations) {
-						if (station.location.segment == model.segments.get(pickupSegmentNumber)) {
+						if (station.location.getSegment() == model.segments.get(pickupSegmentNumber)) {
 							valid = false;
-						} else if (station.location.segment == model.segments.get(dropoffSegmentNumber)) {
+						} else if (station.location.getSegment() == model.segments.get(dropoffSegmentNumber)) {
 							valid = false;
 						}
 						if (!valid) {

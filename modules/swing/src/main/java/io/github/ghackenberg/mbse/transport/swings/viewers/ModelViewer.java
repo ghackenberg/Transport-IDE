@@ -80,10 +80,10 @@ public class ModelViewer implements Viewer {
 		this.statistics = statistics;
 		
 		model.intersections.forEach(intersection -> {
-			minLatitude = Math.min(minLatitude, intersection.coordinate.latitude);
-			minLongitude = Math.min(minLongitude, intersection.coordinate.longitude);
-			maxLatitude = Math.max(maxLatitude, intersection.coordinate.latitude);
-			maxLongitude = Math.max(maxLongitude, intersection.coordinate.longitude);
+			minLatitude = Math.min(minLatitude, intersection.getCoordinate().getX());
+			minLongitude = Math.min(minLongitude, intersection.getCoordinate().getY());
+			maxLatitude = Math.max(maxLatitude, intersection.getCoordinate().getX());
+			maxLongitude = Math.max(maxLongitude, intersection.getCoordinate().getY());
 		});
 		
 		rangeLatitude = maxLatitude - minLatitude;
@@ -215,11 +215,11 @@ public class ModelViewer implements Viewer {
 	
 	private void drawSegment(Graphics2D graphics, Segment segment) {
 		
-		double startX = calculateX(segment.start.coordinate);
-		double startY = calculateY(segment.start.coordinate);
+		double startX = calculateX(segment.start.getCoordinate());
+		double startY = calculateY(segment.start.getCoordinate());
 		
-		double endX = calculateX(segment.end.coordinate);
-		double endY = calculateY(segment.end.coordinate);
+		double endX = calculateX(segment.end.getCoordinate());
+		double endY = calculateY(segment.end.getCoordinate());
 		
 		double deltaX = calculateDeltaX(segment);
 		double deltaY = calculateDeltaY(segment);
@@ -233,8 +233,8 @@ public class ModelViewer implements Viewer {
 		Color color = SEGMENT_COLOR;
 		
 		for (Vehicle vehicle : model.vehicles) {
-			if (vehicle.location.distance == vehicle.location.segment.getLength()) {
-				if (vehicle.location.segment.end == segment.start) {
+			if (vehicle.location.getDistance() == vehicle.location.getSegment().getLength()) {
+				if (vehicle.location.getSegment().end == segment.start) {
 					color = Color.PINK;
 					break;
 				}
@@ -257,8 +257,8 @@ public class ModelViewer implements Viewer {
 	
 	private void drawIntersection(Graphics2D graphics, Intersection intersection) {
 		
-		double centerX = calculateX(intersection.coordinate);
-		double centerY = calculateY(intersection.coordinate);
+		double centerX = calculateX(intersection.getCoordinate());
+		double centerY = calculateY(intersection.getCoordinate());
 		
 		int lanes = 0;
 		for (Segment segment : intersection.incoming) {
@@ -278,23 +278,23 @@ public class ModelViewer implements Viewer {
 		
 		graphics.setFont(new Font(FONT_NAME, FONT_STYLE, (int) radius));
 		
-		int textWidth = graphics.getFontMetrics().stringWidth(intersection.name);
+		int textWidth = graphics.getFontMetrics().stringWidth(intersection.getName());
 		int textHeight = graphics.getFontMetrics().getAscent();
 		
 		int textX = (int) (centerX - textWidth / 2.);
 		int textY = (int) (centerY + textHeight / 2.);
 		
 		graphics.setColor(Color.WHITE);
-		graphics.drawString(intersection.name, textX, textY);
+		graphics.drawString(intersection.getName(), textX, textY);
 		
 	}
 	
 	private void drawStation(Graphics2D graphics, Station station) {
 		
-		double centerX = calculateX(station.location.toCoordinate());
-		double centerY = calculateY(station.location.toCoordinate());
+		double centerX = calculateX(station.location.getCoordinate());
+		double centerY = calculateY(station.location.getCoordinate());
 		
-		double radius = station.location.segment.lanes * LANE_WIDTH * ratioScreenModel / 2;
+		double radius = station.location.getSegment().lanes * LANE_WIDTH * ratioScreenModel / 2;
 		
 		int arcX = (int) (centerX - radius);
 		int arcY = (int) (centerY - radius);
@@ -314,8 +314,8 @@ public class ModelViewer implements Viewer {
 		
 		double vehicleLength = ratioScreenModel * vehicle.length / 2;
 		
-		double deltaX = calculateDeltaX(vehicle.location.segment);
-		double deltaY = calculateDeltaY(vehicle.location.segment);
+		double deltaX = calculateDeltaX(vehicle.location.getSegment());
+		double deltaY = calculateDeltaY(vehicle.location.getSegment());
 		
 		double leftX = (Math.cos(+ Math.PI / 2) * deltaX - Math.sin(+ Math.PI / 2) * deltaY) * 1 * ratioScreenModel;
 		double leftY = (Math.sin(+ Math.PI / 2) * deltaX + Math.cos(+ Math.PI / 2) * deltaY) * 1 * ratioScreenModel;
@@ -349,8 +349,8 @@ public class ModelViewer implements Viewer {
 	
 	private void drawBatteryLevel(Graphics2D graphics, Vehicle vehicle) {
 		
-		double deltaX = calculateDeltaX(vehicle.location.segment);
-		double deltaY = calculateDeltaY(vehicle.location.segment);
+		double deltaX = calculateDeltaX(vehicle.location.getSegment());
+		double deltaY = calculateDeltaY(vehicle.location.getSegment());
 		
 		double stepX = Math.cos(Math.PI / 2) * deltaX - Math.sin(Math.PI / 2) * deltaY;
 		double stepY = Math.sin(Math.PI / 2) * deltaX + Math.cos(Math.PI / 2) * deltaY;
@@ -390,8 +390,8 @@ public class ModelViewer implements Viewer {
 	
 	private void drawDemandLevel(Graphics2D graphics, Vehicle vehicle) {
 		
-		double deltaX = calculateDeltaX(vehicle.location.segment);
-		double deltaY = calculateDeltaY(vehicle.location.segment);
+		double deltaX = calculateDeltaX(vehicle.location.getSegment());
+		double deltaY = calculateDeltaY(vehicle.location.getSegment());
 		
 		double stepX = Math.cos(Math.PI / 2) * deltaX - Math.sin(Math.PI / 2) * deltaY;
 		double stepY = Math.sin(Math.PI / 2) * deltaX + Math.cos(Math.PI / 2) * deltaY;
@@ -431,8 +431,8 @@ public class ModelViewer implements Viewer {
 	
 	private void drawVehicle(Graphics2D graphics, Vehicle vehicle) {
 
-		double vehicleFront = vehicle.location.distance + vehicle.length / 2;
-		double vehicleBack = vehicle.location.distance - vehicle.length / 2;
+		double vehicleFront = vehicle.location.getDistance() + vehicle.length / 2;
+		double vehicleBack = vehicle.location.getDistance() - vehicle.length / 2;
 		
 		boolean decline = false;
 		for (Entry<Demand, Map<Double, Vehicle>> entry : statistics.demandPickupDeclineTimes.entrySet()) {
@@ -451,8 +451,8 @@ public class ModelViewer implements Viewer {
 		boolean decide = false;
 		for (Demand demand : model.demands) {
 			if (demand.done == false && demand.vehicle == null && demand.pickup.time <= model.time) {
-				if (demand.pickup.location.segment == vehicle.location.segment) {
-					if (demand.pickup.location.distance == vehicle.location.distance) {
+				if (demand.pickup.location.getSegment() == vehicle.location.getSegment()) {
+					if (demand.pickup.location.getDistance() == vehicle.location.getDistance()) {
 						decide = true;
 						break;
 					}
@@ -461,8 +461,8 @@ public class ModelViewer implements Viewer {
 		}
 		boolean dropoff = false;
 		for (Demand demand : vehicle.demands) {
-			if (demand.dropoff.location.segment == vehicle.location.segment) {
-				if (demand.dropoff.location.distance == vehicle.location.distance) {
+			if (demand.dropoff.location.getSegment() == vehicle.location.getSegment()) {
+				if (demand.dropoff.location.getDistance() == vehicle.location.getDistance()) {
 					dropoff = true;
 					break;
 				}
@@ -471,9 +471,9 @@ public class ModelViewer implements Viewer {
 		boolean attach = false;
 		boolean detach = false;
 		for (Vehicle other : model.vehicles) {
-			if (other.location.segment == vehicle.location.segment) {
-				double otherFront = other.location.distance + other.length / 2;
-				double otherBack = other.location.distance - other.length / 2;
+			if (other.location.getSegment() == vehicle.location.getSegment()) {
+				double otherFront = other.location.getDistance() + other.length / 2;
+				double otherBack = other.location.getDistance() - other.length / 2;
 				if (otherBack == vehicleFront) {
 					if (other.speed < vehicle.speed) {
 						attach = true;
@@ -502,8 +502,8 @@ public class ModelViewer implements Viewer {
 			}
 		}
 		
-		double deltaX = calculateDeltaX(vehicle.location.segment);
-		double deltaY = calculateDeltaY(vehicle.location.segment);
+		double deltaX = calculateDeltaX(vehicle.location.getSegment());
+		double deltaY = calculateDeltaY(vehicle.location.getSegment());
 		
 		double stepX = Math.cos(Math.PI / 2) * deltaX - Math.sin(Math.PI / 2) * deltaY;
 		double stepY = Math.sin(Math.PI / 2) * deltaX + Math.cos(Math.PI / 2) * deltaY;
@@ -516,7 +516,7 @@ public class ModelViewer implements Viewer {
 		
 		double radius = Math.sqrt(vehicleLength * vehicleLength + vehicleWidth * vehicleWidth) * 1.1;
 		
-		if (vehicle.location.distance == vehicle.location.segment.getLength() || decide || dropoff || attach || detach || charge) {
+		if (vehicle.location.getDistance() == vehicle.location.getSegment().getLength() || decide || dropoff || attach || detach || charge) {
 			graphics.setColor(Color.RED);
 			graphics.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[] { 10 }, 0));
 			graphics.drawArc((int) (centerX - radius), (int) (centerY - radius), (int) (radius * 2), (int) (radius * 2), 0, 360);
@@ -546,8 +546,8 @@ public class ModelViewer implements Viewer {
 	
 	private void drawDemand(Graphics2D graphics, Demand demand) {
 		
-		Coordinate pickup = demand.pickup.location.toCoordinate();
-		Coordinate dropoff = demand.dropoff.location.toCoordinate();
+		Coordinate pickup = demand.pickup.location.getCoordinate();
+		Coordinate dropoff = demand.dropoff.location.getCoordinate();
 		
 		double pickupCenterX = demand.vehicle == null ? calculateX(pickup) : calculateCenterX(demand.vehicle);
 		double pickupCenterY = demand.vehicle == null ? calculateY(pickup) : calculateCenterY(demand.vehicle);
@@ -604,11 +604,11 @@ public class ModelViewer implements Viewer {
 	}
 	
 	private double calculateLength(Segment segment) {
-		double startX = calculateX(segment.start.coordinate);
-		double startY = calculateY(segment.start.coordinate);
+		double startX = calculateX(segment.start.getCoordinate());
+		double startY = calculateY(segment.start.getCoordinate());
 		
-		double endX = calculateX(segment.end.coordinate);
-		double endY = calculateY(segment.end.coordinate);
+		double endX = calculateX(segment.end.getCoordinate());
+		double endY = calculateY(segment.end.getCoordinate());
 		
 		double deltaX = endX - startX;
 		double deltaY = endY - startY;
@@ -617,8 +617,8 @@ public class ModelViewer implements Viewer {
 	}
 	
 	private double calculateDeltaX(Segment segment) {
-		double start = calculateX(segment.start.coordinate);		
-		double end = calculateX(segment.end.coordinate);
+		double start = calculateX(segment.start.getCoordinate());		
+		double end = calculateX(segment.end.getCoordinate());
 		
 		double delta = end - start;
 		double length = calculateLength(segment);
@@ -627,8 +627,8 @@ public class ModelViewer implements Viewer {
 	}
 	
 	private double calculateDeltaY(Segment segment) {
-		double start = calculateY(segment.start.coordinate);		
-		double end = calculateY(segment.end.coordinate);
+		double start = calculateY(segment.start.getCoordinate());		
+		double end = calculateY(segment.end.getCoordinate());
 		
 		double delta = end - start;
 		double length = calculateLength(segment);
@@ -637,35 +637,35 @@ public class ModelViewer implements Viewer {
 	}
 	
 	private double calculateCenterX(Vehicle vehicle) {
-		double deltaX = calculateDeltaX(vehicle.location.segment);
-		double deltaY = calculateDeltaY(vehicle.location.segment);
+		double deltaX = calculateDeltaX(vehicle.location.getSegment());
+		double deltaY = calculateDeltaY(vehicle.location.getSegment());
 		
 		double step = (Math.cos(Math.PI / 2) * deltaX - Math.sin(Math.PI / 2) * deltaY);
-		double left = step * vehicle.location.segment.lanes * LANE_WIDTH * ratioScreenModel / 2;
+		double left = step * vehicle.location.getSegment().lanes * LANE_WIDTH * ratioScreenModel / 2;
 		
-		Coordinate coordinate = vehicle.location.toCoordinate();
+		Coordinate coordinate = vehicle.location.getCoordinate();
 		
 		return (int) (calculateX(coordinate) - left + step * (vehicle.lane + 0.5) * LANE_WIDTH * ratioScreenModel);
 	}
 	
 	private double calculateCenterY(Vehicle vehicle) {
-		double deltaX = calculateDeltaX(vehicle.location.segment);
-		double deltaY = calculateDeltaY(vehicle.location.segment);
+		double deltaX = calculateDeltaX(vehicle.location.getSegment());
+		double deltaY = calculateDeltaY(vehicle.location.getSegment());
 		
 		double step = (Math.sin(Math.PI / 2) * deltaX + Math.cos(Math.PI / 2) * deltaY);
-		double left = step * vehicle.location.segment.lanes * LANE_WIDTH * ratioScreenModel / 2;
+		double left = step * vehicle.location.getSegment().lanes * LANE_WIDTH * ratioScreenModel / 2;
 		
-		Coordinate coordinate = vehicle.location.toCoordinate();
+		Coordinate coordinate = vehicle.location.getCoordinate();
 		
 		return (int) (calculateY(coordinate) - left + step * (vehicle.lane + 0.5) * LANE_WIDTH * ratioScreenModel);
 	}
 	
 	private double calculateX(Coordinate coordinate) {
-		return (coordinate.latitude - minLatitude) / rangeLatitude * calculateWidth() + paddingLeft + MARGIN;
+		return (coordinate.getX() - minLatitude) / rangeLatitude * calculateWidth() + paddingLeft + MARGIN;
 	}
 	
 	private double calculateY(Coordinate coordinate) {
-		return (coordinate.longitude - minLongitude) / rangeLongitude * calculateHeight() + paddingTop + MARGIN;
+		return (coordinate.getY() - minLongitude) / rangeLongitude * calculateHeight() + paddingTop + MARGIN;
 	}
 	
 	private double calculateWidth() {
