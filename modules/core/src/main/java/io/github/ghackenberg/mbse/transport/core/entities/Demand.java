@@ -1,33 +1,66 @@
 package io.github.ghackenberg.mbse.transport.core.entities;
 
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+
 public class Demand {
 
 	// Dynamische Eigenschaften (simuliert)
 	public Vehicle vehicle;
 	public boolean done;
-	public LocationTime pickup;
+	
+	private final Location location = new Location();
 	
 	// Statische Eigenschaften (geparst)
-	public LocationTime initialPickup;
-	public LocationTime dropoff;
-	public double size;
+	private final DoubleProperty size = new SimpleDoubleProperty();
+	
+	private final LocationTime pickup;
+	private final LocationTime dropoff;
 	
 	public Demand() {
+		 pickup = new LocationTime();
+		 dropoff = new LocationTime();
+	}
+	
+	public Demand(LocationTime pick, LocationTime drop, double size) {
+		pickup = pick;
+		dropoff = drop;
 		
+		setSize(size);
 	}
 	
-	public Demand(LocationTime pickup, LocationTime dropoff, double size) {
-		this.initialPickup = new LocationTime(pickup.location, pickup.time);
-		this.pickup = pickup;
-		this.dropoff = dropoff;
-		this.size = size;
+	public Demand(Location pickLoc, double pickTim, Location dropLoc, double dropTim, double size) {
+		pickup = new LocationTime(pickLoc, pickTim);
+		dropoff = new LocationTime(dropLoc, dropTim);
+		
+		setSize(size);
 	}
 	
-	public Demand(Segment pickupSegment, double pickupDistance, double pickupTime, Segment dropoffSegment, double dropoffDistance, double dropoffTime, double size) {
-		this.initialPickup = new LocationTime(pickupSegment, pickupDistance, pickupTime);
-		this.pickup = new LocationTime(pickupSegment, pickupDistance, pickupTime);
-		this.dropoff = new LocationTime(dropoffSegment, dropoffDistance, dropoffTime);
-		this.size = size;
+	public Demand(Segment pickSeg, double pickDis, double pickTim, Segment dropSeg, double dropDis, double dropTim, double size) {
+		pickup = new LocationTime(pickSeg, pickDis, pickTim);
+		dropoff = new LocationTime(dropSeg, dropDis, dropTim);
+		
+		setSize(size);
+	}
+	
+	public double getSize() {
+		return size.get();
+	}
+	public void setSize(double value) {
+		size.set(value);
+	}
+	public DoubleProperty sizeProperty() {
+		return size;
+	}
+	
+	public LocationTime getPickup() {
+		return pickup;
+	}
+	public LocationTime getDropoff() {
+		return dropoff;
+	}
+	public Location getLocation() {
+		return location;
 	}
 	
 	public void reset() {
@@ -35,13 +68,13 @@ public class Demand {
 		
 		done = false;
 		
-		pickup.location.setSegment(initialPickup.location.getSegment());
-		pickup.location.setDistance(initialPickup.location.getDistance());
+		location.setSegment(pickup.getLocation().getSegment());
+		location.setDistance(pickup.getLocation().getDistance());
 	}
 	
 	@Override
 	public String toString( ) {
-		return pickup.toString() + " " + dropoff.toString();
+		return location.toString() + " " + dropoff.toString();
 	}
 	
 }

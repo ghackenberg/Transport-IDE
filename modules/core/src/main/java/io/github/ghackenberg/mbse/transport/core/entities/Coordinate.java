@@ -6,9 +6,9 @@ import javafx.beans.property.SimpleDoubleProperty;
 public class Coordinate {
 	
 	// Statische Eigenschaften (geparst) oder dynamische Eigenschaften (simuliert)
-	private DoubleProperty x = new SimpleDoubleProperty();
-	private DoubleProperty y = new SimpleDoubleProperty();
-	private DoubleProperty z = new SimpleDoubleProperty();
+	private final DoubleProperty x = new SimpleDoubleProperty();
+	private final DoubleProperty y = new SimpleDoubleProperty();
+	private final DoubleProperty z = new SimpleDoubleProperty();
 	
 	public double getX() {
 		return x.get();

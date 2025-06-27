@@ -13,6 +13,8 @@ import io.github.ghackenberg.mbse.transport.core.controllers.GreedyController;
 import io.github.ghackenberg.mbse.transport.core.controllers.RandomController;
 import io.github.ghackenberg.mbse.transport.core.controllers.SmartController;
 import io.github.ghackenberg.mbse.transport.core.entities.Demand;
+import io.github.ghackenberg.mbse.transport.core.entities.Location;
+import io.github.ghackenberg.mbse.transport.core.entities.LocationTime;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
 import io.github.ghackenberg.mbse.transport.core.entities.Station;
 import io.github.ghackenberg.mbse.transport.core.exceptions.ArgumentsException;
@@ -225,7 +227,13 @@ public class Comparison extends Application {
 					Segment pickupSegment = model.segments.get(pickupSegmentNumber);
 					Segment dropoffSegment = model.segments.get(dropoffSegmentNumber);
 					
-					Demand demand = new Demand(pickupSegment, pickupDistance * pickupSegment.getLength(), pickupTime, dropoffSegment, dropoffDistance * dropoffSegment.getLength(), dropoffTime, size);
+					Location pickLoc = new Location(pickupSegment, pickupDistance * pickupSegment.getLength());
+					Location dropLoc = new Location(dropoffSegment, dropoffDistance * dropoffSegment.getLength());
+					
+					LocationTime pick = new LocationTime(pickLoc, pickupTime);
+					LocationTime drop = new LocationTime(dropLoc, dropoffTime);
+					
+					Demand demand = new Demand(pick, drop, size);
 					
 					model.demands.add(demand);
 				}
@@ -236,7 +244,7 @@ public class Comparison extends Application {
 
 		for (List<Model> procModels : models) {
 			for (Model model : procModels) {
-				model.demands.sort((first, second) -> (int) Math.signum(first.pickup.time - second.pickup.time));
+				model.demands.sort((first, second) -> (int) Math.signum(first.getPickup().getTime() - second.getPickup().getTime()));
 				model.reset();
 			}
 		}

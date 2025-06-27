@@ -64,7 +64,7 @@ public class CSVExporter implements Exporter {
 			// Process demands
 			for (Demand demand : model.demands) {
 				// Write row
-				writer.write("\n" + demand.size + ";" + demand.pickup.time + ";" + demand.dropoff.time + ";" + statistics.demandPickupAcceptTimes.get(demand) + ";" + statistics.demandDropoffTimes.get(demand) + ";" + statistics.demandDistances.get(demand));
+				writer.write("\n" + demand.getSize() + ";" + demand.getPickup().getTime() + ";" + demand.getDropoff().getTime() + ";" + statistics.demandPickupAcceptTimes.get(demand) + ";" + statistics.demandDropoffTimes.get(demand) + ";" + statistics.demandDistances.get(demand));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -92,7 +92,7 @@ public class CSVExporter implements Exporter {
 			// Process segments
 			for (Segment segment : model.segments) {
 				// Write row
-				writer.write("\n" + segment + ";" + segment.lanes + ";" + segment.speed + ";" + statistics.segmentTraversals.get(segment));
+				writer.write("\n" + segment + ";" + segment.getLanes() + ";" + segment.getSpeed() + ";" + statistics.segmentTraversals.get(segment));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

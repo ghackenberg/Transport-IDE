@@ -146,8 +146,8 @@ public class Parser {
 		
 		segment.start = start;
 		segment.end = end;
-		segment.lanes = Double.parseDouble(parts[1]);
-		segment.speed = Double.parseDouble(parts[2]);
+		segment.setLanes(Double.parseDouble(parts[1]));
+		segment.setSpeed(Double.parseDouble(parts[2]));
 
 		// Remember outgoing segment
 		start.outgoing.add(segment);
@@ -208,12 +208,13 @@ public class Parser {
 		if (parts.length != 3)
 			throw new IllegalArgumentException(line);
 		
-		Demand demand = new Demand();
+		LocationTime pickup = resolveLocationTime(model, parts[0]);
+		LocationTime dropoff = resolveLocationTime(model, parts[1]); 
 		
-		demand.initialPickup = resolveLocationTime(model, parts[0]);
-		demand.pickup = resolveLocationTime(model, parts[0]);
-		demand.dropoff = resolveLocationTime(model, parts[1]);
-		demand.size = Double.parseDouble(parts[2]);
+		Demand demand = new Demand(pickup, dropoff, Double.parseDouble(parts[2]));
+		
+		demand.getLocation().setSegment(pickup.getLocation().getSegment());
+		demand.getLocation().setDistance(pickup.getLocation().getDistance());
 		
 		model.demands.add(demand);
 		
@@ -226,10 +227,13 @@ public class Parser {
 		if (parts.length != 2)
 			throw new IllegalArgumentException(line);
 		
+		Location location = resolveLocation(model, parts[0]);
+		
 		LocationTime loctime = new LocationTime();
 		
-		loctime.location = resolveLocation(model, parts[0]);
-		loctime.time = Double.parseDouble(parts[1]);
+		loctime.getLocation().setSegment(location.getSegment());
+		loctime.getLocation().setDistance(location.getDistance());
+		loctime.setTime(Double.parseDouble(parts[1]));
 		
 		return loctime;
 		

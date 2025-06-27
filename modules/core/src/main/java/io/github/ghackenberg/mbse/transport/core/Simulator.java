@@ -390,17 +390,17 @@ public class Simulator {
 		// Pickup demands
 		for (Demand demand : model.demands) {
 			// Check demand relevance
-			if (demand.done == false && demand.vehicle == null && !smallerWithPrecision(model.time, demand.pickup.time)) {
+			if (demand.done == false && demand.vehicle == null && !smallerWithPrecision(model.time, demand.getPickup().getTime())) {
 				// Process vehicles
 				for (Vehicle vehicle : model.vehicles) {
 					// Check vehicle
 					if (greaterWithPrecision(vehicle.batteryLevel, 0) && vehicle.station == null) {
 						// Compare segment
-						if (demand.pickup.location.getSegment() == vehicle.location.getSegment()) {
+						if (demand.getLocation().getSegment() == vehicle.location.getSegment()) {
 							// Compare distance on segment
-							if (equalWithPrecision(demand.pickup.location.getDistance(), vehicle.location.getDistance())) {
+							if (equalWithPrecision(demand.getLocation().getDistance(), vehicle.location.getDistance())) {
 								// Compare load vs. capacity
-								if (!greaterWithPrecision(vehicle.loadLevel + demand.size, vehicle.loadCapacity)) {
+								if (!greaterWithPrecision(vehicle.loadLevel + demand.getSize(), vehicle.loadCapacity)) {
 									// Declined before?
 									if (!declines.get(demand).containsKey(model.time) || !declines.get(demand).get(model.time).contains(vehicle)) {
 										// Ask controller for pickup decision
@@ -408,7 +408,7 @@ public class Simulator {
 											// Update demand
 											demand.vehicle = vehicle;
 											// Update vehicle
-											vehicle.loadLevel += demand.size;
+											vehicle.loadLevel += demand.getSize();
 											vehicle.demands.add(demand);
 											// Update statistics
 											statistics.recordPickupAccept(vehicle, demand, model.time);
@@ -447,14 +447,14 @@ public class Simulator {
 				// Obtain demand
 				Demand demand = vehicle.demands.get(index);
 				// Compare segment
-				if (demand.dropoff.location.getSegment() == vehicle.location.getSegment()) {
+				if (demand.getDropoff().getLocation().getSegment() == vehicle.location.getSegment()) {
 					// Compare distance on segment
-					if (equalWithPrecision(demand.dropoff.location.getDistance(), vehicle.location.getDistance())) {
+					if (equalWithPrecision(demand.getDropoff().getLocation().getDistance(), vehicle.location.getDistance())) {
 						// Update demand
 						demand.done = true;
 						demand.vehicle = null;
 						// Update vehicle
-						vehicle.loadLevel -= demand.size;
+						vehicle.loadLevel -= demand.getSize();
 						vehicle.demands.remove(index--);
 						// Update statistics
 						statistics.recordDropoff(vehicle, demand, model.time);
@@ -473,10 +473,10 @@ public class Simulator {
 					
 					demand.vehicle = null;
 					
-					demand.pickup.location.setSegment(vehicle.location.getSegment());
-					demand.pickup.location.setDistance(vehicle.location.getDistance());
+					demand.getLocation().setSegment(vehicle.location.getSegment());
+					demand.getLocation().setDistance(vehicle.location.getDistance());
 					
-					vehicle.loadLevel -= demand.size;
+					vehicle.loadLevel -= demand.getSize();
 					
 					modelTimeStep = 0;
 				}
@@ -492,7 +492,7 @@ public class Simulator {
 				speed = controller.selectSpeed(vehicle);
 			}
 			// Check speed
-			if (greaterWithPrecision(speed, vehicle.location.getSegment().speed)) {
+			if (greaterWithPrecision(speed, vehicle.location.getSegment().getSpeed())) {
 				throw new InvalidSpeedException(vehicle, speed);
 			}
 			// Update speed
@@ -561,15 +561,15 @@ public class Simulator {
 		
 		// Duration until demand appearance
 		for (Demand demand : model.demands) {
-			if (greaterWithPrecision(demand.pickup.time, model.time)) {
-				modelTimeStep = Math.min(modelTimeStep, demand.pickup.time - model.time);
+			if (greaterWithPrecision(demand.getPickup().getTime(), model.time)) {
+				modelTimeStep = Math.min(modelTimeStep, demand.getPickup().getTime() - model.time);
 			}
 		}
 		
 		// Duration until demand overdue
 		for (Demand demand : model.demands) {
-			if (demand.done == false && greaterWithPrecision(demand.dropoff.time, model.time)) {
-				modelTimeStep = Math.min(modelTimeStep, demand.dropoff.time - model.time);
+			if (demand.done == false && greaterWithPrecision(demand.getDropoff().getTime(), model.time)) {
+				modelTimeStep = Math.min(modelTimeStep, demand.getDropoff().getTime() - model.time);
 			}
 		}
 		
@@ -615,21 +615,21 @@ public class Simulator {
 		// Duration until demand pickup
 		for (Demand demand : model.demands) {
 			// Check demand relevance
-			if (demand.done == false && demand.vehicle == null && !greaterWithPrecision(demand.pickup.time, model.time)) {
+			if (demand.done == false && demand.vehicle == null && !greaterWithPrecision(demand.getPickup().getTime(), model.time)) {
 				// Process vehicles
 				for (Vehicle vehicle : model.vehicles) {
 					// Check speed
 					if (greaterWithPrecision(vehicle.speed, 0)) {
 						// Pickup on same segment
-						if (demand.pickup.location.getSegment() == vehicle.location.getSegment()) {
+						if (demand.getLocation().getSegment() == vehicle.location.getSegment()) {
 							// Pickup ahead
-							if (greaterWithPrecision(demand.pickup.location.getDistance(), vehicle.location.getDistance())) {
+							if (greaterWithPrecision(demand.getLocation().getDistance(), vehicle.location.getDistance())) {
 								// Enough capactiy?
-								if (!greaterWithPrecision(demand.size, vehicle.loadCapacity - vehicle.loadLevel)) {
+								if (!greaterWithPrecision(demand.getSize(), vehicle.loadCapacity - vehicle.loadLevel)) {
 									// Speed in meter per millisecond
 									double speed = vehicle.speed * 1000.0 / 60.0 / 60.0 / 1000.0;
 									// Delta in meter
-									double delta = demand.pickup.location.getDistance() - vehicle.location.getDistance();
+									double delta = demand.getLocation().getDistance() - vehicle.location.getDistance();
 									// Duration in milliseconds
 									double duration = delta / speed;
 									// Update model time step;
@@ -649,13 +649,13 @@ public class Simulator {
 				// Process demands
 				for (Demand demand : vehicle.demands) {
 					// Dropoff on same segment
-					if (vehicle.location.getSegment() == demand.dropoff.location.getSegment()) {
+					if (vehicle.location.getSegment() == demand.getDropoff().getLocation().getSegment()) {
 						// Dropoff ahead
-						if (smallerWithPrecision(vehicle.location.getDistance(), demand.dropoff.location.getDistance())) {
+						if (smallerWithPrecision(vehicle.location.getDistance(), demand.getDropoff().getLocation().getDistance())) {
 							// Speed in meter per millisecond
 							double speed = vehicle.speed * 1000.0 / 60.0 / 60.0 / 1000.0;
 							// Delta in meter
-							double delta = demand.dropoff.location.getDistance() - vehicle.location.getDistance();
+							double delta = demand.getDropoff().getLocation().getDistance() - vehicle.location.getDistance();
 							// Duration in milliseconds
 							double duration = delta / speed;
 							// Update model time step;
@@ -872,7 +872,7 @@ public class Simulator {
 		});
 		// Throw exceptions
 		for (Segment segment : model.segments) {
-			if (segment.load > segment.lanes) {
+			if (segment.load > segment.getLanes()) {
 				throw new CollisionException(segment, segment.collisions);
 			}
 		}

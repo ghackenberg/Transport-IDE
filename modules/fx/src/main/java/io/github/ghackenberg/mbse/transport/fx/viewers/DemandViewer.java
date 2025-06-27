@@ -24,8 +24,8 @@ public class DemandViewer extends EntityViewer<Demand, DemandEvent> {
 		
 		setManaged(false);
 		
-		Coordinate start = demand.pickup.location.getCoordinate();
-		Coordinate end = demand.dropoff.location.getCoordinate();
+		Coordinate start = demand.getLocation().getCoordinate();
+		Coordinate end = demand.getDropoff().getLocation().getCoordinate();
 		
 		// Line
 		
@@ -45,7 +45,7 @@ public class DemandViewer extends EntityViewer<Demand, DemandEvent> {
 		
 		source = new Circle();
 		
-		source.setRadius(demand.size);
+		source.radiusProperty().bind(demand.sizeProperty());
 		
 		source.centerXProperty().bind(start.xProperty());
 		source.centerYProperty().bind(start.yProperty());
@@ -58,7 +58,7 @@ public class DemandViewer extends EntityViewer<Demand, DemandEvent> {
 		
 		target = new Circle();
 		
-		target.setRadius(demand.size);
+		target.radiusProperty().bind(demand.sizeProperty());
 		
 		target.centerXProperty().bind(end.xProperty());
 		target.centerYProperty().bind(end.yProperty());
@@ -69,10 +69,10 @@ public class DemandViewer extends EntityViewer<Demand, DemandEvent> {
 	}
 	
 	public void update() {
-		if (!getEntity().done && model.time >= getEntity().pickup.time) {
+		if (!getEntity().done && model.time >= getEntity().getPickup().getTime()) {
 			setVisible(true);
 			
-			if (model.time > getEntity().dropoff.time) {
+			if (model.time > getEntity().getDropoff().getTime()) {
 				line.setStroke(Color.RED);
 				
 				source.setFill(Color.RED);

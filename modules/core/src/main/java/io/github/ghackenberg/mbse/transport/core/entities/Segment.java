@@ -2,6 +2,9 @@ package io.github.ghackenberg.mbse.transport.core.entities;
 
 import java.util.List;
 
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+
 public class Segment {
 
 	// Dynamische Eigenschaften (simuliert)
@@ -11,8 +14,29 @@ public class Segment {
 	// Statische Eigenschaften (geparst)
 	public Intersection start;
 	public Intersection end;
-	public double lanes;
-	public double speed;
+	
+	private final DoubleProperty lanes = new SimpleDoubleProperty();
+	private final DoubleProperty speed = new SimpleDoubleProperty();
+	
+	public double getLanes() {
+		return lanes.get();
+	}
+	public void setLanes(double value) {
+		lanes.set(value);
+	}
+	public DoubleProperty lanesProperty() {
+		return lanes;
+	}
+	
+	public double getSpeed() {
+		return speed.get();
+	}
+	public void setSpeed(double value) {
+		speed.set(value);
+	}
+	public DoubleProperty speedProperty() {
+		return speed;
+	}
 	
 	public Coordinate getCenter() {
 		double dx = end.getCoordinate().getX() - start.getCoordinate().getX();

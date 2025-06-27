@@ -27,7 +27,7 @@ public class RandomController implements Controller {
 
 	@Override
 	public double selectSpeed(Vehicle vehicle) {
-		return vehicle.location.getSegment().speed;
+		return vehicle.location.getSegment().getSpeed();
 	}
 
 	@Override

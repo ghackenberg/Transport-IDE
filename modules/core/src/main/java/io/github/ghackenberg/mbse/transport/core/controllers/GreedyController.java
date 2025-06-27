@@ -35,7 +35,7 @@ public class GreedyController implements Controller {
 
 	@Override
 	public double selectSpeed(Vehicle vehicle) {
-		return vehicle.location.getSegment().speed;
+		return vehicle.location.getSegment().getSpeed();
 	}
 
 	@Override
@@ -71,8 +71,8 @@ public class GreedyController implements Controller {
 		List<Segment> dropoff = new ArrayList<>();
 		
 		for (Demand demand : vehicle.demands) {
-			if (vehicle.location.getSegment().end.outgoing.contains(demand.dropoff.location.getSegment())) {
-				dropoff.add(demand.dropoff.location.getSegment());
+			if (vehicle.location.getSegment().end.outgoing.contains(demand.getDropoff().getLocation().getSegment())) {
+				dropoff.add(demand.getDropoff().getLocation().getSegment());
 			}
 		}
 		
@@ -85,10 +85,10 @@ public class GreedyController implements Controller {
 			List<Segment> pickup = new ArrayList<>();
 			
 			for (Demand demand : model.demands) {
-				if (demand.done == false && demand.vehicle == null && demand.pickup.time <= model.time) {
-					if (vehicle.location.getSegment().end.outgoing.contains(demand.pickup.location.getSegment())) {
-						if (vehicle.loadLevel + demand.size <= vehicle.loadCapacity) {
-							pickup.add(demand.pickup.location.getSegment());
+				if (demand.done == false && demand.vehicle == null && demand.getPickup().getTime() <= model.time) {
+					if (vehicle.location.getSegment().end.outgoing.contains(demand.getLocation().getSegment())) {
+						if (vehicle.loadLevel + demand.getSize() <= vehicle.loadCapacity) {
+							pickup.add(demand.getLocation().getSegment());
 						}
 					}
 				}

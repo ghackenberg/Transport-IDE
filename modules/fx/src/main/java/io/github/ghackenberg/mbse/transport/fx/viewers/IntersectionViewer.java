@@ -25,10 +25,10 @@ public class IntersectionViewer extends EntityViewer<Intersection, IntersectionE
 		double radius = 0;
 		
 		for (Segment segment : intersection.incoming) {
-			radius = Math.max(radius, segment.lanes / 2.);
+			radius = Math.max(radius, segment.getLanes() / 2.);
 		}
 		for (Segment segment : intersection.outgoing) {
-			radius = Math.max(radius, segment.lanes / 2.);
+			radius = Math.max(radius, segment.getLanes() / 2.);
 		}
 		
 		// Circle

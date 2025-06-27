@@ -75,7 +75,7 @@ public class SmartController implements Controller {
 			}
 		}
 		
-		return vehicle.location.getSegment().speed;
+		return vehicle.location.getSegment().getSpeed();
 	}
 
 	@Override
@@ -99,9 +99,9 @@ public class SmartController implements Controller {
 			// Find closest demand dropoff segment
 			
 			for (Demand demand : vehicle.demands) {
-				double distance = getDistance(vehicle.location, demand.dropoff.location, next);
+				double distance = getDistance(vehicle.location, demand.getDropoff().getLocation(), next);
 				if (minimumDistance > distance && next.value != null) {
-					if (vehicle.batteryLevel >= distance + getMinimumStationDistance(demand.dropoff.location)) {
+					if (vehicle.batteryLevel >= distance + getMinimumStationDistance(demand.getDropoff().getLocation())) {
 						minimumDistance = distance;
 						minimumSegment = next.value;
 					}
@@ -111,11 +111,11 @@ public class SmartController implements Controller {
 			// Find closest demand pickup segment
 			
 			for (Demand demand : model.demands) {
-				if (demand.done == false && demand.vehicle == null && demand.pickup.time <= model.time) {
-					if (vehicle.loadLevel + demand.size <= vehicle.loadCapacity) {
-						double distance = getDistance(vehicle.location, demand.pickup.location, next);
+				if (demand.done == false && demand.vehicle == null && demand.getPickup().getTime() <= model.time) {
+					if (vehicle.loadLevel + demand.getSize() <= vehicle.loadCapacity) {
+						double distance = getDistance(vehicle.location, demand.getLocation(), next);
 						if (minimumDistance > distance && next.value != null) {
-							if (vehicle.batteryLevel >= distance + getMinimumStationDistance(demand.pickup.location)) {
+							if (vehicle.batteryLevel >= distance + getMinimumStationDistance(demand.getLocation())) {
 								minimumDistance = distance;
 								minimumSegment = next.value;
 							}

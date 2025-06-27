@@ -25,7 +25,7 @@ public class SegmentViewer extends EntityViewer<Segment, SegmentEvent> {
 		line.endXProperty().bind(segment.end.getCoordinate().xProperty());
 		line.endYProperty().bind(segment.end.getCoordinate().yProperty());
 		
-		line.setStrokeWidth(segment.lanes);
+		line.strokeWidthProperty().bind(segment.lanesProperty());
 		line.setStroke(Color.LIGHTGRAY);
 		
 		line.setOnMouseClicked(event -> {

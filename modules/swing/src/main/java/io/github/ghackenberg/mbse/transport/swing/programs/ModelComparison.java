@@ -133,7 +133,7 @@ public class ModelComparison {
 			// Sort demands and reset models
 			
 			for (Model model : models) {
-				model.demands.sort((first, second) -> (int) Math.signum(first.pickup.time - second.pickup.time));
+				model.demands.sort((first, second) -> (int) Math.signum(first.getPickup().getTime() - second.getPickup().getTime()));
 				
 				model.reset();
 			}

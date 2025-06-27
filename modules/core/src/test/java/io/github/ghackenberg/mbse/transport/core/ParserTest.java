@@ -65,8 +65,8 @@ public class ParserTest {
 		assertNotNull(segment);
 		assertEquals(segment.start, model.intersections.get(0));
 		assertEquals(segment.end, model.intersections.get(1));
-		assertEquals(segment.lanes, 1, 0);
-		assertEquals(segment.speed, 50, 0);
+		assertEquals(segment.getLanes(), 1, 0);
+		assertEquals(segment.getSpeed(), 50, 0);
 	}
 	
 }

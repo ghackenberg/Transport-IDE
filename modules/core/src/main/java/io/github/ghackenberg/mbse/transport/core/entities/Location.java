@@ -9,16 +9,19 @@ public class Location {
 
 	// Statische Eigenschaften (geparst) oder dynamische Eigenschaften (simuliert)
 	
-	private ObjectProperty<Segment> segment = new SimpleObjectProperty<>();
-	private DoubleProperty distance = new SimpleDoubleProperty();
+	private final ObjectProperty<Segment> segment = new SimpleObjectProperty<>();
+	private final DoubleProperty distance = new SimpleDoubleProperty();
 	
 	// Berechnete Eigenschaften
 	
-	private Coordinate coordinate = new Coordinate();
+	private final Coordinate coordinate = new Coordinate();
 	
 	public Location() {
+		// Change segment
 		segment.addListener((observable, oldValue, newValue)-> {
+			// TODO remove listeners from previous segment
 			
+			// Change coordinate of start intersection
 			newValue.start.getCoordinate().xProperty().addListener(e -> {
 				recomputeCoordinate();
 			});
@@ -29,6 +32,7 @@ public class Location {
 				recomputeCoordinate();
 			});
 			
+			// Change coordinate of end intersection
 			newValue.end.getCoordinate().xProperty().addListener(e -> {
 				recomputeCoordinate();
 			});
@@ -41,6 +45,7 @@ public class Location {
 			
 			recomputeCoordinate();
 		});
+		// Change distance
 		distance.addListener(event -> {
 			recomputeCoordinate();
 		});
@@ -48,6 +53,7 @@ public class Location {
 	
 	public Location(Segment segment, double distance) {
 		this();
+		
 		this.setSegment(segment);
 		this.setDistance(distance);
 	}
