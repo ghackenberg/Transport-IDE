@@ -68,14 +68,23 @@ public class Editor extends Application {
 						x.setOnAction(event -> {
 							entityEvent.getEntity().coordinate.x.set(Double.parseDouble(x.getText()));
 						});
+						x.focusedProperty().addListener(event -> {
+							entityEvent.getEntity().coordinate.x.set(Double.parseDouble(x.getText()));
+						});
 						
 						TextField y = new TextField("" + entityEvent.getEntity().coordinate.y.get());
 						y.setOnAction(event -> {
 							entityEvent.getEntity().coordinate.y.set(Double.parseDouble(y.getText()));
 						});
+						y.focusedProperty().addListener(event -> {
+							entityEvent.getEntity().coordinate.y.set(Double.parseDouble(y.getText()));
+						});
 						
 						TextField z = new TextField("" + entityEvent.getEntity().coordinate.z.get());
 						z.setOnAction(event -> {
+							entityEvent.getEntity().coordinate.z.set(Double.parseDouble(z.getText()));
+						});
+						z.focusedProperty().addListener(event -> {
 							entityEvent.getEntity().coordinate.z.set(Double.parseDouble(z.getText()));
 						});
 						
