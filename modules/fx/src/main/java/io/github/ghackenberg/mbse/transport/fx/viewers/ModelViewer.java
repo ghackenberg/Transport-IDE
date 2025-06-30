@@ -15,6 +15,8 @@ import io.github.ghackenberg.mbse.transport.fx.events.SegmentEvent;
 import io.github.ghackenberg.mbse.transport.fx.events.StationEvent;
 import io.github.ghackenberg.mbse.transport.fx.events.VehicleEvent;
 import io.github.ghackenberg.mbse.transport.fx.helpers.GenericListChangeListener;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
@@ -60,6 +62,8 @@ public class ModelViewer extends Pane {
 	private final Map<Vehicle, VehicleViewer> vehicleViewers = new HashMap<>();
 	private final Map<Demand, DemandViewer> demandViewers = new HashMap<>();
 	
+	private final InvalidationListener listener;
+	
 	public ModelViewer(Model model) {
 		this(model, true);
 	}
@@ -67,6 +71,15 @@ public class ModelViewer extends Pane {
 	public ModelViewer(Model model, boolean showDemands) {
 		this.model = model;
 		this.modelState = model.state.get();
+		
+		final ModelViewer self = this;
+		
+		listener = new InvalidationListener() {
+			@Override
+			public void invalidated(Observable observable) {
+				self.resize();
+			}
+		};
 		
 		setStyle("-fx-background-color: white;");
 		
@@ -97,20 +110,7 @@ public class ModelViewer extends Pane {
 			}
 		});
 		
-		// TODO
-		
-		for (Intersection intersection : model.intersections) {
-			minX = Math.min(minX, intersection.coordinate.x.get());
-			maxX = Math.max(maxX, intersection.coordinate.x.get());
-		}
-		
-		for (Intersection intersection : model.intersections) {
-			minY = Math.min(minY, intersection.coordinate.y.get());
-			maxY = Math.max(maxY, intersection.coordinate.y.get());
-		}
-		
-		deltaX = maxX - minX;
-		deltaY = maxY - minY;
+		resize();
 		
 		// Text
 
@@ -173,6 +173,10 @@ public class ModelViewer extends Pane {
 	// Add
 	
 	private void add(Intersection intersection) {
+		intersection.coordinate.x.addListener(listener);
+		intersection.coordinate.y.addListener(listener);
+		intersection.coordinate.z.addListener(listener);
+		
 		IntersectionViewer viewer = new IntersectionViewer(model, intersection);
 		
 		viewer.setOnSelected(event -> {
@@ -184,6 +188,8 @@ public class ModelViewer extends Pane {
 		intersectionLayer.getChildren().add(viewer);
 		
 		intersectionViewers.put(intersection, viewer);
+		
+		resize();
 	}
 	
 	private void add(Segment segment) {
@@ -245,6 +251,10 @@ public class ModelViewer extends Pane {
 	// Remove
 	
 	private void remove(Intersection intersection) {
+		intersection.coordinate.x.removeListener(listener);
+		intersection.coordinate.y.removeListener(listener);
+		intersection.coordinate.z.removeListener(listener);
+		
 		intersectionLayer.getChildren().remove(intersectionViewers.remove(intersection));
 	}
 	
@@ -308,6 +318,29 @@ public class ModelViewer extends Pane {
 	}
 	
 	// Zoom
+	
+	private void resize() {
+		
+		recompute();
+		
+		zoom();
+		
+	}
+	
+	private void recompute() {
+		for (Intersection intersection : model.intersections) {
+			minX = Math.min(minX, intersection.coordinate.x.get());
+			maxX = Math.max(maxX, intersection.coordinate.x.get());
+		}
+		
+		for (Intersection intersection : model.intersections) {
+			minY = Math.min(minY, intersection.coordinate.y.get());
+			maxY = Math.max(maxY, intersection.coordinate.y.get());
+		}
+		
+		deltaX = maxX - minX;
+		deltaY = maxY - minY;
+	}
 	
 	private void zoom() {
 		double width = getWidth() - 20;
