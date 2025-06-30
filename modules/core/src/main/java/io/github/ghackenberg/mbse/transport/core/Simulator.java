@@ -25,7 +25,7 @@ import io.github.ghackenberg.mbse.transport.core.exceptions.InvalidTimeoutExcept
 
 public class Simulator {
 	
-	private static boolean DEBUG = false;
+	private static final boolean DEBUG = false;
 	
 	private static int COUNT = 0;
 	
@@ -35,17 +35,19 @@ public class Simulator {
 	private boolean pause;
 	private boolean step;
 	
-	private String name;
-	private Model model;
-	private Controller controller;
-	private Statistics statistics;
+	private final String name;
+	private final Model model;
+	private final Controller controller;
+	private final Statistics statistics;
+	
 	private double maxModelTimeStep;
 	private double ratioModelRealTime;
 	
-	private File runsFolder;
+	private final File runsFolder;
+	
 	private File runFolder;
 	
-	private Synchronizer synchronizer;
+	private final Synchronizer synchronizer;
 	
 	private Map<Demand, Map<Double, Set<Vehicle>>> declines = new HashMap<>();
 	
@@ -63,19 +65,19 @@ public class Simulator {
 	
 	private Thread thread;
 	
-	public Simulator(String name, Model model, Controller controller, Statistics statistics, double maxModelTimeStep, double ratioModelRealTime, File runsFolder) {
-		this(name, model, controller, statistics, maxModelTimeStep, ratioModelRealTime, runsFolder, new Synchronizer(1));
+	public Simulator(String name, Model model, Controller controller, double maxModelTimeStep, double ratioModelRealTime, File runsFolder) {
+		this(name, model, controller, maxModelTimeStep, ratioModelRealTime, runsFolder, new Synchronizer(1));
 	}
 	
-	public Simulator(String name, Model model, Controller controller, Statistics statistics, double maxModelTimeStep, double ratioModelRealTime, File runsFolder, Synchronizer synchronizer) {
+	public Simulator(String name, Model model, Controller controller, double maxModelTimeStep, double ratioModelRealTime, File runsFolder, Synchronizer synchronizer) {
 		this.name = name;
 		this.model = model;
 		this.controller = controller;
-		this.statistics = statistics;
 		this.maxModelTimeStep = maxModelTimeStep;
 		this.ratioModelRealTime = ratioModelRealTime;
 		this.runsFolder = runsFolder;
 		this.synchronizer = synchronizer;
+		this.statistics = new Statistics(model);
 	}
 	
 	public String getName() {
@@ -209,7 +211,6 @@ public class Simulator {
 			System.out.println("Simulator[" + name + "].loop");
 		}
 		
-		model.reset();
 		controller.reset();
 		statistics.reset();
 		
@@ -276,7 +277,7 @@ public class Simulator {
 		// Remember real time before calculation
 		final double realTimeBefore = System.currentTimeMillis();
 		// Remember model time before calculation
-		final double modelTimeBefore = model.time;
+		final double modelTimeBefore = model.state.get().time;
 		
 		// Perform calculation (and advance simulation time)
 		calculate();
@@ -284,7 +285,7 @@ public class Simulator {
 		// Remember real time after calculation
 		final double realTimeAfter = System.currentTimeMillis();
 		// Remember model time after calculation
-		final double modelTimeAfter = model.time;
+		final double modelTimeAfter = model.state.get().time;
 		
 		// Calculate actual time advance
 		final double realTimeDelta = realTimeAfter - realTimeBefore;
@@ -318,9 +319,9 @@ public class Simulator {
 		// Update vehicle segment
 		for (Vehicle vehicle : model.vehicles) {
 			// Check location distance
-			if (equalWithPrecision(vehicle.location.distance.get(), vehicle.location.segment.get().length.get())) {
+			if (equalWithPrecision(vehicle.state.get().distance, vehicle.state.get().segment.length.get())) {
 				// Remember segment
-				Segment previous = vehicle.location.segment.get();
+				Segment previous = vehicle.state.get().segment;
 				// Select segment
 				Segment next = controller.selectSegment(vehicle);
 				// Check segment
@@ -328,14 +329,14 @@ public class Simulator {
 					throw new InvalidRouteException(vehicle, previous, next);
 				}
 				// Update segment
-				vehicle.location.segment.set(next);
+				vehicle.state.get().segment = next;
 				// Reset segment distance
-				vehicle.location.distance.set(0);
+				vehicle.state.get().distance = 0;
 				// Update speed
-				vehicle.speed = controller.selectSpeed(vehicle);
+				vehicle.state.get().speed = controller.selectSpeed(vehicle);
 				// Update statistics
-				statistics.recordCrossing(vehicle, previous, next, model.time);
-				statistics.recordSpeed(vehicle, vehicle.speed, model.time);
+				statistics.recordCrossing(vehicle, previous, next, model.state.get().time);
+				statistics.recordSpeed(vehicle, vehicle.state.get().speed, model.state.get().time);
 				// Update model time step
 				modelTimeStep = 0;
 			}
@@ -344,15 +345,15 @@ public class Simulator {
 		// Unassign station
 		for (Vehicle vehicle : model.vehicles) {
 			// Check vehicle station
-			if (vehicle.station != null) {
+			if (vehicle.state.get().station != null) {
 				// Check battery level
-				if (equalWithPrecision(vehicle.batteryLevel, vehicle.batteryCapacity.get()) || controller.unselectStation(vehicle)) {
+				if (equalWithPrecision(vehicle.state.get().batteryLevel, vehicle.batteryCapacity.get()) || controller.unselectStation(vehicle)) {
 					// Remember station
-					Station station = vehicle.station;
+					Station station = vehicle.state.get().station;
 					// Unassign vehicle
-					station.vehicle = null;
+					station.state.get().vehicle = null;
 					// Unassign station
-					vehicle.station = null;
+					vehicle.state.get().station = null;
 					// Update statistics
 					statistics.recordChargeEnd(vehicle, station, modelTimeStep);
 				}
@@ -362,21 +363,21 @@ public class Simulator {
 		// Assign station
 		for (Vehicle vehicle : model.vehicles) {
 			// Check vehicle station
-			if (vehicle.station == null && smallerWithPrecision(vehicle.batteryLevel, vehicle.batteryCapacity.get())) {
+			if (vehicle.state.get().station == null && smallerWithPrecision(vehicle.state.get().batteryLevel, vehicle.batteryCapacity.get())) {
 				// Process stations
 				for (Station station : model.stations) {
 					// Check station
-					if (station.vehicle == null) {
+					if (station.state.get().vehicle == null) {
 						// Check segment
-						if (vehicle.location.segment.get() == station.location.segment.get()) {
+						if (vehicle.state.get().segment == station.location.segment.get()) {
 							// Check distance
-							if (equalWithPrecision(vehicle.location.distance.get(), station.location.distance.get())) {
+							if (equalWithPrecision(vehicle.state.get().distance, station.location.distance.get())) {
 								// Ask controller
 								if (controller.selectStation(vehicle, station)) {
 									// Assign station
-									vehicle.station = station;
+									vehicle.state.get().station = station;
 									// Assign vehicle
-									station.vehicle = vehicle;
+									station.state.get().vehicle = vehicle;
 									// Update statistics
 									statistics.recordChargeStart(vehicle, station, modelTimeStep);
 								}
@@ -390,40 +391,40 @@ public class Simulator {
 		// Pickup demands
 		for (Demand demand : model.demands) {
 			// Check demand relevance
-			if (demand.done == false && demand.vehicle == null && !smallerWithPrecision(model.time, demand.pick.time.get())) {
+			if (demand.state.get().done == false && demand.state.get().vehicle == null && !smallerWithPrecision(model.state.get().time, demand.pick.time.get())) {
 				// Process vehicles
 				for (Vehicle vehicle : model.vehicles) {
 					// Check vehicle
-					if (greaterWithPrecision(vehicle.batteryLevel, 0) && vehicle.station == null) {
+					if (greaterWithPrecision(vehicle.state.get().batteryLevel, 0) && vehicle.state.get().station == null) {
 						// Compare segment
-						if (demand.location.segment.get() == vehicle.location.segment.get()) {
+						if (demand.state.get().segment == vehicle.state.get().segment) {
 							// Compare distance on segment
-							if (equalWithPrecision(demand.location.distance.get(), vehicle.location.distance.get())) {
+							if (equalWithPrecision(demand.state.get().distance, vehicle.state.get().distance)) {
 								// Compare load vs. capacity
-								if (!greaterWithPrecision(vehicle.loadLevel + demand.size.get(), vehicle.loadCapacity.get())) {
+								if (!greaterWithPrecision(vehicle.state.get().loadLevel + demand.size.get(), vehicle.loadCapacity.get())) {
 									// Declined before?
-									if (!declines.get(demand).containsKey(model.time) || !declines.get(demand).get(model.time).contains(vehicle)) {
+									if (!declines.get(demand).containsKey(model.state.get().time) || !declines.get(demand).get(model.state.get().time).contains(vehicle)) {
 										// Ask controller for pickup decision
 										if (controller.selectDemand(vehicle, demand)) {
 											// Update demand
-											demand.vehicle = vehicle;
+											demand.state.get().vehicle = vehicle;
 											// Update vehicle
-											vehicle.loadLevel += demand.size.get();
-											vehicle.demands.add(demand);
+											vehicle.state.get().loadLevel += demand.size.get();
+											vehicle.state.get().demands.add(demand);
 											// Update statistics
-											statistics.recordPickupAccept(vehicle, demand, model.time);
+											statistics.recordPickupAccept(vehicle, demand, model.state.get().time);
 											// Update model time step
 											modelTimeStep = 0;
 										} else {
 											// Check time
-											if (!declines.get(demand).containsKey(model.time)) {
+											if (!declines.get(demand).containsKey(model.state.get().time)) {
 												// Add set
-												declines.get(demand).put(model.time, new HashSet<>());
+												declines.get(demand).put(model.state.get().time, new HashSet<>());
 											}
 											// Update declines
-											declines.get(demand).get(model.time).add(vehicle);
+											declines.get(demand).get(model.state.get().time).add(vehicle);
 											// Update statistics
-											statistics.recordPickupDecline(vehicle, demand, model.time);
+											statistics.recordPickupDecline(vehicle, demand, model.state.get().time);
 											// Update model time step
 											modelTimeStep = 0;
 										}
@@ -443,21 +444,21 @@ public class Simulator {
 		// Dropoff demands
 		for (Vehicle vehicle : model.vehicles) {
 			// Process demands
-			for (int index = 0; index < vehicle.demands.size(); index++) {
+			for (int index = 0; index < vehicle.state.get().demands.size(); index++) {
 				// Obtain demand
-				Demand demand = vehicle.demands.get(index);
+				Demand demand = vehicle.state.get().demands.get(index);
 				// Compare segment
-				if (demand.drop.location.segment.get() == vehicle.location.segment.get()) {
+				if (demand.drop.location.segment.get() == vehicle.state.get().segment) {
 					// Compare distance on segment
-					if (equalWithPrecision(demand.drop.location.distance.get(), vehicle.location.distance.get())) {
+					if (equalWithPrecision(demand.drop.location.distance.get(), vehicle.state.get().distance)) {
 						// Update demand
-						demand.done = true;
-						demand.vehicle = null;
+						demand.state.get().done = true;
+						demand.state.get().vehicle = null;
 						// Update vehicle
-						vehicle.loadLevel -= demand.size.get();
-						vehicle.demands.remove(index--);
+						vehicle.state.get().loadLevel -= demand.size.get();
+						vehicle.state.get().demands.remove(index--);
 						// Update statistics
-						statistics.recordDropoff(vehicle, demand, model.time);
+						statistics.recordDropoff(vehicle, demand, model.state.get().time);
 						// Update model time step
 						modelTimeStep = 0;
 					}
@@ -467,16 +468,16 @@ public class Simulator {
 		
 		// Dropoff demands (empty battery vehicles)
 		for (Vehicle vehicle : model.vehicles) {
-			if (equalWithPrecision(vehicle.batteryLevel, 0)) {
-				while (vehicle.demands.size() > 0) {
-					Demand demand = vehicle.demands.remove(0);
+			if (equalWithPrecision(vehicle.state.get().batteryLevel, 0)) {
+				while (vehicle.state.get().demands.size() > 0) {
+					Demand demand = vehicle.state.get().demands.remove(0);
 					
-					demand.vehicle = null;
+					demand.state.get().vehicle = null;
 					
-					demand.location.segment.set(vehicle.location.segment.get());
-					demand.location.distance.set(vehicle.location.distance.get());
+					demand.state.get().segment = vehicle.state.get().segment;
+					demand.state.get().distance = vehicle.state.get().distance;
 					
-					vehicle.loadLevel -= demand.size.get();
+					vehicle.state.get().loadLevel -= demand.size.get();
 					
 					modelTimeStep = 0;
 				}
@@ -488,23 +489,23 @@ public class Simulator {
 			// Initialize speed
 			double speed = 0;
 			// Select speed
-			if (greaterWithPrecision(vehicle.batteryLevel, 0) && vehicle.station == null) {
+			if (greaterWithPrecision(vehicle.state.get().batteryLevel, 0) && vehicle.state.get().station == null) {
 				speed = controller.selectSpeed(vehicle);
 			}
 			// Check speed
-			if (greaterWithPrecision(speed, vehicle.location.segment.get().speed.get())) {
+			if (greaterWithPrecision(speed, vehicle.state.get().segment.speed.get())) {
 				throw new InvalidSpeedException(vehicle, speed);
 			}
 			// Update speed
-			vehicle.speed = speed;
+			vehicle.state.get().speed = speed;
 			// Update statistics
-			statistics.recordSpeed(vehicle, speed, model.time);
+			statistics.recordSpeed(vehicle, speed, model.state.get().time);
 		}
 		
 		// Duration until speed selection
 		for (Vehicle vehicle : model.vehicles) {
 			// Check battery level
-			if (greaterWithPrecision(vehicle.batteryLevel, 0) && vehicle.station == null) {
+			if (greaterWithPrecision(vehicle.state.get().batteryLevel, 0) && vehicle.state.get().station == null) {
 				// Select timeout
 				double timeout = controller.selectMaximumSpeedSelectionTimeout(vehicle);
 				// Check timeout
@@ -519,7 +520,7 @@ public class Simulator {
 		// Duration until station selection
 		for (Vehicle vehicle : model.vehicles) {
 			// Check vehicle station
-			if (vehicle.station != null) {
+			if (vehicle.state.get().station != null) {
 				// Select timeout
 				double timeout = controller.selectMaximumStationSelectionTimeout(vehicle);
 				// Check timeout
@@ -534,11 +535,11 @@ public class Simulator {
 		// Duration until battery level exhaustion
 		for (Vehicle vehicle : model.vehicles) {
 			// Check speed
-			if (greaterWithPrecision(vehicle.speed, 0)) {
+			if (greaterWithPrecision(vehicle.state.get().speed, 0)) {
 				// Speed in meter per millisecond
-				double speed = vehicle.speed * 1000.0 / 60.0 / 60.0 / 1000.0;
+				double speed = vehicle.state.get().speed * 1000.0 / 60.0 / 60.0 / 1000.0;
 				// Duration in milliseconds
-				double duration = vehicle.batteryLevel / speed;
+				double duration = vehicle.state.get().batteryLevel / speed;
 				// Update model time step
 				modelTimeStep = Math.min(modelTimeStep, duration);
 			}
@@ -547,11 +548,11 @@ public class Simulator {
 		// Duration until segment end
 		for (Vehicle vehicle : model.vehicles) {
 			// Check speed
-			if (greaterWithPrecision(vehicle.speed, 0)) {
+			if (greaterWithPrecision(vehicle.state.get().speed, 0)) {
 				// Speed in meter per millisecond
-				double speed = vehicle.speed * 1000.0 / 60.0 / 60.0 / 1000.0;
+				double speed = vehicle.state.get().speed * 1000.0 / 60.0 / 60.0 / 1000.0;
 				// Delta in meter
-				double delta = vehicle.location.segment.get().length.get() - vehicle.location.distance.get();
+				double delta = vehicle.state.get().segment.length.get() - vehicle.state.get().distance;
 				// Duration in milliseconds
 				double duration = delta / speed;
 				// Update model time step
@@ -561,32 +562,32 @@ public class Simulator {
 		
 		// Duration until demand appearance
 		for (Demand demand : model.demands) {
-			if (greaterWithPrecision(demand.pick.time.get(), model.time)) {
-				modelTimeStep = Math.min(modelTimeStep, demand.pick.time.get() - model.time);
+			if (greaterWithPrecision(demand.pick.time.get(), model.state.get().time)) {
+				modelTimeStep = Math.min(modelTimeStep, demand.pick.time.get() - model.state.get().time);
 			}
 		}
 		
 		// Duration until demand overdue
 		for (Demand demand : model.demands) {
-			if (demand.done == false && greaterWithPrecision(demand.drop.time.get(), model.time)) {
-				modelTimeStep = Math.min(modelTimeStep, demand.drop.time.get() - model.time);
+			if (demand.state.get().done == false && greaterWithPrecision(demand.drop.time.get(), model.state.get().time)) {
+				modelTimeStep = Math.min(modelTimeStep, demand.drop.time.get() - model.state.get().time);
 			}
 		}
 		
 		// Duration until station
 		for (Vehicle vehicle : model.vehicles) {
 			// Check speed
-			if (greaterWithPrecision(vehicle.speed, 0)) {
+			if (greaterWithPrecision(vehicle.state.get().speed, 0)) {
 				// Process stations
 				for (Station station : model.stations) {
 					// Compare segments
-					if (vehicle.location.segment.get() == station.location.segment.get()) {
+					if (vehicle.state.get().segment == station.location.segment.get()) {
 						// Compare distances
-						if (smallerWithPrecision(vehicle.location.distance.get(), station.location.distance.get())) {
+						if (smallerWithPrecision(vehicle.state.get().distance, station.location.distance.get())) {
 							// Speed in meter per millisecond
-							double speed = vehicle.speed * 1000.0 / 60.0 / 60.0 / 1000.0;
+							double speed = vehicle.state.get().speed * 1000.0 / 60.0 / 60.0 / 1000.0;
 							// Delta in meter
-							double delta = station.location.distance.get() - vehicle.location.distance.get();
+							double delta = station.location.distance.get() - vehicle.state.get().distance;
 							// Duration in milliseconds
 							double duration = delta / speed;
 							// Update model time step;
@@ -600,11 +601,11 @@ public class Simulator {
 		// Duration until battery full
 		for (Vehicle vehicle : model.vehicles) {
 			// Check vehicle station
-			if (vehicle.station != null) {
+			if (vehicle.state.get().station != null) {
 				// Speed in meter per millisecond
-				double speed = vehicle.station.speed.get() * 1000.0 / 60.0 / 60.0 / 1000.0;
+				double speed = vehicle.state.get().station.speed.get() * 1000.0 / 60.0 / 60.0 / 1000.0;
 				// Delta in meter
-				double delta = vehicle.batteryCapacity.get() - vehicle.batteryLevel;
+				double delta = vehicle.batteryCapacity.get() - vehicle.state.get().batteryLevel;
 				// Duration in milliseconds
 				double duration = delta / speed;
 				// Update model time step
@@ -615,21 +616,21 @@ public class Simulator {
 		// Duration until demand pickup
 		for (Demand demand : model.demands) {
 			// Check demand relevance
-			if (demand.done == false && demand.vehicle == null && !greaterWithPrecision(demand.pick.time.get(), model.time)) {
+			if (demand.state.get().done == false && demand.state.get().vehicle == null && !greaterWithPrecision(demand.pick.time.get(), model.state.get().time)) {
 				// Process vehicles
 				for (Vehicle vehicle : model.vehicles) {
 					// Check speed
-					if (greaterWithPrecision(vehicle.speed, 0)) {
+					if (greaterWithPrecision(vehicle.state.get().speed, 0)) {
 						// Pickup on same segment
-						if (demand.location.segment.get() == vehicle.location.segment.get()) {
+						if (demand.state.get().segment == vehicle.state.get().segment) {
 							// Pickup ahead
-							if (greaterWithPrecision(demand.location.distance.get(), vehicle.location.distance.get())) {
+							if (greaterWithPrecision(demand.state.get().distance, vehicle.state.get().distance)) {
 								// Enough capactiy?
-								if (!greaterWithPrecision(demand.size.get(), vehicle.loadCapacity.get() - vehicle.loadLevel)) {
+								if (!greaterWithPrecision(demand.size.get(), vehicle.loadCapacity.get() - vehicle.state.get().loadLevel)) {
 									// Speed in meter per millisecond
-									double speed = vehicle.speed * 1000.0 / 60.0 / 60.0 / 1000.0;
+									double speed = vehicle.state.get().speed * 1000.0 / 60.0 / 60.0 / 1000.0;
 									// Delta in meter
-									double delta = demand.location.distance.get() - vehicle.location.distance.get();
+									double delta = demand.state.get().distance - vehicle.state.get().distance;
 									// Duration in milliseconds
 									double duration = delta / speed;
 									// Update model time step;
@@ -645,17 +646,17 @@ public class Simulator {
 		// Duration until demand dropoff
 		for (Vehicle vehicle : model.vehicles) {
 			// Check speed
-			if (greaterWithPrecision(vehicle.speed, 0)) {
+			if (greaterWithPrecision(vehicle.state.get().speed, 0)) {
 				// Process demands
-				for (Demand demand : vehicle.demands) {
+				for (Demand demand : vehicle.state.get().demands) {
 					// Dropoff on same segment
-					if (vehicle.location.segment.get() == demand.drop.location.segment.get()) {
+					if (vehicle.state.get().segment == demand.drop.location.segment.get()) {
 						// Dropoff ahead
-						if (smallerWithPrecision(vehicle.location.distance.get(), demand.drop.location.distance.get())) {
+						if (smallerWithPrecision(vehicle.state.get().distance, demand.drop.location.distance.get())) {
 							// Speed in meter per millisecond
-							double speed = vehicle.speed * 1000.0 / 60.0 / 60.0 / 1000.0;
+							double speed = vehicle.state.get().speed * 1000.0 / 60.0 / 60.0 / 1000.0;
 							// Delta in meter
-							double delta = demand.drop.location.distance.get() - vehicle.location.distance.get();
+							double delta = demand.drop.location.distance.get() - vehicle.state.get().distance;
 							// Duration in milliseconds
 							double duration = delta / speed;
 							// Update model time step;
@@ -670,23 +671,23 @@ public class Simulator {
 		for (int i = 0; i < model.vehicles.size(); i++) {
 			Vehicle outer = model.vehicles.get(i);
 			
-			if (greaterWithPrecision(outer.speed, 0)) {
+			if (greaterWithPrecision(outer.state.get().speed, 0)) {
 			
-				double outerBack = outer.location.distance.get() - outer.length.get() / 2;
-				double outerFront = outer.location.distance.get() + outer.length.get() / 2;
+				double outerBack = outer.state.get().distance - outer.length.get() / 2;
+				double outerFront = outer.state.get().distance + outer.length.get() / 2;
 				
 				for (int j = i + 1; j < model.vehicles.size(); j++) {
 					Vehicle inner = model.vehicles.get(j);
 					
-					if (greaterWithPrecision(inner.speed, 0)) {
+					if (greaterWithPrecision(inner.state.get().speed, 0)) {
 					
-						double innerBack = inner.location.distance.get() - inner.length.get() / 2;
-						double innerFront = inner.location.distance.get() + inner.length.get() / 2;
+						double innerBack = inner.state.get().distance - inner.length.get() / 2;
+						double innerFront = inner.state.get().distance + inner.length.get() / 2;
 						
 						// On same segment?
-						if (outer.location.segment.get() == inner.location.segment.get()) {	
-							if (smallerWithPrecision(inner.speed, outer.speed)) {
-								double speed = (outer.speed - inner.speed) * 1000.0 / 60.0 / 60.0 / 1000.0;
+						if (outer.state.get().segment == inner.state.get().segment) {	
+							if (smallerWithPrecision(inner.state.get().speed, outer.state.get().speed)) {
+								double speed = (outer.state.get().speed - inner.state.get().speed) * 1000.0 / 60.0 / 60.0 / 1000.0;
 								
 								// Attach
 								if (smallerWithPrecision(outerFront, innerBack)) {
@@ -701,8 +702,8 @@ public class Simulator {
 									double duration = distance / speed;
 									modelTimeStep = Math.min(modelTimeStep, duration);
 								}
-							} else if (smallerWithPrecision(outer.speed, inner.speed)) {
-								double speed = (inner.speed - outer.speed) * 1000.0 / 60.0 / 60.0 / 1000.0;
+							} else if (smallerWithPrecision(outer.state.get().speed, inner.state.get().speed)) {
+								double speed = (inner.state.get().speed - outer.state.get().speed) * 1000.0 / 60.0 / 60.0 / 1000.0;
 								
 								// Attach
 								if (smallerWithPrecision(innerFront, outerBack)) {
@@ -728,35 +729,35 @@ public class Simulator {
 		modelTimeStep = synchronizer.vote(modelTimeStep);
 		
 		// Update statistics
-		statistics.recordStep(modelTimeStep, model.time);
+		statistics.recordStep(modelTimeStep, model.state.get().time);
 		
 		// Update vehicle state
 		for (Vehicle vehicle : model.vehicles) {
 			// Speed in meter per millisecond
-			double speed = vehicle.speed * 1000.0 / 60.0 / 60.0 / 1000.0;
+			double speed = vehicle.state.get().speed * 1000.0 / 60.0 / 60.0 / 1000.0;
 			// Delta in meter
 			double delta = speed * modelTimeStep;
 			// Decrease battery level
-			vehicle.batteryLevel -= delta;
+			vehicle.state.get().batteryLevel -= delta;
 			// Check vehicle station
-			if (vehicle.station != null) {
+			if (vehicle.state.get().station != null) {
 				// Increase battery level
-				vehicle.batteryLevel += vehicle.station.speed.get() * 1000.0 / 60.0 / 60.0 / 1000.0 * modelTimeStep;
+				vehicle.state.get().batteryLevel += vehicle.state.get().station.speed.get() * 1000.0 / 60.0 / 60.0 / 1000.0 * modelTimeStep;
 			}
 			// Update distance
-			vehicle.location.distance.set(vehicle.location.distance.get() + delta);
+			vehicle.state.get().distance += delta;
 			// Update statistics
-			statistics.recordDistance(vehicle, delta, model.time);
+			statistics.recordDistance(vehicle, delta, model.state.get().time);
 		}
 		
 		// Update model time
-		model.time += modelTimeStep;
+		model.state.get().time += modelTimeStep;
 		
 		// Update collisions
 		updateCollisions();
 		
 		// Throw infinity exception
-		if (Double.isInfinite(model.time)) {
+		if (Double.isInfinite(model.state.get().time)) {
 			throw new InfinityException();
 		}
 		
@@ -773,15 +774,15 @@ public class Simulator {
 			map.put(segment, new ArrayList<>());
 		});
 		model.vehicles.forEach(vehicle -> {
-			map.get(vehicle.location.segment.get()).add(vehicle);
+			map.get(vehicle.state.get().segment).add(vehicle);
 		});
 		model.segments.forEach(segment -> {
 			map.get(segment).sort((first, second) -> {
-				if (!equalWithPrecision(first.speed, second.speed)) {
-					return (int) Math.signum(first.speed - second.speed);
+				if (!equalWithPrecision(first.state.get().speed, second.state.get().speed)) {
+					return (int) Math.signum(first.state.get().speed - second.state.get().speed);
 				} else {
-					if (!equalWithPrecision(first.location.distance.get(), second.location.distance.get())) {
-						return (int) Math.signum(first.location.distance.get() - second.location.distance.get());
+					if (!equalWithPrecision(first.state.get().distance, second.state.get().distance)) {
+						return (int) Math.signum(first.state.get().distance - second.state.get().distance);
 					} else {
 						return first.name.get().compareTo(second.name.get());
 					}
@@ -791,55 +792,55 @@ public class Simulator {
 		// Clear vehicles
 		model.vehicles.forEach(vehicle -> {
 			// Clear collisions
-			vehicle.collisions.clear();
-			vehicle.collisions.add(vehicle);
+			vehicle.state.get().collisions.clear();
+			vehicle.state.get().collisions.add(vehicle);
 			// Clear lane
-			vehicle.lane = -1;
+			vehicle.state.get().lane = -1;
 		});
 		// Clear segments
 		model.segments.forEach(segment -> {
 			// Clear load
-			segment.load = 0;
+			segment.state.get().load = 0;
 			// Clear collisions
-			segment.collisions = null;
+			segment.state.get().collisions = null;
 		});
 		// Collect collisions
 		for (int i = 0; i < model.vehicles.size(); i++) {
 			Vehicle outer = model.vehicles.get(i);
 			// Calculate front/back
-			double outerBack = outer.location.distance.get() - outer.length.get() / 2;
-			double outerFront = outer.location.distance.get() + outer.length.get() / 2;
+			double outerBack = outer.state.get().distance - outer.length.get() / 2;
+			double outerFront = outer.state.get().distance + outer.length.get() / 2;
 			// Compare each other vehicle
 			for (int j = i + 1; j < model.vehicles.size(); j++) {
 				Vehicle inner = model.vehicles.get(j);
 				// Calculate front/back
-				double innerBack = inner.location.distance.get() - inner.length.get() / 2;
-				double innerFront = inner.location.distance.get() + inner.length.get() / 2;
+				double innerBack = inner.state.get().distance - inner.length.get() / 2;
+				double innerFront = inner.state.get().distance + inner.length.get() / 2;
 				// On same segment?
-				if (outer.location.segment.get() == inner.location.segment.get()) {
+				if (outer.state.get().segment == inner.state.get().segment) {
 					// Outer faster
-					if (smallerWithPrecision(inner.speed, outer.speed)) {
+					if (smallerWithPrecision(inner.state.get().speed, outer.state.get().speed)) {
 						if (smallerWithPrecision(outerBack, innerFront) && !smallerWithPrecision(outerFront, innerBack)) {
-							outer.collisions.add(inner);
-							inner.collisions.add(outer);
+							outer.state.get().collisions.add(inner);
+							inner.state.get().collisions.add(outer);
 						}
 					}
 					// Inner faster
-					if (smallerWithPrecision(outer.speed, inner.speed)) {
+					if (smallerWithPrecision(outer.state.get().speed, inner.state.get().speed)) {
 						if (smallerWithPrecision(innerBack, outerFront) && !smallerWithPrecision(innerFront, outerBack)) {
-							outer.collisions.add(inner);
-							inner.collisions.add(outer);
+							outer.state.get().collisions.add(inner);
+							inner.state.get().collisions.add(outer);
 						}
 					}
 					// Same speed
-					if (equalWithPrecision(outer.speed, inner.speed)) {
+					if (equalWithPrecision(outer.state.get().speed, inner.state.get().speed)) {
 						if (smallerWithPrecision(outerBack, innerFront) && greaterWithPrecision(outerFront, innerBack)) {
-							outer.collisions.add(inner);
-							inner.collisions.add(outer);
+							outer.state.get().collisions.add(inner);
+							inner.state.get().collisions.add(outer);
 						}
 						if (smallerWithPrecision(innerBack, outerFront) && greaterWithPrecision(innerFront, outerBack)) {
-							outer.collisions.add(inner);
-							inner.collisions.add(outer);
+							outer.state.get().collisions.add(inner);
+							inner.state.get().collisions.add(outer);
 						}
 					}
 				}
@@ -850,14 +851,14 @@ public class Simulator {
 			entry.getValue().forEach(outer-> {
 				for (int lane = 0; lane < entry.getValue().size(); lane++) {
 					boolean free = true;
-					for (Vehicle inner : outer.collisions) {
-						if (inner.lane == lane) {
+					for (Vehicle inner : outer.state.get().collisions) {
+						if (inner.state.get().lane == lane) {
 							free = false;
 							break;
 						}
 					}
 					if (free) {
-						outer.lane = lane;
+						outer.state.get().lane = lane;
 						break;
 					}
 				}
@@ -865,22 +866,22 @@ public class Simulator {
 		});
 		// Update segments
 		model.vehicles.forEach(vehicle -> {
-			if (vehicle.location.segment.get().load < vehicle.lane + 1) {
-				vehicle.location.segment.get().load = vehicle.lane + 1;
-				vehicle.location.segment.get().collisions = vehicle.collisions;
+			if (vehicle.state.get().segment.state.get().load < vehicle.state.get().lane + 1) {
+				vehicle.state.get().segment.state.get().load = vehicle.state.get().lane + 1;
+				vehicle.state.get().segment.state.get().collisions = vehicle.state.get().collisions;
 			}
 		});
 		// Throw exceptions
 		for (Segment segment : model.segments) {
-			if (segment.load > segment.lanes.get()) {
-				throw new CollisionException(segment, segment.collisions);
+			if (segment.state.get().load > segment.lanes.get()) {
+				throw new CollisionException(segment, segment.state.get().collisions);
 			}
 		}
 	}
 	
 	public boolean isFinished() {
 		for (Demand demand : model.demands) {
-			if (!demand.done) {
+			if (!demand.state.get().done) {
 				return false;
 			}
 		}
@@ -889,14 +890,14 @@ public class Simulator {
 	
 	public boolean isEmpty() {
 		for (Vehicle vehicle : model.vehicles) {
-			if (greaterWithPrecision(vehicle.batteryLevel, 0)) {
+			if (greaterWithPrecision(vehicle.state.get().batteryLevel, 0)) {
 				return false;
-			} else if (vehicle.station != null) {
+			} else if (vehicle.state.get().station != null) {
 				return false;
 			} else {
 				for (Station station : model.stations) {
-					if (vehicle.location.segment.get() == station.location.segment.get()) {
-						if (equalWithPrecision(vehicle.location.distance.get(), station.location.distance.get())) {
+					if (vehicle.state.get().segment == station.location.segment.get()) {
+						if (equalWithPrecision(vehicle.state.get().distance, station.location.distance.get())) {
 							return false;
 						}
 					}

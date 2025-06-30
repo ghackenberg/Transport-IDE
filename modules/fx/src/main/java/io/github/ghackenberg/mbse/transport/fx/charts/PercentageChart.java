@@ -3,6 +3,7 @@ package io.github.ghackenberg.mbse.transport.fx.charts;
 import java.util.ArrayList;
 import java.util.List;
 
+import javafx.application.Platform;
 import javafx.scene.chart.PieChart;
 import javafx.scene.layout.BorderPane;
 
@@ -32,6 +33,8 @@ public class PercentageChart extends BorderPane {
 		}
 		
 		counts.set(i, counts.get(i) + 1);
+		
+		Platform.runLater(this::update);
 	}
 	
 	public void update() {

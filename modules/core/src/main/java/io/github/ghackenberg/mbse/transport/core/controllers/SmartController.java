@@ -13,7 +13,6 @@ import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.adapters.GraphAdapter;
 import io.github.ghackenberg.mbse.transport.core.entities.Demand;
 import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
-import io.github.ghackenberg.mbse.transport.core.entities.Location;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
 import io.github.ghackenberg.mbse.transport.core.entities.Station;
 import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
@@ -40,13 +39,13 @@ public class SmartController implements Controller {
 		double minimumWeight = Double.MAX_VALUE;
 		
 		for (Station otherStation : model.stations) {
-			double distance = getDistance(vehicle.location, otherStation.location, null);
+			double distance = getDistance(vehicle.state.get().segment, vehicle.state.get().distance, otherStation.location.segment.get(), otherStation.location.distance.get(), null);
 			if (minimumWeight > distance) {
 				minimumWeight = distance;
 			}
 		}
 		
-		return vehicle.batteryLevel < minimumWeight;
+		return vehicle.state.get().batteryLevel < minimumWeight;
 	}
 	
 	@Override
@@ -59,23 +58,23 @@ public class SmartController implements Controller {
 		double minimumDistance = Double.MAX_VALUE;
 		
 		for (Station station : model.stations) {
-			double distance = getDistance(vehicle.location, station.location, null);
+			double distance = getDistance(vehicle.state.get().segment, vehicle.state.get().distance, station.location.segment.get(), station.location.distance.get(), null);
 			if (minimumDistance > distance) {
 				minimumDistance = distance;
 			}
 		}
 		
 		for (Station station : model.stations) {
-			if (vehicle.location.segment.get() == station.location.segment.get()) {
-				if (vehicle.location.distance.get() == station.location.distance.get()) {
-					if (vehicle.batteryLevel < minimumDistance) {
+			if (vehicle.state.get().segment == station.location.segment.get()) {
+				if (vehicle.state.get().distance == station.location.distance.get()) {
+					if (vehicle.state.get().batteryLevel < minimumDistance) {
 						return 0;
 					}
 				}
 			}
 		}
 		
-		return vehicle.location.segment.get().speed.get();
+		return vehicle.state.get().segment.speed.get();
 	}
 
 	@Override
@@ -95,13 +94,13 @@ public class SmartController implements Controller {
 		
 		Reference<Segment> next = new Reference<>();
 		
-		if (vehicle.demands.size() > 0) {
+		if (vehicle.state.get().demands.size() > 0) {
 			// Find closest demand dropoff segment
 			
-			for (Demand demand : vehicle.demands) {
-				double distance = getDistance(vehicle.location, demand.drop.location, next);
+			for (Demand demand : vehicle.state.get().demands) {
+				double distance = getDistance(vehicle.state.get().segment, vehicle.state.get().distance, demand.drop.location.segment.get(), demand.drop.location.distance.get(), next);
 				if (minimumDistance > distance && next.value != null) {
-					if (vehicle.batteryLevel >= distance + getMinimumStationDistance(demand.drop.location)) {
+					if (vehicle.state.get().batteryLevel >= distance + getMinimumStationDistance(demand.drop.location.segment.get(), demand.drop.location.distance.get())) {
 						minimumDistance = distance;
 						minimumSegment = next.value;
 					}
@@ -111,11 +110,11 @@ public class SmartController implements Controller {
 			// Find closest demand pickup segment
 			
 			for (Demand demand : model.demands) {
-				if (demand.done == false && demand.vehicle == null && demand.pick.time.get() <= model.time) {
-					if (vehicle.loadLevel + demand.size.get() <= vehicle.loadCapacity.get()) {
-						double distance = getDistance(vehicle.location, demand.location, next);
+				if (demand.state.get().done == false && demand.state.get().vehicle == null && demand.pick.time.get() <= model.state.get().time) {
+					if (vehicle.state.get().loadLevel + demand.size.get() <= vehicle.loadCapacity.get()) {
+						double distance = getDistance(vehicle.state.get().segment, vehicle.state.get().distance, demand.state.get().segment, demand.state.get().distance, next);
 						if (minimumDistance > distance && next.value != null) {
-							if (vehicle.batteryLevel >= distance + getMinimumStationDistance(demand.location)) {
+							if (vehicle.state.get().batteryLevel >= distance + getMinimumStationDistance(demand.state.get().segment, demand.state.get().distance)) {
 								minimumDistance = distance;
 								minimumSegment = next.value;
 							}
@@ -129,7 +128,7 @@ public class SmartController implements Controller {
 			// Find closest station segment
 			
 			for (Station station : model.stations) {
-				double distance = getDistance(vehicle.location, station.location, next);
+				double distance = getDistance(vehicle.state.get().segment, vehicle.state.get().distance, station.location.segment.get(), station.location.distance.get(), next);
 				if (minimumDistance > distance && next.value != null) {
 					minimumDistance = distance;
 					minimumSegment = next.value;
@@ -140,7 +139,7 @@ public class SmartController implements Controller {
 		if (minimumSegment == null) {
 			// Select random segment
 			
-			List<Segment> candidates = vehicle.location.segment.get().end.outgoing;
+			List<Segment> candidates = vehicle.state.get().segment.end.outgoing;
 			
 			minimumSegment = candidates.get((int) (Math.random() * candidates.size()));
 		}
@@ -152,35 +151,35 @@ public class SmartController implements Controller {
 		public T value;
 	}
 	
-	private double getDistance(Location a, Location b, Reference<Segment> next) {
-		if (a.segment.get() == b.segment.get() && a.distance.get() < b.distance.get()) {
-			return b.distance.get() - a.distance.get();
-		} else if (a.segment.get().end == b.segment.get().start) {
+	private double getDistance(Segment aSeg, double aDis, Segment bSeg, double bDis, Reference<Segment> next) {
+		if (aSeg == bSeg && aDis < bDis) {
+			return bDis - aDis;
+		} else if (aSeg.end == bSeg.start) {
 			if (next != null) {
-				next.value = b.segment.get();
+				next.value = bSeg;
 			}
-			return a.segment.get().length.get() - a.distance.get() + b.distance.get();
+			return aSeg.length.get() - aDis + bDis;
 		} else {
-			SingleSourcePaths<Intersection, Segment> paths = algorithm.getPaths(a.segment.get().end);
-			GraphPath<Intersection, Segment> path = paths.getPath(b.segment.get().start);
+			SingleSourcePaths<Intersection, Segment> paths = algorithm.getPaths(aSeg.end);
+			GraphPath<Intersection, Segment> path = paths.getPath(bSeg.start);
 			if (path.getLength() > 0) {
 				if (next != null) {
 					next.value = path.getEdgeList().get(0);
 				}
-				return a.segment.get().length.get() - a.distance.get() + path.getWeight() + b.distance.get();
+				return aSeg.length.get() - aDis + path.getWeight() + bDis;
 			} else {
 				return Double.MAX_VALUE;
 			}
 		}
 	}
 	
-	private double getMinimumStationDistance(Location a) {
+	private double getMinimumStationDistance(Segment aSeg, double aDis) {
 		double minimumDistance = Double.MAX_VALUE;
 		for (Station station : model.stations) {
-			if (station.location.segment.get() == a.segment.get() && station.location.distance.get() == a.distance.get()) {
+			if (station.location.segment.get() == aSeg && station.location.distance.get() == aDis) {
 				return 0;
 			} else {
-				double distance = getDistance(a, station.location, null);
+				double distance = getDistance(aSeg, aDis, station.location.segment.get(), station.location.distance.get(), null);
 				if (minimumDistance > distance) {
 					minimumDistance = distance;
 				}

@@ -3,6 +3,7 @@ package io.github.ghackenberg.mbse.transport.core.entities;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.github.ghackenberg.mbse.transport.core.structures.Location;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -10,11 +11,29 @@ import javafx.beans.property.StringProperty;
 
 public class Vehicle {
 	
-	public double loadLevel;
-	public double batteryLevel;
-	public double speed;
-	public int lane;
-	public Station station;
+	public class State {
+
+		public Segment segment = initialLocation.segment.get();
+		
+		public double distance = initialLocation.distance.get();
+		
+		public double speed = initialSpeed.get();
+		
+		public double batteryLevel = initialBatteryLevel.get();
+		
+		public int lane = -1;
+		
+		public double loadLevel = 0;
+		
+		public Station station = null;
+		
+		public final List<Demand> demands = new ArrayList<>();
+		
+		public final List<Vehicle> collisions = new ArrayList<>();
+		
+	}
+	
+	public final ThreadLocal<State> state = new ThreadLocal<>();
 	
 	// Properties
 	
@@ -28,24 +47,8 @@ public class Vehicle {
 	// Structures
 	
 	public final Location initialLocation = new Location();
-	public final Location location = new Location();
-	
-	public final List<Demand> demands = new ArrayList<>();
-	public final List<Vehicle> collisions = new ArrayList<>();
 	
 	// Methods
-	
-	public void reset() {
-		demands.clear();
-		collisions.clear();
-		loadLevel = 0;
-		batteryLevel = initialBatteryLevel.get();
-		speed = initialSpeed.get();
-		lane = -1;
-		location.segment.set(initialLocation.segment.get());
-		location.distance.set(initialLocation.distance.get());
-		station = null;
-	}
 	
 	@Override
 	public String toString() {

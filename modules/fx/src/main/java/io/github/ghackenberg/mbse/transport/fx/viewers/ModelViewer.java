@@ -17,8 +17,11 @@ import io.github.ghackenberg.mbse.transport.fx.events.VehicleEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.layout.Pane;
+import javafx.scene.text.Text;
 
 public class ModelViewer extends Pane {
+	
+	private final Model.State modelState;
 	
 	private double minX = Double.MAX_VALUE;
 	private double maxX = -Double.MAX_VALUE;
@@ -29,9 +32,11 @@ public class ModelViewer extends Pane {
 	private double deltaX;
 	private double deltaY;
 
-	private Group innerTranslate;
-	private Group outerTranslate;
-	private Group scale;
+	private final Group innerTranslate;
+	private final Group outerTranslate;
+	private final Group scale;
+	
+	private final Text text;
 	
 	private EventHandler<IntersectionEvent> onIntersectionSelected;
 	private EventHandler<SegmentEvent> onSegmentSelected;
@@ -39,17 +44,19 @@ public class ModelViewer extends Pane {
 	private EventHandler<VehicleEvent> onVehicleSelected;
 	private EventHandler<DemandEvent> onDemandSelected;
 
-	private List<SegmentViewer> segments = new ArrayList<>();
-	private List<IntersectionViewer> intersections = new ArrayList<>();
-	private List<StationViewer> stations = new ArrayList<>();
-	private List<DemandViewer> demands = new ArrayList<>();
-	private List<VehicleViewer> vehicles = new ArrayList<>();
+	private final List<SegmentViewer> segments = new ArrayList<>();
+	private final List<IntersectionViewer> intersections = new ArrayList<>();
+	private final List<StationViewer> stations = new ArrayList<>();
+	private final List<DemandViewer> demands = new ArrayList<>();
+	private final List<VehicleViewer> vehicles = new ArrayList<>();
 	
 	public ModelViewer(Model model) {
 		this(model, true);
 	}
 	
 	public ModelViewer(Model model, boolean showDemands) {
+		this.modelState = model.state.get();
+		
 		setStyle("-fx-background-color: white;");
 		
 		setPrefWidth(200);
@@ -73,6 +80,14 @@ public class ModelViewer extends Pane {
 		deltaX = maxX - minX;
 		deltaY = maxY - minY;
 		
+		// Text
+
+		if (modelState != null) {
+			text = new Text("" + modelState.time);
+		} else {
+			text = null;
+		}
+		
 		// Group
 		
 		innerTranslate = new Group();
@@ -84,6 +99,9 @@ public class ModelViewer extends Pane {
 		outerTranslate.getChildren().add(scale);
 		
 		getChildren().add(outerTranslate);
+		if (modelState != null) {
+			getChildren().add(text);
+		}
 		
 		// Segments
 		
@@ -118,7 +136,7 @@ public class ModelViewer extends Pane {
 		// Stations
 		
 		for (Station station : model.stations) {
-			StationViewer viewer = new StationViewer(station);
+			StationViewer viewer = new StationViewer(model, station);
 			viewer.setOnSelected(event -> {
 				if (onStationSelected != null) {
 					onStationSelected.handle(event);
@@ -199,6 +217,7 @@ public class ModelViewer extends Pane {
 		for (VehicleViewer viewer : vehicles) {
 			viewer.update();
 		}
+		text.setText("" + modelState.time);
 	}
 	
 	private void zoom() {

@@ -8,7 +8,6 @@ import io.github.ghackenberg.mbse.transport.core.Controller;
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.Parser;
 import io.github.ghackenberg.mbse.transport.core.Simulator;
-import io.github.ghackenberg.mbse.transport.core.Statistics;
 import io.github.ghackenberg.mbse.transport.core.Synchronizer;
 import io.github.ghackenberg.mbse.transport.core.controllers.SmartController;
 import io.github.ghackenberg.mbse.transport.core.entities.Demand;
@@ -63,7 +62,7 @@ public class ModelComparison {
 				
 				Model model = parser.parse(new File(modelFolder, "intersections.txt"), new File(modelFolder, "segments.txt"), new File(modelFolder, "stations.txt"), new File(modelFolder, "vehicles.txt"), new File(modelFolder, "demands.txt"));
 				
-				model.name = modelFolder.getName();
+				model.name.set(modelFolder.getName());
 				
 				model.demands.clear();
 				
@@ -134,8 +133,6 @@ public class ModelComparison {
 			
 			for (Model model : models) {
 				model.demands.sort((first, second) -> (int) Math.signum(first.pick.time.get() - second.pick.time.get()));
-				
-				model.reset();
 			}
 			
 			// Create synchronizer
@@ -151,8 +148,6 @@ public class ModelComparison {
 			
 			List<Controller> controllers = new ArrayList<>();
 			
-			List<Statistics> statistics = new ArrayList<>();
-			
 			List<Simulator> simulators = new ArrayList<>();
 			
 			for (int index = 0; index < models.size(); index++) {
@@ -167,16 +162,9 @@ public class ModelComparison {
 				
 				controllers.add(controller);
 				
-				// Statistics
-
-				Statistics statistic = new Statistics(model);
-				statistic.reset();
-				
-				statistics.add(statistic);
-				
 				// Simulator
 				
-				Simulator simulator = new Simulator(model.name, model, controller, statistic, maxModelTimeStep, ratioModelRealTime, runsFolder, synchronizer);
+				Simulator simulator = new Simulator(model.name.get(), model, controller, maxModelTimeStep, ratioModelRealTime, runsFolder, synchronizer);
 				
 				simulators.add(simulator);
 			}

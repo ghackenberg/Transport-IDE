@@ -36,14 +36,14 @@ public class DemandTimesChartViewer extends MultipleChartViewer {
 			
 			for (Demand demand : model.demands) {
 
-				if (demand.pick.time.get() < model.time) {
+				if (demand.pick.time.get() < model.state.get().time) {
 					
-					double pickup = model.time;
+					double pickup = model.state.get().time;
 					if (stats.demandPickupAcceptTimes.get(demand).size() == 1) {
 						pickup = stats.demandPickupAcceptTimes.get(demand).entrySet().iterator().next().getKey();
 					}
 					
-					double dropoff = model.time;
+					double dropoff = model.state.get().time;
 					if (stats.demandDropoffTimes.get(demand).size() == 1) {
 						dropoff = stats.demandDropoffTimes.get(demand).entrySet().iterator().next().getKey();
 					}

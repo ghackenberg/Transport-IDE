@@ -8,13 +8,13 @@ import java.io.IOException;
 
 import io.github.ghackenberg.mbse.transport.core.entities.Demand;
 import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
-import io.github.ghackenberg.mbse.transport.core.entities.Location;
-import io.github.ghackenberg.mbse.transport.core.entities.LocationTime;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
 import io.github.ghackenberg.mbse.transport.core.entities.Station;
 import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
 import io.github.ghackenberg.mbse.transport.core.exceptions.DirectoryException;
 import io.github.ghackenberg.mbse.transport.core.exceptions.MissingException;
+import io.github.ghackenberg.mbse.transport.core.structures.Location;
+import io.github.ghackenberg.mbse.transport.core.structures.LocationTime;
 
 public class Parser {
 	
@@ -216,9 +216,6 @@ public class Parser {
 		LocationTime dropoff = resolveLocationTime(model, parts[1]); 
 		
 		Demand demand = new Demand(pickup, dropoff, Double.parseDouble(parts[2]));
-		
-		demand.location.segment.set(pickup.location.segment.get());
-		demand.location.distance.set(pickup.location.distance.get());
 		
 		model.demands.add(demand);
 		

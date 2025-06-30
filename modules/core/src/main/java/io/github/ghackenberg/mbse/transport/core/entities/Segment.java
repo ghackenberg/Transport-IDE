@@ -2,6 +2,7 @@ package io.github.ghackenberg.mbse.transport.core.entities;
 
 import java.util.List;
 
+import io.github.ghackenberg.mbse.transport.core.structures.Coordinate;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.DoubleProperty;
@@ -9,8 +10,15 @@ import javafx.beans.property.SimpleDoubleProperty;
 
 public class Segment {
 
-	public double load;
-	public List<Vehicle> collisions;
+	public class State {
+		
+		public double load = 0;
+		
+		public List<Vehicle> collisions = null;
+		
+	}
+	
+	public final ThreadLocal<State> state = new ThreadLocal<>();
 	
 	// Constants
 	
@@ -21,9 +29,9 @@ public class Segment {
 	
 	public final DoubleProperty lanes = new SimpleDoubleProperty();
 	public final DoubleProperty speed = new SimpleDoubleProperty();
-	
-	public final DoubleProperty angle = new SimpleDoubleProperty();
+
 	public final DoubleProperty length = new SimpleDoubleProperty();
+	public final DoubleProperty angle = new SimpleDoubleProperty();
 	
 	// Structures
 	
@@ -49,6 +57,8 @@ public class Segment {
 		end.coordinate.x.addListener(listener);
 		end.coordinate.y.addListener(listener);
 		end.coordinate.z.addListener(listener);
+		
+		recompute();
 	}
 	
 	// Methods
@@ -69,6 +79,14 @@ public class Segment {
 		center.z.set(start.coordinate.z.get() + dz / 2);
 	}
 	
+	private void recomputeLength() {
+		double dx = end.coordinate.x.get() - start.coordinate.x.get();
+		double dy = end.coordinate.y.get() - start.coordinate.y.get();
+		double dz = end.coordinate.z.get() - start.coordinate.z.get();
+		
+		length.set(Math.sqrt(dx * dx + dy * dy + dz * dz));
+	}
+	
 	private void recomputeAngle() {
 		double len = length.get();
 		
@@ -79,14 +97,6 @@ public class Segment {
 		dy /= len;
 		
 		angle.set(Math.atan2(dy, dx));
-	}
-	
-	private void recomputeLength() {
-		double dx = end.coordinate.x.get() - start.coordinate.x.get();
-		double dy = end.coordinate.y.get() - start.coordinate.y.get();
-		double dz = end.coordinate.z.get() - start.coordinate.z.get();
-		
-		length.set(Math.sqrt(dx * dx + dy * dy + dz * dz));
 	}
 	
 	@Override

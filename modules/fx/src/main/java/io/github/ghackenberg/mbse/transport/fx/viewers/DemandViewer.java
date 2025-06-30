@@ -1,31 +1,44 @@
 package io.github.ghackenberg.mbse.transport.fx.viewers;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
-import io.github.ghackenberg.mbse.transport.core.entities.Coordinate;
 import io.github.ghackenberg.mbse.transport.core.entities.Demand;
+import io.github.ghackenberg.mbse.transport.core.structures.Coordinate;
+import io.github.ghackenberg.mbse.transport.core.structures.Location;
 import io.github.ghackenberg.mbse.transport.fx.events.DemandEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 
 public class DemandViewer extends EntityViewer<Demand, DemandEvent> {
-
-	private Model model;
 	
-	private Line line;
+	private final Demand.State entityState;
 	
-	private Circle source;
-	private Circle target;
+	private final Location location;
+	
+	private final Line line;
+	
+	private final Circle source;
+	private final Circle target;
 	
 	public DemandViewer(Model model, Demand demand) {
-		super(demand);
+		super(model, demand);
 		
-		this.model = model;
+		entityState = demand.state.get();
 		
 		setManaged(false);
 		
-		Coordinate start = demand.location.coordinate;
-		Coordinate end = demand.drop.location.coordinate;
+		// Location
+		
+		if (entityState == null) {
+			location = demand.pick.location;
+		} else {
+			location = new Location();
+			location.segment.set(entityState.segment);
+			location.distance.set(entityState.distance);
+		}
+		
+		final Coordinate start = location.coordinate;
+		final Coordinate end = demand.drop.location.coordinate;
 		
 		// Line
 		
@@ -68,11 +81,15 @@ public class DemandViewer extends EntityViewer<Demand, DemandEvent> {
 		getChildren().add(target);
 	}
 	
+	@Override
 	public void update() {
-		if (!getEntity().done && model.time >= getEntity().pick.time.get()) {
+		location.segment.set(entityState.segment);
+		location.distance.set(entityState.distance);
+		
+		if (!entityState.done && modelState.time >= entity.pick.time.get()) {
 			setVisible(true);
 			
-			if (model.time > getEntity().drop.time.get()) {
+			if (modelState.time > entity.drop.time.get()) {
 				line.setStroke(Color.RED);
 				
 				source.setFill(Color.RED);

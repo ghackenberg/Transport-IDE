@@ -7,9 +7,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import io.github.ghackenberg.mbse.transport.core.entities.Coordinate;
 import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
+import io.github.ghackenberg.mbse.transport.core.structures.Coordinate;
 
 public class ParserTest {
 

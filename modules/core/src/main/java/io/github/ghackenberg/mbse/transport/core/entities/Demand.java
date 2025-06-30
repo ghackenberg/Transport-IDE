@@ -1,12 +1,25 @@
 package io.github.ghackenberg.mbse.transport.core.entities;
 
+import io.github.ghackenberg.mbse.transport.core.structures.Location;
+import io.github.ghackenberg.mbse.transport.core.structures.LocationTime;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 
 public class Demand {
 
-	public Vehicle vehicle;
-	public boolean done;
+	public class State {
+		
+		public boolean done = false;
+		
+		public Vehicle vehicle = null;
+		
+		public Segment segment = pick.location.segment.get();
+		
+		public double distance = pick.location.distance.get();
+		
+	}
+	
+	public final ThreadLocal<State> state = new ThreadLocal<>();
 	
 	// Properties
 	
@@ -16,8 +29,6 @@ public class Demand {
 	
 	public final LocationTime pick;
 	public final LocationTime drop;
-	
-	public final Location location = new Location();
 	
 	// Constructors
 	
@@ -49,18 +60,9 @@ public class Demand {
 	
 	// Methods
 	
-	public void reset() {
-		vehicle = null;
-		
-		done = false;
-		
-		location.segment.set(pick.location.segment.get());
-		location.distance.set(pick.location.distance.get());
-	}
-	
 	@Override
 	public String toString( ) {
-		return location.toString() + " " + drop.toString();
+		return pick.toString() + " " + drop.toString();
 	}
 	
 }

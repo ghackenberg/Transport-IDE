@@ -57,7 +57,7 @@ public class Statistics {
 		// Update vehicle distance
 		vehicleDistances.put(vehicle, vehicleDistances.get(vehicle) + distance);
 		// Process vehicle demands
-		vehicle.demands.forEach(demand -> {
+		vehicle.state.get().demands.forEach(demand -> {
 			// Update demand distance
 			demandDistances.put(demand, demandDistances.get(demand) + distance);
 		});
@@ -103,7 +103,7 @@ public class Statistics {
 			// Initialize vehicle distances
 			vehicleDistances.put(vehicle, 0.0);
 			// Update segment traversals
-			segmentTraversals.put(vehicle.location.segment.get(), segmentTraversals.get(vehicle.location.segment.get()) + 1);
+			segmentTraversals.put(vehicle.state.get().segment, segmentTraversals.get(vehicle.state.get().segment) + 1);
 		});
 		// Process demands
 		model.demands.forEach(demand -> {

@@ -1,5 +1,6 @@
-package io.github.ghackenberg.mbse.transport.core.entities;
+package io.github.ghackenberg.mbse.transport.core.structures;
 
+import io.github.ghackenberg.mbse.transport.core.entities.Segment;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 

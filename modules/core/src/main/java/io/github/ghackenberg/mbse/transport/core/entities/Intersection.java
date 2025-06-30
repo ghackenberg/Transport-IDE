@@ -1,10 +1,10 @@
 package io.github.ghackenberg.mbse.transport.core.entities;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import io.github.ghackenberg.mbse.transport.core.structures.Coordinate;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 public class Intersection {
 	
@@ -16,7 +16,7 @@ public class Intersection {
 	
 	public final Coordinate coordinate = new Coordinate();
 	
-	public final List<Segment> incoming = new ArrayList<>();
-	public final List<Segment> outgoing = new ArrayList<>();
+	public final ObservableList<Segment> incoming = FXCollections.observableArrayList();
+	public final ObservableList<Segment> outgoing = FXCollections.observableArrayList();
 	
 }

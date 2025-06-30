@@ -28,7 +28,7 @@ public class VehicleBatteriesChartViewer extends SingleChartViewer {
 		// Update values
 		
 		for (Vehicle vehicle : model.vehicles) {
-			double batteryLevel = vehicle.batteryLevel;
+			double batteryLevel = vehicle.state.get().batteryLevel;
 			double batteryCapacity = vehicle.batteryCapacity.get();
 			dataset.addValue(batteryLevel, "Battery level", vehicle.name.get());
 			dataset.addValue(batteryCapacity - batteryLevel, "Battery capacity", vehicle.name.get());

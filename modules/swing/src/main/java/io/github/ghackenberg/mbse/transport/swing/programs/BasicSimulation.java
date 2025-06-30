@@ -8,7 +8,6 @@ import io.github.ghackenberg.mbse.transport.core.Exporter;
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.Parser;
 import io.github.ghackenberg.mbse.transport.core.Simulator;
-import io.github.ghackenberg.mbse.transport.core.Statistics;
 import io.github.ghackenberg.mbse.transport.core.controllers.GreedyController;
 import io.github.ghackenberg.mbse.transport.core.controllers.ManualController;
 import io.github.ghackenberg.mbse.transport.core.controllers.RandomController;
@@ -52,7 +51,6 @@ public class BasicSimulation {
 			Parser parser = new Parser();
 			// Parser model
 			Model model = parser.parse(new File(modelFolder, "intersections.txt"), new File(modelFolder, "segments.txt"), new File(modelFolder, "stations.txt"), new File(modelFolder, "vehicles.txt"), new File(modelFolder, "demands.txt"));
-			model.reset();
 			// Create controller
 			SwitchableController controller = new SwitchableController();
 			controller.addController(new RandomController());
@@ -60,11 +58,8 @@ public class BasicSimulation {
 			controller.addController(new GreedyController(model));
 			controller.addController(new SmartController(model));
 			controller.reset();
-			// Create statistics
-			Statistics statistics = new Statistics(model);
-			statistics.reset();
 			// Create simulator
-			Simulator simulator = new Simulator("Static", model, controller, statistics, 1000.0 / 30.0, 1.0, runsFolder);
+			Simulator simulator = new Simulator("Static", model, controller, 1000.0 / 30.0, 1.0, runsFolder);
 			// Create simulators
 			List<Simulator> simulators = new ArrayList<>();
 			simulators.add(simulator);
@@ -72,7 +67,7 @@ public class BasicSimulation {
 			Exporter exporter = new CSVExporter(".");
 			// Create viewer
 			SingleViewer viewer = new SingleViewer(simulator, controller);
-			viewer.addViewer(0, 0, 1, 2, new ModelViewer(model, statistics));
+			viewer.addViewer(0, 0, 1, 2, new ModelViewer(model, simulator.getStatistics()));
 			viewer.addViewer(1, 0, 1, 1, new VehicleBatteriesChartViewer(simulators, 0));
 			viewer.addViewer(1, 1, 1, 1, new VehicleDistancesChartViewer(simulators, 0));
 			viewer.addViewer(2, 0, 1, 1, new DemandTimesChartViewer(simulators, 0));
@@ -85,18 +80,18 @@ public class BasicSimulation {
 			});
 			simulator.setHandleStopped(() -> {
 				viewer.handleStopped();
-				exporter.export(model, statistics);
+				exporter.export(model, simulator.getStatistics());
 			});
 			simulator.setHandleFinished(() -> {
 				viewer.handleFinished();
-				exporter.export(model, statistics);
+				exporter.export(model, simulator.getStatistics());
 			});
 			simulator.setHandleException(exception -> {
 				viewer.handleException(exception);
 			});
 			simulator.start();
 			// Print time
-			System.out.println("Finished in " + Math.round(model.time)+ "ms");
+			System.out.println("Finished in " + Math.round(model.state.get().time)+ "ms");
 		} catch (ArgumentsException exception) {
 			
 			System.err.println(exception.getMessage());

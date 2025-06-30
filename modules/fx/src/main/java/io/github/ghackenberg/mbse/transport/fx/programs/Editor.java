@@ -58,7 +58,6 @@ public class Editor extends Application {
 				
 				try {
 					model = new Parser().parse(intersections, segments, stations, vehicles, demands);
-					model.reset();
 					
 					viewer = new ModelViewer(model);
 					viewer.setOnIntersectionSelected(entityEvent -> {

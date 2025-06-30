@@ -1,21 +1,24 @@
 package io.github.ghackenberg.mbse.transport.fx.viewers;
 
+import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.fx.events.AbstractEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 
-public class EntityViewer<T, S extends AbstractEvent<T>> extends Group {
+public abstract class EntityViewer<T, S extends AbstractEvent<T>> extends Group {
 
-	private T entity;
+	protected final Model model;
+	protected final Model.State modelState;
+	
+	protected final T entity;
 	
 	private EventHandler<S> onSelected;
 	
-	public EntityViewer(T entity) {
+	public EntityViewer(Model model, T entity) {
+		this.model = model;
+		this.modelState = model.state.get();
+		
 		this.entity = entity;
-	}
-	
-	public T getEntity() {
-		return entity;
 	}
 	
 	public void setOnSelected(EventHandler<S> handler) {
@@ -25,5 +28,7 @@ public class EntityViewer<T, S extends AbstractEvent<T>> extends Group {
 	protected EventHandler<S> getOnSelected() {
 		return onSelected;
 	}
+	
+	public abstract void update();
 	
 }

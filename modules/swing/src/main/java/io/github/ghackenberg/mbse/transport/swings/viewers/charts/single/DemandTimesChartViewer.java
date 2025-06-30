@@ -28,7 +28,7 @@ public class DemandTimesChartViewer extends SingleChartViewer {
 		// Update values
 		
 		for (Demand demand : model.demands) {
-			if (demand.pick.time.get() > model.time) {
+			if (demand.pick.time.get() > model.state.get().time) {
 				
 				dataset.addValue(0, "Underdue (wait)", demand.toString());
 				dataset.addValue(0, "Underdue (ride)", demand.toString());
@@ -37,12 +37,12 @@ public class DemandTimesChartViewer extends SingleChartViewer {
 				
 			} else {
 				
-				double pickup = model.time;
+				double pickup = model.state.get().time;
 				if (statistics.demandPickupAcceptTimes.get(demand).size() == 1) {
 					pickup = statistics.demandPickupAcceptTimes.get(demand).entrySet().iterator().next().getKey();
 				}
 				
-				double dropoff = model.time;
+				double dropoff = model.state.get().time;
 				if (statistics.demandDropoffTimes.get(demand).size() == 1) {
 					dropoff = statistics.demandDropoffTimes.get(demand).entrySet().iterator().next().getKey();
 				}
@@ -70,8 +70,8 @@ public class DemandTimesChartViewer extends SingleChartViewer {
 			Model model = simulator.getModel();
 			Statistics statistics = simulator.getStatistics();
 			for (Demand demand : model.demands) {
-				if (demand.pick.time.get() < model.time) {
-					double dropoff = model.time;
+				if (demand.pick.time.get() < model.state.get().time) {
+					double dropoff = model.state.get().time;
 					if (statistics.demandDropoffTimes.get(demand).size() == 1) {
 						dropoff = statistics.demandDropoffTimes.get(demand).entrySet().iterator().next().getKey();
 					}

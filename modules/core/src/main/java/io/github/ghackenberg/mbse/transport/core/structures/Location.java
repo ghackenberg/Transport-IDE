@@ -1,5 +1,6 @@
-package io.github.ghackenberg.mbse.transport.core.entities;
+package io.github.ghackenberg.mbse.transport.core.structures;
 
+import io.github.ghackenberg.mbse.transport.core.entities.Segment;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.DoubleProperty;
@@ -13,6 +14,7 @@ public class Location {
 	
 	public final ObjectProperty<Segment> segment = new SimpleObjectProperty<>();
 	public final DoubleProperty distance = new SimpleDoubleProperty();
+	public final DoubleProperty angle = new SimpleDoubleProperty();
 	
 	// Structures
 	
@@ -24,7 +26,7 @@ public class Location {
 		final InvalidationListener listener = new InvalidationListener() {
 			@Override
 			public void invalidated(Observable observable) {
-				recomputeCoordinate();	
+				recompute();
 			}
 		};
 		
@@ -59,7 +61,7 @@ public class Location {
 				newValue.end.coordinate.z.addListener(listener);
 			}
 			
-			recomputeCoordinate();
+			recompute();
 		});
 		// Change distance
 		distance.addListener(listener);
@@ -74,7 +76,7 @@ public class Location {
 	
 	// Methods
 	
-	private void recomputeCoordinate() {
+	private void recompute() {
 		if (segment.get() != null) {
 			Coordinate start = segment.get().start.coordinate;
 			Coordinate end = segment.get().end.coordinate;
@@ -85,10 +87,14 @@ public class Location {
 			coordinate.x.set(start.x.get() + (end.x.get() - start.x.get()) * prg);
 			coordinate.y.set(start.y.get() + (end.y.get() - start.y.get()) * prg);
 			coordinate.z.set(start.z.get() + (end.z.get() - start.z.get()) * prg);
+			
+			angle.set(segment.get().angle.get());
 		} else {
 			coordinate.x.set(0);
 			coordinate.y.set(0);
 			coordinate.z.set(0);
+			
+			angle.set(0);
 		}
 	}
 	

@@ -44,11 +44,11 @@ public class ManualController implements Controller {
 
 	@Override
 	public Segment selectSegment(Vehicle vehicle) {
-		List<Segment> outgoing = vehicle.location.segment.get().end.outgoing;
+		List<Segment> outgoing = vehicle.state.get().segment.end.outgoing;
 		if (outgoing.size() == 1) {
 			return outgoing.get(0);
 		} else {
-			int index = JOptionPane.showOptionDialog(null, "Which segment should vehicle " + vehicle + " take?", "Route choice", JOptionPane.YES_OPTION, JOptionPane.QUESTION_MESSAGE, null, vehicle.location.segment.get().end.outgoing.toArray(), vehicle.location.segment.get().end.outgoing.get(0));
+			int index = JOptionPane.showOptionDialog(null, "Which segment should vehicle " + vehicle + " take?", "Route choice", JOptionPane.YES_OPTION, JOptionPane.QUESTION_MESSAGE, null, vehicle.state.get().segment.end.outgoing.toArray(), vehicle.state.get().segment.end.outgoing.get(0));
 			if (index >= 0) {
 				return outgoing.get(index);
 			} else {

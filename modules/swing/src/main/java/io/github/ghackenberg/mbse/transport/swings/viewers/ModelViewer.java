@@ -21,12 +21,13 @@ import javax.swing.JPanel;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.Statistics;
-import io.github.ghackenberg.mbse.transport.core.entities.Coordinate;
 import io.github.ghackenberg.mbse.transport.core.entities.Demand;
 import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
 import io.github.ghackenberg.mbse.transport.core.entities.Station;
 import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
+import io.github.ghackenberg.mbse.transport.core.structures.Coordinate;
+import io.github.ghackenberg.mbse.transport.core.structures.Location;
 
 public class ModelViewer implements Viewer {
 	
@@ -169,7 +170,7 @@ public class ModelViewer implements Viewer {
 		// Draw time
 		graphics.setFont(new Font(FONT_NAME, FONT_STYLE, 10));
 		
-		String timeText = "Time: " + Math.round(model.time / 1000.0) + "s";
+		String timeText = "Time: " + Math.round(model.state.get().time / 1000.0) + "s";
 		
 		int timeTextHeight = graphics.getFontMetrics().getAscent();
 		
@@ -190,7 +191,7 @@ public class ModelViewer implements Viewer {
 		}
 		// Draw demands
 		for (Demand demand : model.demands) {
-			if (!demand.done && demand.pick.time.get() <= model.time) {
+			if (!demand.state.get().done && demand.pick.time.get() <= model.state.get().time) {
 				drawDemand(graphics, demand);
 			}
 		}
@@ -233,8 +234,8 @@ public class ModelViewer implements Viewer {
 		Color color = SEGMENT_COLOR;
 		
 		for (Vehicle vehicle : model.vehicles) {
-			if (vehicle.location.distance.get() == vehicle.location.segment.get().length.get()) {
-				if (vehicle.location.segment.get().end == segment.start) {
+			if (vehicle.state.get().distance == vehicle.state.get().segment.length.get()) {
+				if (vehicle.state.get().segment.end == segment.start) {
 					color = Color.PINK;
 					break;
 				}
@@ -309,13 +310,15 @@ public class ModelViewer implements Viewer {
 	
 	private void drawSpeed(Graphics2D graphics, Vehicle vehicle) {
 		
-		double centerX = calculateCenterX(vehicle);
-		double centerY = calculateCenterY(vehicle);
+		final Location location = new Location(vehicle.state.get().segment, vehicle.state.get().distance); 
+		
+		double centerX = calculateCenterX(vehicle, location);
+		double centerY = calculateCenterY(vehicle, location);
 		
 		double vehicleLength = ratioScreenModel * vehicle.length.get() / 2;
 		
-		double deltaX = calculateDeltaX(vehicle.location.segment.get());
-		double deltaY = calculateDeltaY(vehicle.location.segment.get());
+		double deltaX = calculateDeltaX(vehicle.state.get().segment);
+		double deltaY = calculateDeltaY(vehicle.state.get().segment);
 		
 		double leftX = (Math.cos(+ Math.PI / 2) * deltaX - Math.sin(+ Math.PI / 2) * deltaY) * 1 * ratioScreenModel;
 		double leftY = (Math.sin(+ Math.PI / 2) * deltaX + Math.cos(+ Math.PI / 2) * deltaY) * 1 * ratioScreenModel;
@@ -326,8 +329,8 @@ public class ModelViewer implements Viewer {
 		double startX = centerX + deltaX * vehicleLength;
 		double startY = centerY + deltaY * vehicleLength;
 		
-		double endX = startX + deltaX * vehicle.speed * 1000 / 60 / 60 * ratioScreenModel;
-		double endY = startY + deltaY * vehicle.speed * 1000 / 60 / 60 * ratioScreenModel;
+		double endX = startX + deltaX * vehicle.state.get().speed * 1000 / 60 / 60 * ratioScreenModel;
+		double endY = startY + deltaY * vehicle.state.get().speed * 1000 / 60 / 60 * ratioScreenModel;
 		
 		double middleX = endX - deltaX * 1 * ratioScreenModel;
 		double middleY = endY - deltaY * 1 * ratioScreenModel;
@@ -349,14 +352,16 @@ public class ModelViewer implements Viewer {
 	
 	private void drawBatteryLevel(Graphics2D graphics, Vehicle vehicle) {
 		
-		double deltaX = calculateDeltaX(vehicle.location.segment.get());
-		double deltaY = calculateDeltaY(vehicle.location.segment.get());
+		final Location location = new Location(vehicle.state.get().segment, vehicle.state.get().distance); 
+		
+		double deltaX = calculateDeltaX(vehicle.state.get().segment);
+		double deltaY = calculateDeltaY(vehicle.state.get().segment);
 		
 		double stepX = Math.cos(Math.PI / 2) * deltaX - Math.sin(Math.PI / 2) * deltaY;
 		double stepY = Math.sin(Math.PI / 2) * deltaX + Math.cos(Math.PI / 2) * deltaY;
 		
-		double centerX = calculateCenterX(vehicle);
-		double centerY = calculateCenterY(vehicle);
+		double centerX = calculateCenterX(vehicle, location);
+		double centerY = calculateCenterY(vehicle, location);
 		
 		double vehicleLength = ratioScreenModel * vehicle.length.get() / 2;
 		double vehicleWidth =  ratioScreenModel * VEHICLE_WIDTH / 2;
@@ -364,7 +369,7 @@ public class ModelViewer implements Viewer {
 		double factor1 = 1.1;
 		double factor2 = 1.3;
 		
-		double percentage = vehicle.batteryLevel / vehicle.batteryCapacity.get();
+		double percentage = vehicle.state.get().batteryLevel / vehicle.batteryCapacity.get();
 		
 		// Background
 		Polygon background = new Polygon();
@@ -390,14 +395,16 @@ public class ModelViewer implements Viewer {
 	
 	private void drawDemandLevel(Graphics2D graphics, Vehicle vehicle) {
 		
-		double deltaX = calculateDeltaX(vehicle.location.segment.get());
-		double deltaY = calculateDeltaY(vehicle.location.segment.get());
+		final Location location = new Location(vehicle.state.get().segment, vehicle.state.get().distance); 
+		
+		double deltaX = calculateDeltaX(vehicle.state.get().segment);
+		double deltaY = calculateDeltaY(vehicle.state.get().segment);
 		
 		double stepX = Math.cos(Math.PI / 2) * deltaX - Math.sin(Math.PI / 2) * deltaY;
 		double stepY = Math.sin(Math.PI / 2) * deltaX + Math.cos(Math.PI / 2) * deltaY;
 		
-		double centerX = calculateCenterX(vehicle);
-		double centerY = calculateCenterY(vehicle);
+		double centerX = calculateCenterX(vehicle, location);
+		double centerY = calculateCenterY(vehicle, location);
 		
 		double vehicleLength = ratioScreenModel * vehicle.length.get() / 2;
 		double vehicleWidth =  ratioScreenModel * VEHICLE_WIDTH / 2;
@@ -405,7 +412,7 @@ public class ModelViewer implements Viewer {
 		double factor1 = 1.4;
 		double factor2 = 1.6;
 		
-		double percentage = vehicle.loadLevel / vehicle.loadCapacity.get();
+		double percentage = vehicle.state.get().loadLevel / vehicle.loadCapacity.get();
 		
 		// Background
 		Polygon background = new Polygon();
@@ -430,29 +437,31 @@ public class ModelViewer implements Viewer {
 	}
 	
 	private void drawVehicle(Graphics2D graphics, Vehicle vehicle) {
+		
+		final Location location = new Location(vehicle.state.get().segment, vehicle.state.get().distance); 
 
-		double vehicleFront = vehicle.location.distance.get() + vehicle.length.get() / 2;
-		double vehicleBack = vehicle.location.distance.get() - vehicle.length.get() / 2;
+		double vehicleFront = vehicle.state.get().distance + vehicle.length.get() / 2;
+		double vehicleBack = vehicle.state.get().distance - vehicle.length.get() / 2;
 		
 		boolean decline = false;
 		for (Entry<Demand, Map<Double, Vehicle>> entry : statistics.demandPickupDeclineTimes.entrySet()) {
-			if (entry.getValue().containsKey(model.time) && entry.getValue().get(model.time) == vehicle) {
+			if (entry.getValue().containsKey(model.state.get().time) && entry.getValue().get(model.state.get().time) == vehicle) {
 				decline = true;
 				break;
 			}
 		}
 		boolean accept = false;
 		for (Entry<Demand, Map<Double, Vehicle>> entry : statistics.demandPickupAcceptTimes.entrySet()) {
-			if (entry.getValue().containsKey(model.time) && entry.getValue().get(model.time) == vehicle) {
+			if (entry.getValue().containsKey(model.state.get().time) && entry.getValue().get(model.state.get().time) == vehicle) {
 				accept = true;
 				break;
 			}
 		}
 		boolean decide = false;
 		for (Demand demand : model.demands) {
-			if (demand.done == false && demand.vehicle == null && demand.pick.time.get() <= model.time) {
-				if (demand.location.segment.get() == vehicle.location.segment.get()) {
-					if (demand.location.distance.get() == vehicle.location.distance.get()) {
+			if (demand.state.get().done == false && demand.state.get().vehicle == null && demand.pick.time.get() <= model.state.get().time) {
+				if (demand.state.get().segment == vehicle.state.get().segment) {
+					if (demand.state.get().distance == vehicle.state.get().distance) {
 						decide = true;
 						break;
 					}
@@ -460,9 +469,9 @@ public class ModelViewer implements Viewer {
 			}
 		}
 		boolean dropoff = false;
-		for (Demand demand : vehicle.demands) {
-			if (demand.drop.location.segment.get() == vehicle.location.segment.get()) {
-				if (demand.drop.location.distance.get() == vehicle.location.distance.get()) {
+		for (Demand demand : vehicle.state.get().demands) {
+			if (demand.drop.location.segment.get() == vehicle.state.get().segment) {
+				if (demand.drop.location.distance.get() == vehicle.state.get().distance) {
 					dropoff = true;
 					break;
 				}
@@ -471,18 +480,18 @@ public class ModelViewer implements Viewer {
 		boolean attach = false;
 		boolean detach = false;
 		for (Vehicle other : model.vehicles) {
-			if (other.location.segment.get() == vehicle.location.segment.get()) {
-				double otherFront = other.location.distance.get() + other.length.get() / 2;
-				double otherBack = other.location.distance.get() - other.length.get() / 2;
+			if (other.state.get().segment == vehicle.state.get().segment) {
+				double otherFront = other.state.get().distance + other.length.get() / 2;
+				double otherBack = other.state.get().distance - other.length.get() / 2;
 				if (otherBack == vehicleFront) {
-					if (other.speed < vehicle.speed) {
+					if (other.state.get().speed < vehicle.state.get().speed) {
 						attach = true;
 					} else {
 						detach = true;
 					}
 				}
 				if (otherFront == vehicleBack) {
-					if (other.speed > vehicle.speed) {
+					if (other.state.get().speed > vehicle.state.get().speed) {
 						attach = true;
 					} else {
 						detach = true;
@@ -492,31 +501,31 @@ public class ModelViewer implements Viewer {
 		}
 		boolean charge = false;
 		for (Station station : model.stations) {
-			if (statistics.chargeStartTimes.get(station).get(model.time) == vehicle) {
+			if (statistics.chargeStartTimes.get(station).get(model.state.get().time) == vehicle) {
 				charge = true;
 				break;
 			}
-			if (statistics.chargeEndTimes.get(station).get(model.time) == vehicle) {
+			if (statistics.chargeEndTimes.get(station).get(model.state.get().time) == vehicle) {
 				charge = true;
 				break;
 			}
 		}
 		
-		double deltaX = calculateDeltaX(vehicle.location.segment.get());
-		double deltaY = calculateDeltaY(vehicle.location.segment.get());
+		double deltaX = calculateDeltaX(vehicle.state.get().segment);
+		double deltaY = calculateDeltaY(vehicle.state.get().segment);
 		
 		double stepX = Math.cos(Math.PI / 2) * deltaX - Math.sin(Math.PI / 2) * deltaY;
 		double stepY = Math.sin(Math.PI / 2) * deltaX + Math.cos(Math.PI / 2) * deltaY;
 		
-		double centerX = calculateCenterX(vehicle);
-		double centerY = calculateCenterY(vehicle);
+		double centerX = calculateCenterX(vehicle, location);
+		double centerY = calculateCenterY(vehicle, location);
 		
 		double vehicleLength = ratioScreenModel * vehicle.length.get() / 2;
 		double vehicleWidth =  ratioScreenModel * VEHICLE_WIDTH / 2;
 		
 		double radius = Math.sqrt(vehicleLength * vehicleLength + vehicleWidth * vehicleWidth) * 1.1;
 		
-		if (vehicle.location.distance.get() == vehicle.location.segment.get().length.get() || decide || dropoff || attach || detach || charge) {
+		if (vehicle.state.get().distance == vehicle.state.get().segment.length.get() || decide || dropoff || attach || detach || charge) {
 			graphics.setColor(Color.RED);
 			graphics.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[] { 10 }, 0));
 			graphics.drawArc((int) (centerX - radius), (int) (centerY - radius), (int) (radius * 2), (int) (radius * 2), 0, 360);
@@ -528,7 +537,7 @@ public class ModelViewer implements Viewer {
 		polygon.addPoint((int) (centerX + deltaX * vehicleLength - stepX * vehicleWidth), (int) (centerY + deltaY * vehicleLength - stepY * vehicleWidth));
 		polygon.addPoint((int) (centerX + deltaX * vehicleLength + stepX * vehicleWidth), (int) (centerY + deltaY * vehicleLength + stepY * vehicleWidth));
 		
-		graphics.setColor(accept ? VEHICLE_ACCEPT_COLOR : (decline ? VEHICLE_DECLINE_COLOR : (vehicle.collisions.size() > 1 ? VEHICLE_COLLISION_COLOR : VEHICLE_DEFAULT_COLOR)));
+		graphics.setColor(accept ? VEHICLE_ACCEPT_COLOR : (decline ? VEHICLE_DECLINE_COLOR : (vehicle.state.get().collisions.size() > 1 ? VEHICLE_COLLISION_COLOR : VEHICLE_DEFAULT_COLOR)));
 		graphics.fillPolygon(polygon);
 		
 		graphics.setFont(new Font(FONT_NAME, FONT_STYLE, (int) Math.min(vehicleLength, vehicleWidth)));
@@ -546,44 +555,46 @@ public class ModelViewer implements Viewer {
 	
 	private void drawDemand(Graphics2D graphics, Demand demand) {
 		
-		Coordinate pickup = demand.location.coordinate;
+		final Location location = new Location(demand.state.get().segment, demand.state.get().distance); 
+		
+		Coordinate pickup = location.coordinate;
 		Coordinate dropoff = demand.drop.location.coordinate;
 		
-		double pickupCenterX = demand.vehicle == null ? calculateX(pickup) : calculateCenterX(demand.vehicle);
-		double pickupCenterY = demand.vehicle == null ? calculateY(pickup) : calculateCenterY(demand.vehicle);
+		double pickupCenterX = demand.state.get().vehicle == null ? calculateX(pickup) : calculateCenterX(demand.state.get().vehicle, location);
+		double pickupCenterY = demand.state.get().vehicle == null ? calculateY(pickup) : calculateCenterY(demand.state.get().vehicle, location);
 		
 		double dropoffCenterX = calculateX(dropoff);
 		double dropoffCenterY = calculateY(dropoff);
 		
-		graphics.setColor(demand.vehicle == null ? DEMAND_WAIT_COLOR : DEMAND_RIDE_COLOR);
+		graphics.setColor(demand.state.get().vehicle == null ? DEMAND_WAIT_COLOR : DEMAND_RIDE_COLOR);
 		graphics.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[] { 5 }, 0));
 		graphics.drawLine((int) pickupCenterX, (int) pickupCenterY, (int) dropoffCenterX, (int) dropoffCenterY);
 		
 		double radius = demand.size.get() * ratioScreenModel;
 		
-		if (demand.pick.time.get() == model.time) {
+		if (demand.pick.time.get() == model.state.get().time) {
 			graphics.setColor(Color.RED);
 			graphics.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[] { 10 }, 0));
 			graphics.drawArc((int) (pickupCenterX - radius * 1.5), (int) (pickupCenterY - radius * 1.5), (int) (radius * 3), (int) (radius * 3), 0, 360);
 		}
 		
-		if (demand.drop.time.get() == model.time) {
+		if (demand.drop.time.get() == model.state.get().time) {
 			graphics.setColor(Color.RED);
 			graphics.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, new float[] { 10 }, 0));
 			graphics.drawArc((int) (dropoffCenterX - radius * 1.5), (int) (dropoffCenterY - radius * 1.5), (int) (radius * 3), (int) (radius * 3), 0, 360);
 		}
 		
-		if (demand.vehicle == null) {
-			graphics.setColor(demand.drop.time.get() < model.time ? DEMAND_OVERDUE_COLOR : DEMAND_UNDERDUE_COLOR);
+		if (demand.state.get().vehicle == null) {
+			graphics.setColor(demand.drop.time.get() < model.state.get().time ? DEMAND_OVERDUE_COLOR : DEMAND_UNDERDUE_COLOR);
 			graphics.fillArc((int) (pickupCenterX - radius), (int) (pickupCenterY - radius), (int) (radius * 2), (int) (radius * 2), 0, 360);
 		}
 		
-		graphics.setColor(demand.drop.time.get() < model.time ? DEMAND_OVERDUE_COLOR : DEMAND_UNDERDUE_COLOR);
+		graphics.setColor(demand.drop.time.get() < model.state.get().time ? DEMAND_OVERDUE_COLOR : DEMAND_UNDERDUE_COLOR);
 		graphics.fillArc((int) (dropoffCenterX - radius), (int) (dropoffCenterY - radius), (int) (radius * 2), (int) (radius * 2), 0, 360);
 		
 		graphics.setFont(new Font(FONT_NAME, FONT_STYLE, 10));
 		
-		if (demand.vehicle == null) {
+		if (demand.state.get().vehicle == null) {
 			String pickupText = Math.round(demand.pick.time.get() / 1000) + "s";
 			
 			int pickupTextWidth = graphics.getFontMetrics().stringWidth(pickupText);
@@ -636,28 +647,28 @@ public class ModelViewer implements Viewer {
 		return delta / length;
 	}
 	
-	private double calculateCenterX(Vehicle vehicle) {
-		double deltaX = calculateDeltaX(vehicle.location.segment.get());
-		double deltaY = calculateDeltaY(vehicle.location.segment.get());
+	private double calculateCenterX(Vehicle vehicle, Location location) {
+		double deltaX = calculateDeltaX(vehicle.state.get().segment);
+		double deltaY = calculateDeltaY(vehicle.state.get().segment);
 		
 		double step = (Math.cos(Math.PI / 2) * deltaX - Math.sin(Math.PI / 2) * deltaY);
-		double left = step * vehicle.location.segment.get().lanes.get() * LANE_WIDTH * ratioScreenModel / 2;
+		double left = step * vehicle.state.get().segment.lanes.get() * LANE_WIDTH * ratioScreenModel / 2;
 		
-		Coordinate coordinate = vehicle.location.coordinate;
+		Coordinate coordinate = location.coordinate;
 		
-		return (int) (calculateX(coordinate) - left + step * (vehicle.lane + 0.5) * LANE_WIDTH * ratioScreenModel);
+		return (int) (calculateX(coordinate) - left + step * (vehicle.state.get().lane + 0.5) * LANE_WIDTH * ratioScreenModel);
 	}
 	
-	private double calculateCenterY(Vehicle vehicle) {
-		double deltaX = calculateDeltaX(vehicle.location.segment.get());
-		double deltaY = calculateDeltaY(vehicle.location.segment.get());
+	private double calculateCenterY(Vehicle vehicle, Location location) {
+		double deltaX = calculateDeltaX(location.segment.get());
+		double deltaY = calculateDeltaY(location.segment.get());
 		
 		double step = (Math.sin(Math.PI / 2) * deltaX + Math.cos(Math.PI / 2) * deltaY);
-		double left = step * vehicle.location.segment.get().lanes.get() * LANE_WIDTH * ratioScreenModel / 2;
+		double left = step * location.segment.get().lanes.get() * LANE_WIDTH * ratioScreenModel / 2;
 		
-		Coordinate coordinate = vehicle.location.coordinate;
+		Coordinate coordinate = location.coordinate;
 		
-		return (int) (calculateY(coordinate) - left + step * (vehicle.lane + 0.5) * LANE_WIDTH * ratioScreenModel);
+		return (int) (calculateY(coordinate) - left + step * (vehicle.state.get().lane + 0.5) * LANE_WIDTH * ratioScreenModel);
 	}
 	
 	private double calculateX(Coordinate coordinate) {

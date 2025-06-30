@@ -8,16 +8,15 @@ import io.github.ghackenberg.mbse.transport.core.Controller;
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.Parser;
 import io.github.ghackenberg.mbse.transport.core.Simulator;
-import io.github.ghackenberg.mbse.transport.core.Statistics;
 import io.github.ghackenberg.mbse.transport.core.controllers.GreedyController;
 import io.github.ghackenberg.mbse.transport.core.controllers.RandomController;
 import io.github.ghackenberg.mbse.transport.core.controllers.SmartController;
 import io.github.ghackenberg.mbse.transport.core.entities.Demand;
-import io.github.ghackenberg.mbse.transport.core.entities.Location;
-import io.github.ghackenberg.mbse.transport.core.entities.LocationTime;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
 import io.github.ghackenberg.mbse.transport.core.entities.Station;
 import io.github.ghackenberg.mbse.transport.core.exceptions.ArgumentsException;
+import io.github.ghackenberg.mbse.transport.core.structures.Location;
+import io.github.ghackenberg.mbse.transport.core.structures.LocationTime;
 import io.github.ghackenberg.mbse.transport.fx.charts.HistogramChart;
 import io.github.ghackenberg.mbse.transport.fx.charts.PercentageChart;
 import io.github.ghackenberg.mbse.transport.fx.viewers.ModelViewer;
@@ -69,27 +68,27 @@ public class Comparison extends Application {
 	
 	final List<String> names = new ArrayList<>();
 	final List<File> folders = new ArrayList<>();
-	final List<List<Model>> models = new ArrayList<>();
-	final List<List<Statistics>> statistics = new ArrayList<>();
+	final List<Model> models = new ArrayList<>();
 	
 	final List<List<Integer>> replicationCounts = new ArrayList<>(); 
 	
-	final List<List<ModelViewer>> modelViewers = new ArrayList<>();
 	final List<List<PercentageChart>> percentageViewers = new ArrayList<>();
 	final List<List<HistogramChart>> histogramViewers = new ArrayList<>();
 	
 	AnimationTimer animation;
 	
-	final ObservableList<String> modelPaneListItems = FXCollections.observableArrayList();
-	final ListView<String> modelPaneList = new ListView<>(modelPaneListItems);
-	final BorderPane modelPane = new BorderPane();
+	final List<ModelViewer> modelViewers = new ArrayList<>();
+	final ObservableList<String> simulatorPaneLeftItems = FXCollections.observableArrayList();
+	final ListView<String> simulatorPaneLeft = new ListView<>(simulatorPaneLeftItems);
+	final List<BorderPane> simulatorPaneCenter = new ArrayList<>();
+	final BorderPane simulatorPane = new BorderPane();
 	
 	final ProgressBar progress = new ProgressBar();
 
 	final GridPane chartPane = new GridPane();
 	
 	final Tab chartsTab = new Tab("Charts", chartPane);
-	final Tab simulatorsTab = new Tab("Simulators", modelPane);
+	final Tab simulatorsTab = new Tab("Simulators", simulatorPane);
 	
 	final ToolBar top = new ToolBar(new Label("Progress:"), progress);
 	final ToolBar bottom = new ToolBar(new Label("(c) 2025 Dr. Georg Hackenberg, Professor for Industrial Informatics, FH Upper Austria."));
@@ -155,19 +154,11 @@ public class Comparison extends Application {
 			
 			// Parse
 			
-			List<Model> procModels = new ArrayList<>();
+			Model model = parser.parse(intersections, segments, stations, vehicles, demands);
+			model.name.set(modelFolder.getName());
+			model.demands.clear();
 			
-			for (int processor = 0; processor < processorCount; processor++) {
-				Model model = parser.parse(intersections, segments, stations, vehicles, demands);
-				model.name = modelFolder.getName();
-				model.demands.clear();
-				
-				procModels.add(model);
-			}
-			
-			// Add
-			
-			models.add(procModels);
+			models.add(model);
 			
 		} while (true);
 		
@@ -185,8 +176,8 @@ public class Comparison extends Application {
 			
 			// Select segments
 			
-			int pickupSegmentNumber = (int) (Math.random() * models.get(0).get(0).segments.size());
-			int dropoffSegmentNumber = (int) (Math.random() * models.get(0).get(0).segments.size());
+			int pickupSegmentNumber = (int) (Math.random() * models.get(0).segments.size());
+			int dropoffSegmentNumber = (int) (Math.random() * models.get(0).segments.size());
 			
 			// Select distance (in percent)
 			
@@ -197,21 +188,19 @@ public class Comparison extends Application {
 			
 			boolean valid = true;
 			
-			for (List<Model> procModels : models) {
-				for (Model model : procModels) {
-					for (Station station : model.stations) {
-						if (station.location.segment.get() == model.segments.get(pickupSegmentNumber)) {
-							valid = false;
-						} else if (station.location.segment.get() == model.segments.get(dropoffSegmentNumber)) {
-							valid = false;
-						}
-						if (!valid) {
-							break;
-						}
+			for (Model model : models) {
+				for (Station station : model.stations) {
+					if (station.location.segment.get() == model.segments.get(pickupSegmentNumber)) {
+						valid = false;
+					} else if (station.location.segment.get() == model.segments.get(dropoffSegmentNumber)) {
+						valid = false;
 					}
 					if (!valid) {
 						break;
 					}
+				}
+				if (!valid) {
+					break;
 				}
 			}
 			
@@ -222,92 +211,33 @@ public class Comparison extends Application {
 			
 			// Process models
 
-			for (List<Model> procModels : models) {
-				for (Model model : procModels) {
-					Segment pickupSegment = model.segments.get(pickupSegmentNumber);
-					Segment dropoffSegment = model.segments.get(dropoffSegmentNumber);
-					
-					Location pickLoc = new Location(pickupSegment, pickupDistance * pickupSegment.length.get());
-					Location dropLoc = new Location(dropoffSegment, dropoffDistance * dropoffSegment.length.get());
-					
-					LocationTime pick = new LocationTime(pickLoc, pickupTime);
-					LocationTime drop = new LocationTime(dropLoc, dropoffTime);
-					
-					Demand demand = new Demand(pick, drop, size);
-					
-					model.demands.add(demand);
-				}
+			for (Model model : models) {
+				Segment pickupSegment = model.segments.get(pickupSegmentNumber);
+				Segment dropoffSegment = model.segments.get(dropoffSegmentNumber);
+				
+				Location pickLoc = new Location(pickupSegment, pickupDistance * pickupSegment.length.get());
+				Location dropLoc = new Location(dropoffSegment, dropoffDistance * dropoffSegment.length.get());
+				
+				LocationTime pick = new LocationTime(pickLoc, pickupTime);
+				LocationTime drop = new LocationTime(dropLoc, dropoffTime);
+				
+				Demand demand = new Demand(pick, drop, size);
+				
+				model.demands.add(demand);
 			}
 		}
 		
 		// Sort demands and reset models
 
-		for (List<Model> procModels : models) {
-			for (Model model : procModels) {
-				model.demands.sort((first, second) -> (int) Math.signum(first.pick.time.get() - second.pick.time.get()));
-				model.reset();
-			}
+		for (Model model : models) {
+			model.demands.sort((first, second) -> (int) Math.signum(first.pick.time.get() - second.pick.time.get()));
 		}
 		
-		// Generate statistics
-		
-		for (List<Model> procModels : models) {
-			
-			List<Statistics> procStatistics = new ArrayList<>();
-			
-			for (Model model : procModels) {
-				Statistics statistic = new Statistics(model);
-				statistic.reset();
-				
-				procStatistics.add(statistic);
-			}
-			
-			statistics.add(procStatistics);
-		}
-		
-		// Model viewers
-		
-		for (List<Model> procModels : models) {
-			List<ModelViewer> procViewers = new ArrayList<>();
-			
-			for (Model model : procModels) {
-				procViewers.add(new ModelViewer(model));
-			}
-			
-			modelViewers.add(procViewers);
-		}
-		
-		// Model pane
-		
-		for (int processor = 0; processor < processorCount; processor++) {
-			modelPaneListItems.add("Processor " + processor);
-		}
-		
-		modelPaneList.getSelectionModel().selectedIndexProperty().addListener(event -> {
-			//int index = modelPaneList.getSelectionModel().getSelectedIndex();
-			
-			//modelPane.setCenter(viewers.get(index));
-		});
-		
-		modelPane.setLeft(modelPaneList);
-		
-		// Update viewers
-		
-		animation = new AnimationTimer() {
-			@Override
-			public void handle(long now) {
-				for (List<ModelViewer> procViewers : modelViewers) {
-					for (ModelViewer viewer : procViewers) {
-						viewer.update();
-					}
-				}
-			}
-		};
-		animation.start();
-		
-		// Replication counts
+		// Total count
 		
 		totalCount = replicationCount * models.size() * controllerClasses.size();
+		
+		// Replication counts
 		
 		for (int i = 0; i < models.size(); i++) {
 			List<Integer> controllerCounts = new ArrayList<>();
@@ -357,16 +287,46 @@ public class Comparison extends Application {
 		chartPane.getRowConstraints().add(createRowConstraints(100 / 2.));
 		
 		for (int i = 0; i < models.size(); i++) {
-			chartPane.add(new ModelViewer(models.get(i).get(0), false), i * controllerClasses.size(), 0, controllerClasses.size(), 1);	
+			chartPane.add(new ModelViewer(models.get(i), false), i * controllerClasses.size(), 0, controllerClasses.size(), 1);	
 			for (int j = 0; j < controllerClasses.size(); j++) {
 				chartPane.add(percentageViewers.get(i).get(j), i * controllerClasses.size() + j, 1);
 				chartPane.add(histogramViewers.get(i).get(j), i * controllerClasses.size() + j, 2);	
 			}
 		}
 		
+		// Simulator pane
+		
+		for (int processor = 0; processor < processorCount; processor++) {
+			simulatorPaneLeftItems.add("Processor " + processor);
+			simulatorPaneCenter.add(new BorderPane());
+		}
+		
+		simulatorPaneLeft.getSelectionModel().selectedIndexProperty().addListener(event -> {
+			int index = simulatorPaneLeft.getSelectionModel().getSelectedIndex();
+			
+			simulatorPane.setCenter(simulatorPaneCenter.get(index));
+		});
+		
+		simulatorPane.setLeft(simulatorPaneLeft);
+		
+		// Animation
+		
+		animation = new AnimationTimer() {
+			@Override
+			public void handle(long now) {
+				synchronized (modelViewers) {
+					for (ModelViewer viewer : modelViewers) {
+						viewer.update();
+					}
+				}
+			}
+		};
+		animation.start();
+		
 		// Tabs
 		
 		chartsTab.setClosable(false);
+		
 		simulatorsTab.setClosable(false);
 		
 		mainPane.getTabs().add(chartsTab);
@@ -389,21 +349,16 @@ public class Comparison extends Application {
 			
 			Thread thread = new Thread(() -> {
 				while (true) {
-					int modelIndex = -1;
-					int controllerIndex = -1;
+					int mdlIdx = -1;
+					int ctrlIdx = -1;
 					
 					int repCount = -1;
 
 					String name = null;
 					File folder = null;
-					
 					Model model = null;
-					Statistics statistic = null;
 
 					Class<? extends Controller> controllerClass = null;
-					Controller controller = null;
-					
-					Simulator simulator = null;
 					
 					synchronized (replicationCounts) {
 						for (int i = 0; i < models.size(); i++) {
@@ -411,69 +366,135 @@ public class Comparison extends Application {
 								repCount = replicationCounts.get(i).get(j);
 								
 								if (repCount < replicationCount) {
-									modelIndex = i;
-									controllerIndex = j; 
+									mdlIdx = i;
+									ctrlIdx = j; 
 									
 									name = names.get(i);
 									folder = folders.get(i);
-									
-									model = models.get(i).removeFirst();
-									statistic = statistics.get(i).removeFirst();
+									model = models.get(i);
 									
 									controllerClass = controllerClasses.get(j);
-									if (controllerClass == RandomController.class) {
-										controller = new RandomController();
-									} else if (controllerClass == GreedyController.class) {
-										controller = new GreedyController(model);
-									} else if (controllerClass == SmartController.class) {
-										controller = new SmartController(model);
-									} else {
-										throw new IllegalStateException("Controller class not supported!");
-									}
 									
-									replicationCounts.get(modelIndex).set(controllerIndex, ++repCount);
+									replicationCounts.get(mdlIdx).set(ctrlIdx, ++repCount);
 									
-									System.out.println(modelIndex + "-" + controllerIndex + "-" + repCount);
+									System.out.println(mdlIdx + "-" + ctrlIdx + "-" + repCount);
 									
 									break;
 								}
 							}
 							
-							if (modelIndex != -1 && controllerIndex != -1) {
+							if (mdlIdx != -1 && ctrlIdx != -1) {
 								break;
 							}
 						}
 						
-						if (modelIndex == -1 || controllerIndex == -1) {
+						if (mdlIdx == -1 || ctrlIdx == -1) {
 							return;
 						}
 					}
 					
-					simulator = new Simulator(name + "-" + controllerClass.getSimpleName() + "-" + repCount, model, controller, statistic, maxModelTimeStep, ratioModelRealTime, folder);
+					// Initialize model
+					
+					model.initialize();
+					
+					// Create controller
+					
+					Controller controller = null;
+					
+					if (controllerClass == RandomController.class) {
+						controller = new RandomController();
+					} else if (controllerClass == GreedyController.class) {
+						controller = new GreedyController(model);
+					} else if (controllerClass == SmartController.class) {
+						controller = new SmartController(model);
+					} else {
+						throw new IllegalStateException("Controller class not supported!");
+					}
+					
+					// Create model viewer
+					
+					ModelViewer viewer;
+					
+					synchronized (modelViewers) {
+						viewer = new ModelViewer(model);
+						
+						modelViewers.add(viewer);
+					}
+					
+					Platform.runLater(() -> {
+						simulatorPaneCenter.get(processorIndex).setCenter(viewer);
+					});
+					
+					// Create and run simulator
+					
+					String simName = name + "-" + controllerClass.getSimpleName() + "-" + repCount;
+					
+					final Simulator simulator = new Simulator(simName, model, controller, maxModelTimeStep, ratioModelRealTime, folder);
 					simulator.loop();
 					
-					synchronized (replicationCounts) {
+					// Remove model viewer
+					
+					synchronized (modelViewers) {
+						modelViewers.remove(viewer);
+					}
+					
+					// Update percentage viewer
+					
+					synchronized (percentageViewers) {
 						if (simulator.isFinished()) {
-							percentageViewers.get(modelIndex).get(controllerIndex).increment("Finished");
-							histogramViewers.get(modelIndex).get(controllerIndex).add(controllerClass.getSimpleName(), model.time / 1000 / 60);
+							percentageViewers.get(mdlIdx).get(ctrlIdx).increment("Finished");
 						} else if (simulator.isEmpty()) {
-							percentageViewers.get(modelIndex).get(controllerIndex).increment("Empty");
-						} else if (Double.isInfinite(model.time)) {
-							percentageViewers.get(modelIndex).get(controllerIndex).increment("Infinite");
+							percentageViewers.get(mdlIdx).get(ctrlIdx).increment("Empty");
+						} else if (Double.isInfinite(model.state.get().time)) {
+							percentageViewers.get(mdlIdx).get(ctrlIdx).increment("Infinite");
 						} else {
-							percentageViewers.get(modelIndex).get(controllerIndex).increment("Collision");
+							percentageViewers.get(mdlIdx).get(ctrlIdx).increment("Collision");
+						}
+					}
+					
+					// Update histogram viewer
+					
+					synchronized (histogramViewers) {
+						if (simulator.isFinished()) {
+							histogramViewers.get(mdlIdx).get(ctrlIdx).add(controllerClass.getSimpleName(), model.state.get().time / 1000 / 60);
+						}
+					}
+					
+					// Update user interface
+					
+					final int finMdlIdx = mdlIdx;
+					final int finCtrlIdx = ctrlIdx;
+					
+					Platform.runLater(() -> {
+						synchronized (percentageViewers) {
+							percentageViewers.get(finMdlIdx).get(finCtrlIdx).update();
 						}
 						
-						models.get(modelIndex).add(model);
-						statistics.get(modelIndex).add(statistic);
+						synchronized (histogramViewers) {
+							// Histogram chart
+							
+							double min = +Double.MAX_VALUE;
+							double max = -Double.MAX_VALUE;
+							
+							for (List<HistogramChart> ctrlViewers : histogramViewers) {
+								for (HistogramChart ctrlViewer : ctrlViewers) {
+									min = Math.min(min, ctrlViewer.getMin());
+									max = Math.max(max, ctrlViewer.getMax());
+								}
+							}
+							
+							final double finMin = min;
+							final double finMax = max;
+	
+							for (List<HistogramChart> ctrlViewers : histogramViewers) {
+								for (HistogramChart ctrlViewer : ctrlViewers) {
+									ctrlViewer.update(finMin, finMax);
+								}
+							}
+						};
 						
-						final int myModelIndex = modelIndex;
-						final int myControllerIndex = controllerIndex;
-						
-						Platform.runLater(() -> {
-							update(processorIndex, myModelIndex, myControllerIndex);
-						});
-					}
+						progress.setProgress(++finishedCount / (double) totalCount);
+					});
 				}
 			});
 			thread.start();
@@ -486,41 +507,10 @@ public class Comparison extends Application {
 		primaryStage.show();
 	}
 	
-	private void update(int processorIndex, int modelIndex, int controllerIndex) {
-		synchronized (replicationCounts) {
-			// Pie chart
-			
-			percentageViewers.get(modelIndex).get(controllerIndex).update();
-				
-			// Histogram chart
-			
-			double min = +Double.MAX_VALUE;
-			double max = -Double.MAX_VALUE;
-			
-			for (List<HistogramChart> ctrlViewers : histogramViewers) {
-				for (HistogramChart ctrlViewer : ctrlViewers) {
-					min = Math.min(min, ctrlViewer.getMin());
-					max = Math.max(max, ctrlViewer.getMax());
-				}
-			}
-
-			for (List<HistogramChart> ctrlViewers : histogramViewers) {
-				for (HistogramChart ctrlViewer : ctrlViewers) {
-					ctrlViewer.update(min, max);
-				}
-			}
-			
-			// Progress bar
-				
-			progress.setProgress(++finishedCount / (double) totalCount);
-		}
-	}
-	
 	private ColumnConstraints createColumnConstraints(double percentage) {
 		ColumnConstraints constraints = new ColumnConstraints();
 		
 		constraints.setPercentWidth(percentage);
-		//constraints.setHgrow(Priority.ALWAYS);
 		
 		return constraints;
 	}
@@ -529,7 +519,6 @@ public class Comparison extends Application {
 		RowConstraints constraints = new RowConstraints();
 		
 		constraints.setPercentHeight(percentage);
-		//constraints.setVgrow(Priority.ALWAYS);
 		
 		return constraints;
 	}

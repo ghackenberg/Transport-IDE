@@ -8,7 +8,6 @@ import io.github.ghackenberg.mbse.transport.core.Controller;
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.Parser;
 import io.github.ghackenberg.mbse.transport.core.Simulator;
-import io.github.ghackenberg.mbse.transport.core.Statistics;
 import io.github.ghackenberg.mbse.transport.core.Synchronizer;
 import io.github.ghackenberg.mbse.transport.core.controllers.GreedyController;
 import io.github.ghackenberg.mbse.transport.core.controllers.RandomController;
@@ -156,8 +155,6 @@ public class ControllerComparison {
 			
 			for (Model model : models) {
 				model.demands.sort((first, second) -> (int) Math.signum(first.pick.time.get() - second.pick.time.get()));
-				
-				model.reset();
 			}
 			
 			// Create controllers
@@ -170,16 +167,6 @@ public class ControllerComparison {
 			controller2.reset();
 			controller3.reset();
 			
-			// Create statistics
-			
-			Statistics statistics1 = new Statistics(model1);
-			Statistics statistics2 = new Statistics(model2);
-			Statistics statistics3 = new Statistics(model3);
-			
-			statistics1.reset();
-			statistics2.reset();
-			statistics3.reset();
-			
 			// Create synchronizer
 			
 			Synchronizer synchronizer = new Synchronizer(3);
@@ -191,9 +178,9 @@ public class ControllerComparison {
 			
 			// Create simulators
 			
-			Simulator simulator1 = new Simulator("Random", model1, controller1, statistics1, maxModelTimeStep, ratioModelRealTime, randomRunsFolder, synchronizer);
-			Simulator simulator2 = new Simulator("Greedy", model2, controller2, statistics2, maxModelTimeStep, ratioModelRealTime, greedyRunsFolder, synchronizer);
-			Simulator simulator3 = new Simulator("Smart", model3, controller3, statistics3, maxModelTimeStep, ratioModelRealTime, smartRunsFolder, synchronizer);
+			Simulator simulator1 = new Simulator("Random", model1, controller1, maxModelTimeStep, ratioModelRealTime, randomRunsFolder, synchronizer);
+			Simulator simulator2 = new Simulator("Greedy", model2, controller2, maxModelTimeStep, ratioModelRealTime, greedyRunsFolder, synchronizer);
+			Simulator simulator3 = new Simulator("Smart", model3, controller3, maxModelTimeStep, ratioModelRealTime, smartRunsFolder, synchronizer);
 			
 			// List simulators
 			

@@ -8,10 +8,10 @@ import javafx.scene.shape.Line;
 
 public class SegmentViewer extends EntityViewer<Segment, SegmentEvent> {
 	
-	private Line line;
+	private final Line line;
 	
 	public SegmentViewer(Model model, Segment segment) {
-		super(segment);
+		super(model, segment);
 		
 		setManaged(false);
 		
@@ -34,7 +34,8 @@ public class SegmentViewer extends EntityViewer<Segment, SegmentEvent> {
 		
 		getChildren().add(line);
 	}
-	
+
+	@Override
 	public void update() {
 		
 	}
