@@ -22,7 +22,7 @@ public class IntersectionViewer extends EntityViewer<Intersection, IntersectionE
 		
 		setManaged(false);
 		
-		double radius = 0;
+		double radius = 0.5;
 		
 		for (Segment segment : intersection.incoming) {
 			radius = Math.max(radius, segment.lanes.get() / 2.);
@@ -43,16 +43,17 @@ public class IntersectionViewer extends EntityViewer<Intersection, IntersectionE
 		circle.setFill(Color.BLACK);
 		
 		circle.setOnMouseClicked(event -> {
+			event.consume();
 			circle.setFill(Color.RED);
 			if (getOnSelected() != null) {
 				getOnSelected().handle(new IntersectionEvent(entity));
 			}
 		});
-		circle.setOnMouseDragged(event -> {
-			// TODO start moving intersection
+		circle.setOnDragDetected(event -> {
+			event.consume();
 		});
-		circle.setOnMouseDragReleased(event -> {
-			// TODO stop moving intersection
+		circle.setOnDragDropped(event -> {
+			event.consume();
 		});
 		
 		getChildren().add(circle);
@@ -74,6 +75,7 @@ public class IntersectionViewer extends EntityViewer<Intersection, IntersectionE
 		text.setFill(Color.WHITE);
 		
 		text.setOnMouseClicked(event -> {
+			event.consume();
 			circle.setFill(Color.RED);
 			if (getOnSelected() != null) {
 				getOnSelected().handle(new IntersectionEvent(entity));

@@ -36,16 +36,34 @@ public class Editor extends Application {
 	
 	private ModelViewer viewer;
 	
-	private GridPane grid;
+	private final MenuItem open = new MenuItem("Open");
+	private final MenuItem save = new MenuItem("Save");
+	private final MenuItem saveAs = new MenuItem("Save as");
+	private final MenuItem close = new MenuItem("Close");
+
+	private final Menu file = new Menu("File", null, open, save, saveAs, close);
+	private final Menu edit = new Menu("Edit");
+	private final Menu help = new Menu("Help");
 	
-	private BorderPane root;
+	private final MenuBar top = new MenuBar(file, edit, help);
+	
+	private final ToolBar bottom = new ToolBar();
+	
+	private final GridPane right = new GridPane();
+
+	private final ImageView info = new ImageView("info.png");
+
+	private final VBox welcome = new VBox(info, new Label("Open model to start editing!"));
+	
+	private final BorderPane root = new BorderPane(welcome, top, right, bottom, null);
+	
+	private final Scene scene = new Scene(root, 640, 480);
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		
 		// Menü
 		
-		MenuItem open = new MenuItem("Open");
 		open.setOnAction(menuEvent -> {			
 			DirectoryChooser chooser = new DirectoryChooser();
 			chooser.setInitialDirectory(new File("."));
@@ -63,6 +81,7 @@ public class Editor extends Application {
 					model = new Parser().parse(intersections, segments, stations, vehicles, demands);
 					
 					viewer = new ModelViewer(model);
+					
 					viewer.setOnIntersectionSelected(entityEvent -> {
 						TextField name = new TextField(entityEvent.getEntity().name.get());
 						entityEvent.getEntity().name.bind(name.textProperty());
@@ -91,19 +110,19 @@ public class Editor extends Application {
 							entityEvent.getEntity().coordinate.z.set(Double.parseDouble(z.getText()));
 						});
 						
-						grid.getChildren().clear();
+						right.getChildren().clear();
 						
-						grid.add(new Label("Name"), 0, 0);
-						grid.add(name, 1, 0);
+						right.add(new Label("Name"), 0, 0);
+						right.add(name, 1, 0);
 						
-						grid.add(new Label("X"), 0, 1);
-						grid.add(x, 1, 1);
+						right.add(new Label("X"), 0, 1);
+						right.add(x, 1, 1);
 						
-						grid.add(new Label("Y"), 0, 2);
-						grid.add(y, 1, 2);
+						right.add(new Label("Y"), 0, 2);
+						right.add(y, 1, 2);
 						
-						grid.add(new Label("Z"), 0, 3);
-						grid.add(z, 1, 3);
+						right.add(new Label("Z"), 0, 3);
+						right.add(z, 1, 3);
 					});
 					viewer.setOnSegmentSelected(e -> {
 						// TODO
@@ -127,62 +146,26 @@ public class Editor extends Application {
 			}
 		});
 		
-		MenuItem save = new MenuItem("Save");
 		save.setOnAction(event -> {
 			new Alert(AlertType.ERROR, "Not implemented yet!").showAndWait();
 		});
 		
-		MenuItem saveAs = new MenuItem("Save as");
+		// Right
 		
-		MenuItem close = new MenuItem("Close");
+		right.setPadding(new Insets(10));
 		
-		Menu file = new Menu("File");
-		file.getItems().add(open);
-		file.getItems().add(save);
-		file.getItems().add(saveAs);
-		file.getItems().add(close);
+		right.setHgap(10);
+		right.setVgap(10);
 		
-		Menu edit = new Menu("Edit");
+		// Welcome
 		
-		Menu help = new Menu("Help");
-		
-		MenuBar menu = new MenuBar();
-		menu.getMenus().add(file);
-		menu.getMenus().add(edit);
-		menu.getMenus().add(help);
-		
-		// Rechts
-		
-		grid = new GridPane();
-		
-		grid.setPadding(new Insets(10));
-		
-		grid.setHgap(10);
-		grid.setVgap(10);
-		
-		// Unten
-		
-		ToolBar tool = new ToolBar(new Label("FH Wels"));
-		
-		// Haupt
-		
-		ImageView info = new ImageView("info.png");
 		info.setFitWidth(64);
 		info.setFitHeight(64);
 		
-		Label note = new Label("Open model to start editing!");
+		welcome.setSpacing(10);
+		welcome.setAlignment(Pos.CENTER);
 		
-		VBox center = new VBox(info, note);
-		center.setSpacing(10);
-		center.setAlignment(Pos.CENTER);
-		
-		root = new BorderPane();
-		root.setTop(menu);
-		root.setCenter(center);
-		root.setRight(grid);
-		root.setBottom(tool);
-		
-		Scene scene = new Scene(root, 640, 480);
+		// Stage
 		
 		primaryStage.setScene(scene);
 		primaryStage.setTitle("Transport-IDE Editor");

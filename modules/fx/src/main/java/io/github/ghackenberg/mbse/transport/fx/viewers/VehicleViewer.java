@@ -46,6 +46,11 @@ public class VehicleViewer extends EntityViewer<Vehicle, VehicleEvent> {
 		
 		rectangle.setFill(Color.BLUE);
 		
+		rectangle.setOnMouseClicked(event -> {
+			event.consume();
+			// TODO
+		});
+		
 		getChildren().add(rectangle);
 	}
 

@@ -52,6 +52,11 @@ public class DemandViewer extends EntityViewer<Demand, DemandEvent> {
 		
 		line.setStroke(Color.GREEN);
 		
+		line.setOnMouseClicked(event -> {
+			event.consume();
+			// TODO
+		});
+		
 		getChildren().add(line);
 		
 		// Source
@@ -65,6 +70,11 @@ public class DemandViewer extends EntityViewer<Demand, DemandEvent> {
 		
 		source.setFill(Color.GREEN);
 		
+		source.setOnMouseClicked(event -> {
+			event.consume();
+			// TODO
+		});
+		
 		getChildren().add(source);
 		
 		// Target
@@ -77,6 +87,11 @@ public class DemandViewer extends EntityViewer<Demand, DemandEvent> {
 		target.centerYProperty().bind(end.y);
 		
 		target.setFill(Color.GREEN);
+		
+		target.setOnMouseClicked(event -> {
+			event.consume();
+			// TODO
+		});
 		
 		getChildren().add(target);
 	}

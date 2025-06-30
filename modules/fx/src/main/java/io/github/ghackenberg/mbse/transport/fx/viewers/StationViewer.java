@@ -27,6 +27,11 @@ public class StationViewer extends EntityViewer<Station, StationEvent> {
 		
 		circle.setFill(Color.MAGENTA);
 		
+		circle.setOnMouseClicked(event -> {
+			event.consume();
+			// TODO
+		});
+		
 		getChildren().add(circle);
 	}
 

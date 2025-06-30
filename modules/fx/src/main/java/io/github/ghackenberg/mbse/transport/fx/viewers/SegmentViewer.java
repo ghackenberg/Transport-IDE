@@ -29,6 +29,7 @@ public class SegmentViewer extends EntityViewer<Segment, SegmentEvent> {
 		line.setStroke(Color.LIGHTGRAY);
 		
 		line.setOnMouseClicked(event -> {
+			event.consume();
 			// TODO
 		});
 		
