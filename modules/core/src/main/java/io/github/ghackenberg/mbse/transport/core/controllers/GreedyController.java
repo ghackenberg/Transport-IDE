@@ -35,7 +35,7 @@ public class GreedyController implements Controller {
 
 	@Override
 	public double selectSpeed(Vehicle vehicle) {
-		return vehicle.location.getSegment().getSpeed();
+		return vehicle.location.segment.get().speed.get();
 	}
 
 	@Override
@@ -51,13 +51,13 @@ public class GreedyController implements Controller {
 	@Override
 	public Segment selectSegment(Vehicle vehicle) {
 		// Try station
-		if (vehicle.batteryLevel / vehicle.batteryCapacity < 0.5) {
+		if (vehicle.batteryLevel / vehicle.batteryCapacity.get() < 0.5) {
 			List<Segment> charge = new ArrayList<>();
 			
 			for (Station station : model.stations)  {
 				if (station.vehicle == null) {
-					if (vehicle.location.getSegment().end.outgoing.contains(station.location.getSegment())) {
-						charge.add(station.location.getSegment());
+					if (vehicle.location.segment.get().end.outgoing.contains(station.location.segment.get())) {
+						charge.add(station.location.segment.get());
 					}
 				}
 			}
@@ -71,8 +71,8 @@ public class GreedyController implements Controller {
 		List<Segment> dropoff = new ArrayList<>();
 		
 		for (Demand demand : vehicle.demands) {
-			if (vehicle.location.getSegment().end.outgoing.contains(demand.getDropoff().getLocation().getSegment())) {
-				dropoff.add(demand.getDropoff().getLocation().getSegment());
+			if (vehicle.location.segment.get().end.outgoing.contains(demand.drop.location.segment.get())) {
+				dropoff.add(demand.drop.location.segment.get());
 			}
 		}
 		
@@ -85,10 +85,10 @@ public class GreedyController implements Controller {
 			List<Segment> pickup = new ArrayList<>();
 			
 			for (Demand demand : model.demands) {
-				if (demand.done == false && demand.vehicle == null && demand.getPickup().getTime() <= model.time) {
-					if (vehicle.location.getSegment().end.outgoing.contains(demand.getLocation().getSegment())) {
-						if (vehicle.loadLevel + demand.getSize() <= vehicle.loadCapacity) {
-							pickup.add(demand.getLocation().getSegment());
+				if (demand.done == false && demand.vehicle == null && demand.pick.time.get() <= model.time) {
+					if (vehicle.location.segment.get().end.outgoing.contains(demand.location.segment.get())) {
+						if (vehicle.loadLevel + demand.size.get() <= vehicle.loadCapacity.get()) {
+							pickup.add(demand.location.segment.get());
 						}
 					}
 				}
@@ -100,7 +100,7 @@ public class GreedyController implements Controller {
 		}
 		
 		// Try random
-		List<Segment> outgoing = vehicle.location.getSegment().end.outgoing;
+		List<Segment> outgoing = vehicle.location.segment.get().end.outgoing;
 		
 		return outgoing.get((int) (Math.random() * outgoing.size()));
 	}

@@ -20,19 +20,19 @@ public class VehicleViewer extends EntityViewer<Vehicle, VehicleEvent> {
 		
 		setManaged(false);
 		
-		Coordinate location = vehicle.location.getCoordinate();
+		Coordinate location = vehicle.location.coordinate;
 		
-		double angle = vehicle.location.getSegment().getAngle();
+		double angle = vehicle.location.segment.get().angle.get();
 		
 		// Rectangle
 		
 		rectangle = new Rectangle();
 		
-		rectangle.setWidth(vehicle.length);
+		rectangle.widthProperty().bind(vehicle.length);
 		rectangle.setHeight(1);
 		
-		rectangle.xProperty().bind(location.xProperty().subtract(vehicle.length / 2));
-		rectangle.yProperty().bind(location.yProperty().subtract(1 / 2.));
+		rectangle.xProperty().bind(location.x.subtract(vehicle.length.divide(2)));
+		rectangle.yProperty().bind(location.y.subtract(1 / 2.));
 		
 		rectangle.setRotate(angle / Math.PI * 180);
 		
@@ -42,7 +42,7 @@ public class VehicleViewer extends EntityViewer<Vehicle, VehicleEvent> {
 	}
 	
 	public void update() {
-		double angle = vehicle.location.getSegment().getAngle();
+		double angle = vehicle.location.segment.get().angle.get();
 		
 		rectangle.setRotate(angle / Math.PI * 180);
 	}

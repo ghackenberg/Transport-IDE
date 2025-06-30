@@ -2,79 +2,96 @@ package io.github.ghackenberg.mbse.transport.core.entities;
 
 import java.util.List;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 
 public class Segment {
 
-	// Dynamische Eigenschaften (simuliert)
 	public double load;
 	public List<Vehicle> collisions;
 	
-	// Statische Eigenschaften (geparst)
-	public Intersection start;
-	public Intersection end;
+	// Constants
 	
-	private final DoubleProperty lanes = new SimpleDoubleProperty();
-	private final DoubleProperty speed = new SimpleDoubleProperty();
+	public final Intersection start;
+	public final Intersection end;
 	
-	public double getLanes() {
-		return lanes.get();
-	}
-	public void setLanes(double value) {
-		lanes.set(value);
-	}
-	public DoubleProperty lanesProperty() {
-		return lanes;
-	}
+	// Properties
 	
-	public double getSpeed() {
-		return speed.get();
-	}
-	public void setSpeed(double value) {
-		speed.set(value);
-	}
-	public DoubleProperty speedProperty() {
-		return speed;
-	}
+	public final DoubleProperty lanes = new SimpleDoubleProperty();
+	public final DoubleProperty speed = new SimpleDoubleProperty();
 	
-	public Coordinate getCenter() {
-		double dx = end.getCoordinate().getX() - start.getCoordinate().getX();
-		double dy = end.getCoordinate().getY() - start.getCoordinate().getY();
-		double dz = end.getCoordinate().getZ() - start.getCoordinate().getZ();
+	public final DoubleProperty angle = new SimpleDoubleProperty();
+	public final DoubleProperty length = new SimpleDoubleProperty();
+	
+	// Structures
+	
+	public final Coordinate center = new Coordinate();
+	
+	// Constructors
+	
+	public Segment(Intersection start, Intersection end) {
+		this.start = start;
+		this.end = end;
 		
-		Coordinate coord = new Coordinate();
+		final InvalidationListener listener = new InvalidationListener() {
+			@Override
+			public void invalidated(Observable observable) {
+				recompute();	
+			}
+		};
 		
-		coord.setX(start.getCoordinate().getX() + dx / 2);
-		coord.setY(start.getCoordinate().getY() + dy / 2);
-		coord.setZ(start.getCoordinate().getZ() + dz / 2);
+		start.coordinate.x.addListener(listener);
+		start.coordinate.y.addListener(listener);
+		start.coordinate.z.addListener(listener);
 		
-		return coord;
+		end.coordinate.x.addListener(listener);
+		end.coordinate.y.addListener(listener);
+		end.coordinate.z.addListener(listener);
 	}
 	
-	public double getAngle() {
-		double len = getLength();
+	// Methods
+	
+	private void recompute() {
+		recomputeCenter();
+		recomputeLength();
+		recomputeAngle();
+	}
+	
+	private void recomputeCenter() {
+		double dx = end.coordinate.x.get() - start.coordinate.x.get();
+		double dy = end.coordinate.y.get() - start.coordinate.y.get();
+		double dz = end.coordinate.z.get() - start.coordinate.z.get();
 		
-		double dx = end.getCoordinate().getX() - start.getCoordinate().getX();
-		double dy = end.getCoordinate().getY() - start.getCoordinate().getY();
+		center.x.set(start.coordinate.x.get() + dx / 2);
+		center.y.set(start.coordinate.y.get() + dy / 2);
+		center.z.set(start.coordinate.z.get() + dz / 2);
+	}
+	
+	private void recomputeAngle() {
+		double len = length.get();
+		
+		double dx = end.coordinate.x.get() - start.coordinate.x.get();
+		double dy = end.coordinate.y.get() - start.coordinate.y.get();
 		
 		dx /= len;
 		dy /= len;
 		
-		return Math.atan2(dy, dx);
+		angle.set(Math.atan2(dy, dx));
 	}
 	
-	public double getLength() {
-		double dx = end.getCoordinate().getX() - start.getCoordinate().getX();
-		double dy = end.getCoordinate().getY() - start.getCoordinate().getY();
-		double dz = end.getCoordinate().getZ() - start.getCoordinate().getZ();
+	private void recomputeLength() {
+		double dx = end.coordinate.x.get() - start.coordinate.x.get();
+		double dy = end.coordinate.y.get() - start.coordinate.y.get();
+		double dz = end.coordinate.z.get() - start.coordinate.z.get();
 		
-		return Math.sqrt(dx * dx + dy * dy + dz * dz);
+		length.set(Math.sqrt(dx * dx + dy * dy + dz * dz));
 	}
 	
 	@Override
 	public String toString() {
-		return start.getName() + "->" + end.getName();
+		return start.name.get() + "->" + end.name.get();
 	}
 
 }

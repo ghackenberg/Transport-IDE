@@ -103,7 +103,7 @@ public class Statistics {
 			// Initialize vehicle distances
 			vehicleDistances.put(vehicle, 0.0);
 			// Update segment traversals
-			segmentTraversals.put(vehicle.location.getSegment(), segmentTraversals.get(vehicle.location.getSegment()) + 1);
+			segmentTraversals.put(vehicle.location.segment.get(), segmentTraversals.get(vehicle.location.segment.get()) + 1);
 		});
 		// Process demands
 		model.demands.forEach(demand -> {

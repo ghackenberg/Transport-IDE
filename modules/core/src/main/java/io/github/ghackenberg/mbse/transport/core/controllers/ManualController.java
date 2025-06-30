@@ -29,7 +29,7 @@ public class ManualController implements Controller {
 
 	@Override
 	public double selectSpeed(Vehicle vehicle) {
-		return vehicle.initialSpeed; // Math.random() * vehicle.location.segment.speed;
+		return vehicle.initialSpeed.get(); // Math.random() * vehicle.location.segment.speed;
 	}
 
 	@Override
@@ -44,11 +44,11 @@ public class ManualController implements Controller {
 
 	@Override
 	public Segment selectSegment(Vehicle vehicle) {
-		List<Segment> outgoing = vehicle.location.getSegment().end.outgoing;
+		List<Segment> outgoing = vehicle.location.segment.get().end.outgoing;
 		if (outgoing.size() == 1) {
 			return outgoing.get(0);
 		} else {
-			int index = JOptionPane.showOptionDialog(null, "Which segment should vehicle " + vehicle + " take?", "Route choice", JOptionPane.YES_OPTION, JOptionPane.QUESTION_MESSAGE, null, vehicle.location.getSegment().end.outgoing.toArray(), vehicle.location.getSegment().end.outgoing.get(0));
+			int index = JOptionPane.showOptionDialog(null, "Which segment should vehicle " + vehicle + " take?", "Route choice", JOptionPane.YES_OPTION, JOptionPane.QUESTION_MESSAGE, null, vehicle.location.segment.get().end.outgoing.toArray(), vehicle.location.segment.get().end.outgoing.get(0));
 			if (index >= 0) {
 				return outgoing.get(index);
 			} else {

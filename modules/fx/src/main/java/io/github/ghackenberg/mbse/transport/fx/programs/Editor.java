@@ -62,22 +62,22 @@ public class Editor extends Application {
 					
 					viewer = new ModelViewer(model);
 					viewer.setOnIntersectionSelected(entityEvent -> {
-						TextField name = new TextField(entityEvent.getEntity().getName());
-						entityEvent.getEntity().nameProperty().bind(name.textProperty());
+						TextField name = new TextField(entityEvent.getEntity().name.get());
+						entityEvent.getEntity().name.bind(name.textProperty());
 						
-						TextField x = new TextField("" + entityEvent.getEntity().getCoordinate().getX());
+						TextField x = new TextField("" + entityEvent.getEntity().coordinate.x.get());
 						x.setOnAction(event -> {
-							entityEvent.getEntity().getCoordinate().setX(Double.parseDouble(x.getText()));
+							entityEvent.getEntity().coordinate.x.set(Double.parseDouble(x.getText()));
 						});
 						
-						TextField y = new TextField("" + entityEvent.getEntity().getCoordinate().getY());
+						TextField y = new TextField("" + entityEvent.getEntity().coordinate.y.get());
 						y.setOnAction(event -> {
-							entityEvent.getEntity().getCoordinate().setY(Double.parseDouble(y.getText()));
+							entityEvent.getEntity().coordinate.y.set(Double.parseDouble(y.getText()));
 						});
 						
-						TextField z = new TextField("" + entityEvent.getEntity().getCoordinate().getZ());
+						TextField z = new TextField("" + entityEvent.getEntity().coordinate.z.get());
 						z.setOnAction(event -> {
-							entityEvent.getEntity().getCoordinate().setZ(Double.parseDouble(z.getText()));
+							entityEvent.getEntity().coordinate.z.set(Double.parseDouble(z.getText()));
 						});
 						
 						grid.getChildren().clear();

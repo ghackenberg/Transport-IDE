@@ -28,7 +28,7 @@ public class DemandTimesChartViewer extends SingleChartViewer {
 		// Update values
 		
 		for (Demand demand : model.demands) {
-			if (demand.getPickup().getTime() > model.time) {
+			if (demand.pick.time.get() > model.time) {
 				
 				dataset.addValue(0, "Underdue (wait)", demand.toString());
 				dataset.addValue(0, "Underdue (ride)", demand.toString());
@@ -47,10 +47,10 @@ public class DemandTimesChartViewer extends SingleChartViewer {
 					dropoff = statistics.demandDropoffTimes.get(demand).entrySet().iterator().next().getKey();
 				}
 				
-				double underdueWait = Math.min(demand.getDropoff().getTime(), pickup) - demand.getPickup().getTime();
-				double underdueRide = Math.min(demand.getDropoff().getTime(), dropoff) - Math.min(demand.getDropoff().getTime(), pickup);
-				double overdueWait = Math.max(demand.getDropoff().getTime(), pickup) - demand.getDropoff().getTime();
-				double overdueRide = Math.max(demand.getDropoff().getTime(), dropoff) - Math.max(demand.getDropoff().getTime(), pickup);
+				double underdueWait = Math.min(demand.drop.time.get(), pickup) - demand.pick.time.get();
+				double underdueRide = Math.min(demand.drop.time.get(), dropoff) - Math.min(demand.drop.time.get(), pickup);
+				double overdueWait = Math.max(demand.drop.time.get(), pickup) - demand.drop.time.get();
+				double overdueRide = Math.max(demand.drop.time.get(), dropoff) - Math.max(demand.drop.time.get(), pickup);
 				
 				dataset.addValue(underdueWait / 1000, "Underdue (wait)", demand.toString());
 				dataset.addValue(underdueRide / 1000, "Underdue (ride)", demand.toString());
@@ -70,12 +70,12 @@ public class DemandTimesChartViewer extends SingleChartViewer {
 			Model model = simulator.getModel();
 			Statistics statistics = simulator.getStatistics();
 			for (Demand demand : model.demands) {
-				if (demand.getPickup().getTime() < model.time) {
+				if (demand.pick.time.get() < model.time) {
 					double dropoff = model.time;
 					if (statistics.demandDropoffTimes.get(demand).size() == 1) {
 						dropoff = statistics.demandDropoffTimes.get(demand).entrySet().iterator().next().getKey();
 					}
-					max = Math.max((dropoff - demand.getPickup().getTime()) / 1000, max);
+					max = Math.max((dropoff - demand.pick.time.get()) / 1000, max);
 				}
 			}
 		}

@@ -8,26 +8,15 @@ import javafx.beans.property.StringProperty;
 
 public class Intersection {
 	
-	// Statische Eigenschaften (geparst)
-	private final StringProperty name = new SimpleStringProperty();
+	// Properties
 	
-	private final Coordinate coordinate = new Coordinate();
+	public final StringProperty name = new SimpleStringProperty();
 	
-	public List<Segment> incoming = new ArrayList<>();
-	public List<Segment> outgoing = new ArrayList<>();
+	// Structures
 	
-	public String getName() {
-		return name.get();
-	}
-	public void setName(String value) {
-		name.set(value);
-	}
-	public StringProperty nameProperty() {
-		return name;
-	}
+	public final Coordinate coordinate = new Coordinate();
 	
-	public Coordinate getCoordinate() {
-		return coordinate;
-	}
+	public final List<Segment> incoming = new ArrayList<>();
+	public final List<Segment> outgoing = new ArrayList<>();
 	
 }

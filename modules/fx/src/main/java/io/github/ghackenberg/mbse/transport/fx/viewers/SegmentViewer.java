@@ -19,13 +19,13 @@ public class SegmentViewer extends EntityViewer<Segment, SegmentEvent> {
 		
 		line = new Line();
 		
-		line.startXProperty().bind(segment.start.getCoordinate().xProperty());
-		line.startYProperty().bind(segment.start.getCoordinate().yProperty());
+		line.startXProperty().bind(segment.start.coordinate.x);
+		line.startYProperty().bind(segment.start.coordinate.y);
 		
-		line.endXProperty().bind(segment.end.getCoordinate().xProperty());
-		line.endYProperty().bind(segment.end.getCoordinate().yProperty());
+		line.endXProperty().bind(segment.end.coordinate.x);
+		line.endYProperty().bind(segment.end.coordinate.y);
 		
-		line.strokeWidthProperty().bind(segment.lanesProperty());
+		line.strokeWidthProperty().bind(segment.lanes);
 		line.setStroke(Color.LIGHTGRAY);
 		
 		line.setOnMouseClicked(event -> {

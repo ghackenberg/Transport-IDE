@@ -1,104 +1,100 @@
 package io.github.ghackenberg.mbse.transport.core.entities;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 public class Location {
-
-	// Statische Eigenschaften (geparst) oder dynamische Eigenschaften (simuliert)
 	
-	private final ObjectProperty<Segment> segment = new SimpleObjectProperty<>();
-	private final DoubleProperty distance = new SimpleDoubleProperty();
+	// Properties
 	
-	// Berechnete Eigenschaften
+	public final ObjectProperty<Segment> segment = new SimpleObjectProperty<>();
+	public final DoubleProperty distance = new SimpleDoubleProperty();
 	
-	private final Coordinate coordinate = new Coordinate();
+	// Structures
+	
+	public final Coordinate coordinate = new Coordinate();
+	
+	// Constructors
 	
 	public Location() {
+		final InvalidationListener listener = new InvalidationListener() {
+			@Override
+			public void invalidated(Observable observable) {
+				recomputeCoordinate();	
+			}
+		};
+		
 		// Change segment
 		segment.addListener((observable, oldValue, newValue)-> {
-			// TODO remove listeners from previous segment
 			
-			// Change coordinate of start intersection
-			newValue.start.getCoordinate().xProperty().addListener(e -> {
-				recomputeCoordinate();
-			});
-			newValue.start.getCoordinate().yProperty().addListener(e -> {
-				recomputeCoordinate();
-			});
-			newValue.start.getCoordinate().zProperty().addListener(e -> {
-				recomputeCoordinate();
-			});
+			// Old value
 			
-			// Change coordinate of end intersection
-			newValue.end.getCoordinate().xProperty().addListener(e -> {
-				recomputeCoordinate();
-			});
-			newValue.end.getCoordinate().yProperty().addListener(e -> {
-				recomputeCoordinate();
-			});
-			newValue.end.getCoordinate().zProperty().addListener(e -> {
-				recomputeCoordinate();
-			});
+			if (oldValue != null) {
+				// Change of start intersection
+				oldValue.start.coordinate.x.removeListener(listener);
+				oldValue.start.coordinate.y.removeListener(listener);
+				oldValue.start.coordinate.z.removeListener(listener);
+				
+				// Change of end intersection
+				oldValue.end.coordinate.x.removeListener(listener);
+				oldValue.end.coordinate.y.removeListener(listener);
+				oldValue.end.coordinate.z.removeListener(listener);
+			}
+			
+			// New value
+			
+			if (newValue != null) {
+				// Change coordinate of start intersection
+				newValue.start.coordinate.x.addListener(listener);
+				newValue.start.coordinate.y.addListener(listener);
+				newValue.start.coordinate.z.addListener(listener);
+				
+				// Change coordinate of end intersection
+				newValue.end.coordinate.x.addListener(listener);
+				newValue.end.coordinate.y.addListener(listener);
+				newValue.end.coordinate.z.addListener(listener);
+			}
 			
 			recomputeCoordinate();
 		});
 		// Change distance
-		distance.addListener(event -> {
-			recomputeCoordinate();
-		});
+		distance.addListener(listener);
 	}
 	
 	public Location(Segment segment, double distance) {
 		this();
 		
-		this.setSegment(segment);
-		this.setDistance(distance);
+		this.segment.set(segment);
+		this.distance.set(distance);
 	}
 	
-	public Segment getSegment() {
-		return segment.get();
-	}
-	public void setSegment(Segment value) {
-		segment.set(value);
-	}
-	public ObjectProperty<Segment> segmentProperty() {
-		return segment;
-	}
-	
-	public double getDistance() {
-		return distance.get();
-	}
-	public void setDistance(double value) {
-		distance.set(value);
-	}
-	public DoubleProperty distanceProperty() {
-		return distance;
-	}
-	
-	public Coordinate getCoordinate() {
-		return coordinate;
-	}
+	// Methods
 	
 	private void recomputeCoordinate() {
-		
-		Coordinate start = getSegment().start.getCoordinate();
-		Coordinate end = getSegment().end.getCoordinate();
-		
-		double len = getSegment().getLength();
-		double prg = getDistance() / len;
-		
-		coordinate.setX(start.getX() + (end.getX() - start.getX()) * prg);
-		coordinate.setY(start.getY() + (end.getY() - start.getY()) * prg);
-		coordinate.setZ(start.getZ() + (end.getZ() - start.getZ()) * prg);
-		
+		if (segment.get() != null) {
+			Coordinate start = segment.get().start.coordinate;
+			Coordinate end = segment.get().end.coordinate;
+			
+			double len = segment.get().length.get();
+			double prg = distance.get() / len;
+			
+			coordinate.x.set(start.x.get() + (end.x.get() - start.x.get()) * prg);
+			coordinate.y.set(start.y.get() + (end.y.get() - start.y.get()) * prg);
+			coordinate.z.set(start.z.get() + (end.z.get() - start.z.get()) * prg);
+		} else {
+			coordinate.x.set(0);
+			coordinate.y.set(0);
+			coordinate.z.set(0);
+		}
 	}
 	
 	@Override
 	public String toString() {
-		return getSegment() + ":" + Math.round(getDistance() / getSegment().getLength() * 100);
+		return segment.get() + ":" + Math.round(distance.get() / segment.get().length.get() * 100);
 	}
 	
 }

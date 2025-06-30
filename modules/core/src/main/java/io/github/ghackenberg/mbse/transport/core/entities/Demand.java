@@ -5,76 +5,62 @@ import javafx.beans.property.SimpleDoubleProperty;
 
 public class Demand {
 
-	// Dynamische Eigenschaften (simuliert)
 	public Vehicle vehicle;
 	public boolean done;
 	
-	private final Location location = new Location();
+	// Properties
 	
-	// Statische Eigenschaften (geparst)
-	private final DoubleProperty size = new SimpleDoubleProperty();
+	public final DoubleProperty size = new SimpleDoubleProperty();
 	
-	private final LocationTime pickup;
-	private final LocationTime dropoff;
+	// Structures
+	
+	public final LocationTime pick;
+	public final LocationTime drop;
+	
+	public final Location location = new Location();
+	
+	// Constructors
 	
 	public Demand() {
-		 pickup = new LocationTime();
-		 dropoff = new LocationTime();
+		 pick = new LocationTime();
+		 drop = new LocationTime();
 	}
 	
 	public Demand(LocationTime pick, LocationTime drop, double size) {
-		pickup = pick;
-		dropoff = drop;
+		this.pick = pick;
+		this.drop = drop;
 		
-		setSize(size);
+		this.size.set(size);
 	}
 	
 	public Demand(Location pickLoc, double pickTim, Location dropLoc, double dropTim, double size) {
-		pickup = new LocationTime(pickLoc, pickTim);
-		dropoff = new LocationTime(dropLoc, dropTim);
+		pick = new LocationTime(pickLoc, pickTim);
+		drop = new LocationTime(dropLoc, dropTim);
 		
-		setSize(size);
+		this.size.set(size);
 	}
 	
 	public Demand(Segment pickSeg, double pickDis, double pickTim, Segment dropSeg, double dropDis, double dropTim, double size) {
-		pickup = new LocationTime(pickSeg, pickDis, pickTim);
-		dropoff = new LocationTime(dropSeg, dropDis, dropTim);
+		pick = new LocationTime(pickSeg, pickDis, pickTim);
+		drop = new LocationTime(dropSeg, dropDis, dropTim);
 		
-		setSize(size);
+		this.size.set(size);
 	}
 	
-	public double getSize() {
-		return size.get();
-	}
-	public void setSize(double value) {
-		size.set(value);
-	}
-	public DoubleProperty sizeProperty() {
-		return size;
-	}
-	
-	public LocationTime getPickup() {
-		return pickup;
-	}
-	public LocationTime getDropoff() {
-		return dropoff;
-	}
-	public Location getLocation() {
-		return location;
-	}
+	// Methods
 	
 	public void reset() {
 		vehicle = null;
 		
 		done = false;
 		
-		location.setSegment(pickup.getLocation().getSegment());
-		location.setDistance(pickup.getLocation().getDistance());
+		location.segment.set(pick.location.segment.get());
+		location.distance.set(pick.location.distance.get());
 	}
 	
 	@Override
 	public String toString( ) {
-		return location.toString() + " " + dropoff.toString();
+		return location.toString() + " " + drop.toString();
 	}
 	
 }

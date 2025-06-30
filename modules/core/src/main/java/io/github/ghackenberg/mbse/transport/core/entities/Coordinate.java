@@ -5,39 +5,22 @@ import javafx.beans.property.SimpleDoubleProperty;
 
 public class Coordinate {
 	
-	// Statische Eigenschaften (geparst) oder dynamische Eigenschaften (simuliert)
-	private final DoubleProperty x = new SimpleDoubleProperty();
-	private final DoubleProperty y = new SimpleDoubleProperty();
-	private final DoubleProperty z = new SimpleDoubleProperty();
+	// Properties
 	
-	public double getX() {
-		return x.get();
-	}
-	public void setX(double value) {
-		x.set(value);
-	}
-	public DoubleProperty xProperty() {
-		return x;
+	public final DoubleProperty x = new SimpleDoubleProperty();
+	public final DoubleProperty y = new SimpleDoubleProperty();
+	public final DoubleProperty z = new SimpleDoubleProperty();
+	
+	// Constructors
+	
+	public Coordinate() {
+		this(0, 0, 0);
 	}
 	
-	public double getY() {
-		return y.get();
-	}
-	public void setY(double value) {
-		y.set(value);
-	}
-	public DoubleProperty yProperty() {
-		return y;
-	}
-	
-	public double getZ() {
-		return z.get();
-	}
-	public void setZ(double value) {
-		z.set(value);
-	}
-	public DoubleProperty zProperty() {
-		return z;
+	public Coordinate(double x, double y, double z) {
+		this.x.set(x);
+		this.y.set(y);
+		this.z.set(z);
 	}
 	
 }

@@ -21,7 +21,7 @@ public class VehicleDistancesChartViewer extends SingleChartViewer {
 		
 		for (Vehicle vehicle : model.vehicles) {
 			double distance = statistics.vehicleDistances.get(vehicle);
-			dataset.addValue(distance, "Distances", vehicle.name);
+			dataset.addValue(distance, "Distances", vehicle.name.get());
 		}
 		
 		// Update range

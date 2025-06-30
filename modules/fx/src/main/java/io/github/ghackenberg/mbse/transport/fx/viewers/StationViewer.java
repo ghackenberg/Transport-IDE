@@ -13,7 +13,7 @@ public class StationViewer extends EntityViewer<Station, StationEvent> {
 	public StationViewer(Station station) {
 		super(station);
 		
-		Coordinate location = station.location.getCoordinate();
+		Coordinate location = station.location.coordinate;
 		
 		// Circle
 		
@@ -21,8 +21,8 @@ public class StationViewer extends EntityViewer<Station, StationEvent> {
 		
 		circle.setRadius(0.5);
 		
-		circle.centerXProperty().bind(location.xProperty());
-		circle.centerYProperty().bind(location.yProperty());
+		circle.centerXProperty().bind(location.x);
+		circle.centerYProperty().bind(location.y);
 		
 		circle.setFill(Color.MAGENTA);
 		

@@ -21,7 +21,7 @@ public class IntersectionCrossingsChartViewer extends SingleChartViewer {
 		
 		for (Intersection intersection : model.intersections) {
 			int traversals = statistics.intersectionCrossings.get(intersection);
-			dataset.addValue(traversals, "Crossings", intersection.getName());
+			dataset.addValue(traversals, "Crossings", intersection.name.get());
 		}
 		
 		// Update range

@@ -100,9 +100,9 @@ public class ModelComparison {
 				
 				for (Model model : models) {
 					for (Station station : model.stations) {
-						if (station.location.getSegment() == model.segments.get(pickupSegmentNumber)) {
+						if (station.location.segment.get() == model.segments.get(pickupSegmentNumber)) {
 							valid = false;
-						} else if (station.location.getSegment() == model.segments.get(dropoffSegmentNumber)) {
+						} else if (station.location.segment.get() == model.segments.get(dropoffSegmentNumber)) {
 							valid = false;
 						}
 						if (!valid) {
@@ -124,7 +124,7 @@ public class ModelComparison {
 					Segment pickupSegment = model.segments.get(pickupSegmentNumber);
 					Segment dropoffSegment = model.segments.get(dropoffSegmentNumber);
 					
-					Demand demand = new Demand(pickupSegment, pickupDistance * pickupSegment.getLength(), pickupTime, dropoffSegment, dropoffDistance * dropoffSegment.getLength(), dropoffTime, size);
+					Demand demand = new Demand(pickupSegment, pickupDistance * pickupSegment.length.get(), pickupTime, dropoffSegment, dropoffDistance * dropoffSegment.length.get(), dropoffTime, size);
 					
 					model.demands.add(demand);
 				}
@@ -133,7 +133,7 @@ public class ModelComparison {
 			// Sort demands and reset models
 			
 			for (Model model : models) {
-				model.demands.sort((first, second) -> (int) Math.signum(first.getPickup().getTime() - second.getPickup().getTime()));
+				model.demands.sort((first, second) -> (int) Math.signum(first.pick.time.get() - second.pick.time.get()));
 				
 				model.reset();
 			}

@@ -61,13 +61,13 @@ public class ModelViewer extends Pane {
 		// TODO
 		
 		for (Intersection intersection : model.intersections) {
-			minX = Math.min(minX, intersection.getCoordinate().getX());
-			maxX = Math.max(maxX, intersection.getCoordinate().getX());
+			minX = Math.min(minX, intersection.coordinate.x.get());
+			maxX = Math.max(maxX, intersection.coordinate.x.get());
 		}
 		
 		for (Intersection intersection : model.intersections) {
-			minY = Math.min(minY, intersection.getCoordinate().getY());
-			maxY = Math.max(maxY, intersection.getCoordinate().getY());
+			minY = Math.min(minY, intersection.coordinate.y.get());
+			maxY = Math.max(maxY, intersection.coordinate.y.get());
 		}
 		
 		deltaX = maxX - minX;

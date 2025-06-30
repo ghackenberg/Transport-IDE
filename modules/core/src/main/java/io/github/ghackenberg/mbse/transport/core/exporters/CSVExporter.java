@@ -64,7 +64,7 @@ public class CSVExporter implements Exporter {
 			// Process demands
 			for (Demand demand : model.demands) {
 				// Write row
-				writer.write("\n" + demand.getSize() + ";" + demand.getPickup().getTime() + ";" + demand.getDropoff().getTime() + ";" + statistics.demandPickupAcceptTimes.get(demand) + ";" + statistics.demandDropoffTimes.get(demand) + ";" + statistics.demandDistances.get(demand));
+				writer.write("\n" + demand.size.get() + ";" + demand.pick.time.get() + ";" + demand.drop.time.get() + ";" + statistics.demandPickupAcceptTimes.get(demand) + ";" + statistics.demandDropoffTimes.get(demand) + ";" + statistics.demandDistances.get(demand));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -92,7 +92,7 @@ public class CSVExporter implements Exporter {
 			// Process segments
 			for (Segment segment : model.segments) {
 				// Write row
-				writer.write("\n" + segment + ";" + segment.getLanes() + ";" + segment.getSpeed() + ";" + statistics.segmentTraversals.get(segment));
+				writer.write("\n" + segment + ";" + segment.lanes.get() + ";" + segment.speed.get() + ";" + statistics.segmentTraversals.get(segment));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -106,7 +106,7 @@ public class CSVExporter implements Exporter {
 			// Process intersections
 			for (Intersection intersection : model.intersections) {
 				// Write row
-				writer.write("\n" + intersection.getName() + ";" + statistics.intersectionCrossings.get(intersection));
+				writer.write("\n" + intersection.name.get() + ";" + statistics.intersectionCrossings.get(intersection));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

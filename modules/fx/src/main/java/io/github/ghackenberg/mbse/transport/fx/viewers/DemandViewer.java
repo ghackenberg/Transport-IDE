@@ -24,18 +24,18 @@ public class DemandViewer extends EntityViewer<Demand, DemandEvent> {
 		
 		setManaged(false);
 		
-		Coordinate start = demand.getLocation().getCoordinate();
-		Coordinate end = demand.getDropoff().getLocation().getCoordinate();
+		Coordinate start = demand.location.coordinate;
+		Coordinate end = demand.drop.location.coordinate;
 		
 		// Line
 		
 		line = new Line();
 		
-		line.startXProperty().bind(start.xProperty());
-		line.startYProperty().bind(start.yProperty());
+		line.startXProperty().bind(start.x);
+		line.startYProperty().bind(start.y);
 		
-		line.endXProperty().bind(end.xProperty());
-		line.endYProperty().bind(end.yProperty());
+		line.endXProperty().bind(end.x);
+		line.endYProperty().bind(end.y);
 		
 		line.setStroke(Color.GREEN);
 		
@@ -45,10 +45,10 @@ public class DemandViewer extends EntityViewer<Demand, DemandEvent> {
 		
 		source = new Circle();
 		
-		source.radiusProperty().bind(demand.sizeProperty());
+		source.radiusProperty().bind(demand.size);
 		
-		source.centerXProperty().bind(start.xProperty());
-		source.centerYProperty().bind(start.yProperty());
+		source.centerXProperty().bind(start.x);
+		source.centerYProperty().bind(start.y);
 		
 		source.setFill(Color.GREEN);
 		
@@ -58,10 +58,10 @@ public class DemandViewer extends EntityViewer<Demand, DemandEvent> {
 		
 		target = new Circle();
 		
-		target.radiusProperty().bind(demand.sizeProperty());
+		target.radiusProperty().bind(demand.size);
 		
-		target.centerXProperty().bind(end.xProperty());
-		target.centerYProperty().bind(end.yProperty());
+		target.centerXProperty().bind(end.x);
+		target.centerYProperty().bind(end.y);
 		
 		target.setFill(Color.GREEN);
 		
@@ -69,10 +69,10 @@ public class DemandViewer extends EntityViewer<Demand, DemandEvent> {
 	}
 	
 	public void update() {
-		if (!getEntity().done && model.time >= getEntity().getPickup().getTime()) {
+		if (!getEntity().done && model.time >= getEntity().pick.time.get()) {
 			setVisible(true);
 			
-			if (model.time > getEntity().getDropoff().getTime()) {
+			if (model.time > getEntity().drop.time.get()) {
 				line.setStroke(Color.RED);
 				
 				source.setFill(Color.RED);

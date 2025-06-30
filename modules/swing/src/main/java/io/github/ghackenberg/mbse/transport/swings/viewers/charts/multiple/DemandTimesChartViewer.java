@@ -36,7 +36,7 @@ public class DemandTimesChartViewer extends MultipleChartViewer {
 			
 			for (Demand demand : model.demands) {
 
-				if (demand.getPickup().getTime() < model.time) {
+				if (demand.pick.time.get() < model.time) {
 					
 					double pickup = model.time;
 					if (stats.demandPickupAcceptTimes.get(demand).size() == 1) {
@@ -48,10 +48,10 @@ public class DemandTimesChartViewer extends MultipleChartViewer {
 						dropoff = stats.demandDropoffTimes.get(demand).entrySet().iterator().next().getKey();
 					}
 					
-					underdueWait += Math.min(demand.getDropoff().getTime(), pickup) - demand.getPickup().getTime();
-					underdueRide += Math.min(demand.getDropoff().getTime(), dropoff) - Math.min(demand.getDropoff().getTime(), pickup);
-					overdueWait += Math.max(demand.getDropoff().getTime(), pickup) - demand.getDropoff().getTime();
-					overdueRide += Math.max(demand.getDropoff().getTime(), dropoff) - Math.max(demand.getDropoff().getTime(), pickup);
+					underdueWait += Math.min(demand.drop.time.get(), pickup) - demand.pick.time.get();
+					underdueRide += Math.min(demand.drop.time.get(), dropoff) - Math.min(demand.drop.time.get(), pickup);
+					overdueWait += Math.max(demand.drop.time.get(), pickup) - demand.drop.time.get();
+					overdueRide += Math.max(demand.drop.time.get(), dropoff) - Math.max(demand.drop.time.get(), pickup);
 					
 					//System.out.println((underdueWait + underdueRide + overdueWait + overdueRide) / 1000);
 					

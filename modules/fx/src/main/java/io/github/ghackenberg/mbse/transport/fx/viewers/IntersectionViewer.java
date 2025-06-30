@@ -25,10 +25,10 @@ public class IntersectionViewer extends EntityViewer<Intersection, IntersectionE
 		double radius = 0;
 		
 		for (Segment segment : intersection.incoming) {
-			radius = Math.max(radius, segment.getLanes() / 2.);
+			radius = Math.max(radius, segment.lanes.get() / 2.);
 		}
 		for (Segment segment : intersection.outgoing) {
-			radius = Math.max(radius, segment.getLanes() / 2.);
+			radius = Math.max(radius, segment.lanes.get() / 2.);
 		}
 		
 		// Circle
@@ -37,8 +37,8 @@ public class IntersectionViewer extends EntityViewer<Intersection, IntersectionE
 		
 		circle.setRadius(radius);
 		
-		circle.centerXProperty().bind(intersection.getCoordinate().xProperty());
-		circle.centerYProperty().bind(intersection.getCoordinate().yProperty());
+		circle.centerXProperty().bind(intersection.coordinate.x);
+		circle.centerYProperty().bind(intersection.coordinate.y);
 		
 		circle.setFill(Color.BLACK);
 		
@@ -61,12 +61,12 @@ public class IntersectionViewer extends EntityViewer<Intersection, IntersectionE
 		
 		text = new Text();
 		
-		text.textProperty().bind(intersection.nameProperty());
+		text.textProperty().bind(intersection.name);
 		
 		text.setFont(new Font(radius));
 		
-		text.xProperty().bind(intersection.getCoordinate().xProperty());
-		text.yProperty().bind(intersection.getCoordinate().yProperty());
+		text.xProperty().bind(intersection.coordinate.x);
+		text.yProperty().bind(intersection.coordinate.y);
 		
 		text.setTextAlignment(TextAlignment.CENTER);
 		text.setTextOrigin(VPos.CENTER);

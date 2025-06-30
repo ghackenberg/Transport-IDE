@@ -111,10 +111,10 @@ public class Parser {
 		
 		Intersection intersection = new Intersection();
 		
-		intersection.setName(parts[0]);
-		intersection.getCoordinate().setX(Double.parseDouble(parts[1]));
-		intersection.getCoordinate().setY(Double.parseDouble(parts[2]));
-		intersection.getCoordinate().setZ(Double.parseDouble(parts[3]));
+		intersection.name.set(parts[0]);
+		intersection.coordinate.x.set(Double.parseDouble(parts[1]));
+		intersection.coordinate.y.set(Double.parseDouble(parts[2]));
+		intersection.coordinate.z.set(Double.parseDouble(parts[3]));
 		
 		model.intersections.add(intersection);
 		
@@ -142,12 +142,10 @@ public class Parser {
 		if (end == null)
 			throw new IllegalArgumentException(intersections[1]);
 		
-		Segment segment = new Segment();
+		Segment segment = new Segment(start, end);
 		
-		segment.start = start;
-		segment.end = end;
-		segment.setLanes(Double.parseDouble(parts[1]));
-		segment.setSpeed(Double.parseDouble(parts[2]));
+		segment.lanes.set(Double.parseDouble(parts[1]));
+		segment.speed.set(Double.parseDouble(parts[2]));
 
 		// Remember outgoing segment
 		start.outgoing.add(segment);
@@ -167,10 +165,13 @@ public class Parser {
 		if (parts.length != 2)
 			throw new IllegalArgumentException(line);
 		
+		Location location = resolveLocation(model, parts[1]);
+		
 		Station station = new Station();
 		
-		station.speed = Double.parseDouble(parts[0]);
-		station.location = resolveLocation(model, parts[1]);
+		station.speed.set(Double.parseDouble(parts[0]));
+		station.location.segment.set(location.segment.get());
+		station.location.distance.set(location.distance.get());
 		
 		model.stations.add(station);
 		
@@ -185,15 +186,18 @@ public class Parser {
 		if (parts.length != 7)
 			throw new IllegalArgumentException(line);
 		
+		Location initialLocation = resolveLocation(model, parts[6]);
+		
 		Vehicle vehicle = new Vehicle();
 		
-		vehicle.name = parts[0];
-		vehicle.length = Double.parseDouble(parts[1]);
-		vehicle.loadCapacity = Double.parseDouble(parts[2]);
-		vehicle.batteryCapacity = Double.parseDouble(parts[3]);
-		vehicle.initialBatteryLevel = Double.parseDouble(parts[4]);
-		vehicle.initialSpeed = Double.parseDouble(parts[5]);
-		vehicle.initialLocation = resolveLocation(model, parts[6]);
+		vehicle.name.set(parts[0]);
+		vehicle.length.set(Double.parseDouble(parts[1]));
+		vehicle.loadCapacity.set(Double.parseDouble(parts[2]));
+		vehicle.batteryCapacity.set(Double.parseDouble(parts[3]));
+		vehicle.initialBatteryLevel.set(Double.parseDouble(parts[4]));
+		vehicle.initialSpeed.set(Double.parseDouble(parts[5]));
+		vehicle.initialLocation.segment.set(initialLocation.segment.get());
+		vehicle.initialLocation.distance.set(initialLocation.distance.get());
 		
 		model.vehicles.add(vehicle);
 		
@@ -213,8 +217,8 @@ public class Parser {
 		
 		Demand demand = new Demand(pickup, dropoff, Double.parseDouble(parts[2]));
 		
-		demand.getLocation().setSegment(pickup.getLocation().getSegment());
-		demand.getLocation().setDistance(pickup.getLocation().getDistance());
+		demand.location.segment.set(pickup.location.segment.get());
+		demand.location.distance.set(pickup.location.distance.get());
 		
 		model.demands.add(demand);
 		
@@ -229,13 +233,13 @@ public class Parser {
 		
 		Location location = resolveLocation(model, parts[0]);
 		
-		LocationTime loctime = new LocationTime();
+		LocationTime locTime = new LocationTime();
 		
-		loctime.getLocation().setSegment(location.getSegment());
-		loctime.getLocation().setDistance(location.getDistance());
-		loctime.setTime(Double.parseDouble(parts[1]));
+		locTime.location.segment.set(location.segment.get());
+		locTime.location.distance.set(location.distance.get());
+		locTime.time.set(Double.parseDouble(parts[1]));
 		
-		return loctime;
+		return locTime;
 		
 	}
 	
@@ -248,8 +252,8 @@ public class Parser {
 		
 		Location location = new Location();
 		
-		location.setSegment(resolveSegment(model, parts[0]));
-		location.setDistance(location.getSegment().getLength() * Double.parseDouble(parts[1]) / 100.0);
+		location.segment.set(resolveSegment(model, parts[0]));
+		location.distance.set(location.segment.get().length.get() * Double.parseDouble(parts[1]) / 100.0);
 		
 		return location;
 		

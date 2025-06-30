@@ -31,7 +31,7 @@ public class GraphAdapter implements Graph<Intersection, Segment> {
 	}
 	@Override
 	public double getEdgeWeight(Segment segment) {
-		return segment.getLength();
+		return segment.length.get();
 	}
 	@Override
 	public Set<Segment> getAllEdges(Intersection sourceVertex, Intersection targetVertex) {

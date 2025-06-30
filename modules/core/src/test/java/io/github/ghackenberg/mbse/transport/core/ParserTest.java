@@ -36,14 +36,14 @@ public class ParserTest {
 		Intersection intersection = model.intersections.get(0); 
 		
 		assertNotNull(intersection);
-		assertEquals(intersection.getName(), "A");
+		assertEquals(intersection.name.get(), "A");
 		
-		Coordinate coordinate = intersection.getCoordinate(); 
+		Coordinate coordinate = intersection.coordinate; 
 		
 		assertNotNull(coordinate);
-		assertEquals(coordinate.getX(), 200, 0);
-		assertEquals(coordinate.getY(), 100, 0);
-		assertEquals(coordinate.getZ(), 0, 0);
+		assertEquals(coordinate.x.get(), 200, 0);
+		assertEquals(coordinate.y.get(), 100, 0);
+		assertEquals(coordinate.z.get(), 0, 0);
 	}
 
 	@Test public void testfallB() {
@@ -65,8 +65,8 @@ public class ParserTest {
 		assertNotNull(segment);
 		assertEquals(segment.start, model.intersections.get(0));
 		assertEquals(segment.end, model.intersections.get(1));
-		assertEquals(segment.getLanes(), 1, 0);
-		assertEquals(segment.getSpeed(), 50, 0);
+		assertEquals(segment.lanes.get(), 1, 0);
+		assertEquals(segment.speed.get(), 50, 0);
 	}
 	
 }

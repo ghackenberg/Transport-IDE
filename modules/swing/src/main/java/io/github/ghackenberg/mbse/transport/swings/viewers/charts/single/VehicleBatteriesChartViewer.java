@@ -29,9 +29,9 @@ public class VehicleBatteriesChartViewer extends SingleChartViewer {
 		
 		for (Vehicle vehicle : model.vehicles) {
 			double batteryLevel = vehicle.batteryLevel;
-			double batteryCapacity = vehicle.batteryCapacity;
-			dataset.addValue(batteryLevel, "Battery level", vehicle.name);
-			dataset.addValue(batteryCapacity - batteryLevel, "Battery capacity", vehicle.name);
+			double batteryCapacity = vehicle.batteryCapacity.get();
+			dataset.addValue(batteryLevel, "Battery level", vehicle.name.get());
+			dataset.addValue(batteryCapacity - batteryLevel, "Battery capacity", vehicle.name.get());
 		}
 		
 		// Update range
@@ -39,7 +39,7 @@ public class VehicleBatteriesChartViewer extends SingleChartViewer {
 		double max = 0;
 		
 		for (Vehicle vehicle : model.vehicles) {
-			max = Math.max(vehicle.batteryCapacity, max);
+			max = Math.max(vehicle.batteryCapacity.get(), max);
 		}
 		
 		range.setRange(0, max > 0 ? max : 1);

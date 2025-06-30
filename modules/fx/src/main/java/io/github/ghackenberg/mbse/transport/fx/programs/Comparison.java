@@ -200,9 +200,9 @@ public class Comparison extends Application {
 			for (List<Model> procModels : models) {
 				for (Model model : procModels) {
 					for (Station station : model.stations) {
-						if (station.location.getSegment() == model.segments.get(pickupSegmentNumber)) {
+						if (station.location.segment.get() == model.segments.get(pickupSegmentNumber)) {
 							valid = false;
-						} else if (station.location.getSegment() == model.segments.get(dropoffSegmentNumber)) {
+						} else if (station.location.segment.get() == model.segments.get(dropoffSegmentNumber)) {
 							valid = false;
 						}
 						if (!valid) {
@@ -227,8 +227,8 @@ public class Comparison extends Application {
 					Segment pickupSegment = model.segments.get(pickupSegmentNumber);
 					Segment dropoffSegment = model.segments.get(dropoffSegmentNumber);
 					
-					Location pickLoc = new Location(pickupSegment, pickupDistance * pickupSegment.getLength());
-					Location dropLoc = new Location(dropoffSegment, dropoffDistance * dropoffSegment.getLength());
+					Location pickLoc = new Location(pickupSegment, pickupDistance * pickupSegment.length.get());
+					Location dropLoc = new Location(dropoffSegment, dropoffDistance * dropoffSegment.length.get());
 					
 					LocationTime pick = new LocationTime(pickLoc, pickupTime);
 					LocationTime drop = new LocationTime(dropLoc, dropoffTime);
@@ -244,7 +244,7 @@ public class Comparison extends Application {
 
 		for (List<Model> procModels : models) {
 			for (Model model : procModels) {
-				model.demands.sort((first, second) -> (int) Math.signum(first.getPickup().getTime() - second.getPickup().getTime()));
+				model.demands.sort((first, second) -> (int) Math.signum(first.pick.time.get() - second.pick.time.get()));
 				model.reset();
 			}
 		}

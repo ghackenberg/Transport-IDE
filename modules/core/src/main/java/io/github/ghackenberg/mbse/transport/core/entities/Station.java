@@ -1,13 +1,21 @@
 package io.github.ghackenberg.mbse.transport.core.entities;
 
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+
 public class Station {
 	
-	// Dynamische Eigenschaften (simuliert)
 	public Vehicle vehicle;
 
-	// Statische Eigenschaften (geparst)
-	public double speed;
-	public Location location;
+	// Properties
+	
+	public final DoubleProperty speed = new SimpleDoubleProperty();
+	
+	// Structures
+	
+	public final Location location = new Location();
+	
+	// Methods
 	
 	public void reset() {
 		vehicle = null;
