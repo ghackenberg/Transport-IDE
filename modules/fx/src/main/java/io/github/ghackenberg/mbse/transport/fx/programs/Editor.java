@@ -9,6 +9,7 @@ import io.github.ghackenberg.mbse.transport.core.exceptions.MissingException;
 import io.github.ghackenberg.mbse.transport.fx.viewers.ModelViewer;
 import javafx.application.Application;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -18,8 +19,10 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToolBar;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
@@ -163,8 +166,19 @@ public class Editor extends Application {
 		
 		// Haupt
 		
+		ImageView info = new ImageView("info.png");
+		info.setFitWidth(64);
+		info.setFitHeight(64);
+		
+		Label note = new Label("Open model to start editing!");
+		
+		VBox center = new VBox(info, note);
+		center.setSpacing(10);
+		center.setAlignment(Pos.CENTER);
+		
 		root = new BorderPane();
 		root.setTop(menu);
+		root.setCenter(center);
 		root.setRight(grid);
 		root.setBottom(tool);
 		
