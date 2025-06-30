@@ -8,7 +8,7 @@ import javafx.scene.shape.Line;
 
 public class SegmentViewer extends EntityViewer<Segment, SegmentEvent> {
 	
-	private final Line line;
+	public final Line line;
 	
 	public SegmentViewer(Model model, Segment segment) {
 		super(model, segment);
@@ -27,11 +27,6 @@ public class SegmentViewer extends EntityViewer<Segment, SegmentEvent> {
 		
 		line.strokeWidthProperty().bind(segment.lanes);
 		line.setStroke(Color.LIGHTGRAY);
-		
-		line.setOnMouseClicked(event -> {
-			event.consume();
-			// TODO
-		});
 		
 		getChildren().add(line);
 	}

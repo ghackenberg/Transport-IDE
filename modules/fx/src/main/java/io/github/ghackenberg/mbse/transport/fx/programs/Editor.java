@@ -4,12 +4,19 @@ import java.io.File;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.Parser;
+import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
 import io.github.ghackenberg.mbse.transport.core.exceptions.DirectoryException;
 import io.github.ghackenberg.mbse.transport.core.exceptions.MissingException;
+import io.github.ghackenberg.mbse.transport.fx.viewers.DemandViewer;
+import io.github.ghackenberg.mbse.transport.fx.viewers.IntersectionViewer;
 import io.github.ghackenberg.mbse.transport.fx.viewers.ModelViewer;
+import io.github.ghackenberg.mbse.transport.fx.viewers.SegmentViewer;
+import io.github.ghackenberg.mbse.transport.fx.viewers.StationViewer;
+import io.github.ghackenberg.mbse.transport.fx.viewers.VehicleViewer;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -82,59 +89,96 @@ public class Editor extends Application {
 					
 					viewer = new ModelViewer(model);
 					
-					viewer.setOnIntersectionSelected(entityEvent -> {
-						TextField name = new TextField(entityEvent.getEntity().name.get());
-						entityEvent.getEntity().name.bind(name.textProperty());
+					viewer.setOnMouseClicked(mouseEvent -> {
 						
-						TextField x = new TextField("" + entityEvent.getEntity().coordinate.x.get());
-						x.setOnAction(event -> {
-							entityEvent.getEntity().coordinate.x.set(Double.parseDouble(x.getText()));
-						});
-						x.focusedProperty().addListener(event -> {
-							entityEvent.getEntity().coordinate.x.set(Double.parseDouble(x.getText()));
-						});
+						Node node = mouseEvent.getPickResult().getIntersectedNode();
 						
-						TextField y = new TextField("" + entityEvent.getEntity().coordinate.y.get());
-						y.setOnAction(event -> {
-							entityEvent.getEntity().coordinate.y.set(Double.parseDouble(y.getText()));
-						});
-						y.focusedProperty().addListener(event -> {
-							entityEvent.getEntity().coordinate.y.set(Double.parseDouble(y.getText()));
-						});
+						while (node != null) {
+							if (node instanceof IntersectionViewer) {
+								Intersection intersection = ((IntersectionViewer) node).entity;
+								
+								TextField name = new TextField(intersection.name.get());
+								intersection.name.bind(name.textProperty());
+								
+								TextField x = new TextField("" + intersection.coordinate.x.get());
+								x.setOnAction(event -> {
+									intersection.coordinate.x.set(Double.parseDouble(x.getText()));
+								});
+								x.focusedProperty().addListener(event -> {
+									intersection.coordinate.x.set(Double.parseDouble(x.getText()));
+								});
+								
+								TextField y = new TextField("" + intersection.coordinate.y.get());
+								y.setOnAction(event -> {
+									intersection.coordinate.y.set(Double.parseDouble(y.getText()));
+								});
+								y.focusedProperty().addListener(event -> {
+									intersection.coordinate.y.set(Double.parseDouble(y.getText()));
+								});
+								
+								TextField z = new TextField("" + intersection.coordinate.z.get());
+								z.setOnAction(event -> {
+									intersection.coordinate.z.set(Double.parseDouble(z.getText()));
+								});
+								z.focusedProperty().addListener(event -> {
+									intersection.coordinate.z.set(Double.parseDouble(z.getText()));
+								});
+								
+								right.getChildren().clear();
+								
+								right.add(new Label("Name"), 0, 0);
+								right.add(name, 1, 0);
+								
+								right.add(new Label("X"), 0, 1);
+								right.add(x, 1, 1);
+								
+								right.add(new Label("Y"), 0, 2);
+								right.add(y, 1, 2);
+								
+								right.add(new Label("Z"), 0, 3);
+								right.add(z, 1, 3);
+								
+								break;
+							} else if (node instanceof SegmentViewer) {
+								right.getChildren().clear();
+								
+								// TODO
+								
+								break;
+							} else if (node instanceof StationViewer) {
+								right.getChildren().clear();
+								
+								// TODO
+								
+								break;
+							} else if (node instanceof VehicleViewer) {
+								right.getChildren().clear();
+								
+								// TODO
+								
+								break;
+							} else if (node instanceof DemandViewer) {
+								right.getChildren().clear();
+								
+								// TODO
+								
+								break;
+							} else if (node instanceof ModelViewer) {
+								right.getChildren().clear();
+								
+								// TODO
+								
+								break;
+							} else {
+								node = node.getParent();	
+							}
+						}
 						
-						TextField z = new TextField("" + entityEvent.getEntity().coordinate.z.get());
-						z.setOnAction(event -> {
-							entityEvent.getEntity().coordinate.z.set(Double.parseDouble(z.getText()));
-						});
-						z.focusedProperty().addListener(event -> {
-							entityEvent.getEntity().coordinate.z.set(Double.parseDouble(z.getText()));
-						});
+						/*
 						
-						right.getChildren().clear();
 						
-						right.add(new Label("Name"), 0, 0);
-						right.add(name, 1, 0);
 						
-						right.add(new Label("X"), 0, 1);
-						right.add(x, 1, 1);
-						
-						right.add(new Label("Y"), 0, 2);
-						right.add(y, 1, 2);
-						
-						right.add(new Label("Z"), 0, 3);
-						right.add(z, 1, 3);
-					});
-					viewer.setOnSegmentSelected(e -> {
-						// TODO
-					});
-					viewer.setOnStationSelected(e -> {
-						// TODO
-					});
-					viewer.setOnVehicleSelected(e -> {
-						// TODO
-					});
-					viewer.setOnDemandSelected(e -> {
-						// TODO
+						*/
 					});
 					
 					root.setCenter(viewer);

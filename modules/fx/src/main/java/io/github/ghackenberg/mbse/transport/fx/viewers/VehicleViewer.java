@@ -9,11 +9,11 @@ import javafx.scene.shape.Rectangle;
 
 public class VehicleViewer extends EntityViewer<Vehicle, VehicleEvent> {
 	
-	private final Vehicle.State entityState;
+	public final Vehicle.State entityState;
 	
-	private final Location location;
+	public final Location location;
 	
-	private final Rectangle rectangle;
+	public final Rectangle rectangle;
 	
 	public VehicleViewer(Model model, Vehicle vehicle) {
 		super(model, vehicle);
@@ -45,11 +45,6 @@ public class VehicleViewer extends EntityViewer<Vehicle, VehicleEvent> {
 		rectangle.rotateProperty().bind(location.angle.divide(Math.PI).multiply(180));
 		
 		rectangle.setFill(Color.BLUE);
-		
-		rectangle.setOnMouseClicked(event -> {
-			event.consume();
-			// TODO
-		});
 		
 		getChildren().add(rectangle);
 	}

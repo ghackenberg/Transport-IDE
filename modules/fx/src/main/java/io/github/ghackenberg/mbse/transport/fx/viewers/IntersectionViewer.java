@@ -13,9 +13,9 @@ import javafx.scene.text.TextAlignment;
 
 public class IntersectionViewer extends EntityViewer<Intersection, IntersectionEvent> {
 	
-	private final Circle circle;
+	public final Circle circle;
 	
-	private final Text text;
+	public final Text text;
 	
 	public IntersectionViewer(Model model, Intersection intersection) {
 		super(model, intersection);
@@ -42,20 +42,6 @@ public class IntersectionViewer extends EntityViewer<Intersection, IntersectionE
 		
 		circle.setFill(Color.BLACK);
 		
-		circle.setOnMouseClicked(event -> {
-			event.consume();
-			circle.setFill(Color.RED);
-			if (getOnSelected() != null) {
-				getOnSelected().handle(new IntersectionEvent(entity));
-			}
-		});
-		circle.setOnDragDetected(event -> {
-			event.consume();
-		});
-		circle.setOnDragDropped(event -> {
-			event.consume();
-		});
-		
 		getChildren().add(circle);
 		
 		// Text
@@ -73,14 +59,6 @@ public class IntersectionViewer extends EntityViewer<Intersection, IntersectionE
 		text.setTextOrigin(VPos.CENTER);
 		
 		text.setFill(Color.WHITE);
-		
-		text.setOnMouseClicked(event -> {
-			event.consume();
-			circle.setFill(Color.RED);
-			if (getOnSelected() != null) {
-				getOnSelected().handle(new IntersectionEvent(entity));
-			}
-		});
 		
 		getChildren().add(text);
 	}

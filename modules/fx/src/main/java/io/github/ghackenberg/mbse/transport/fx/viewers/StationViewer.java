@@ -9,7 +9,7 @@ import javafx.scene.shape.Circle;
 
 public class StationViewer extends EntityViewer<Station, StationEvent> {
 	
-	private final Circle circle;
+	public final Circle circle;
 
 	public StationViewer(Model model, Station station) {
 		super(model, station);
@@ -26,11 +26,6 @@ public class StationViewer extends EntityViewer<Station, StationEvent> {
 		circle.centerYProperty().bind(location.y);
 		
 		circle.setFill(Color.MAGENTA);
-		
-		circle.setOnMouseClicked(event -> {
-			event.consume();
-			// TODO
-		});
 		
 		getChildren().add(circle);
 	}

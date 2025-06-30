@@ -11,14 +11,14 @@ import javafx.scene.shape.Line;
 
 public class DemandViewer extends EntityViewer<Demand, DemandEvent> {
 	
-	private final Demand.State entityState;
+	public final Demand.State entityState;
 	
-	private final Location location;
+	public final Location location;
 	
-	private final Line line;
+	public final Line line;
 	
-	private final Circle source;
-	private final Circle target;
+	public final Circle source;
+	public final Circle target;
 	
 	public DemandViewer(Model model, Demand demand) {
 		super(model, demand);
@@ -52,11 +52,6 @@ public class DemandViewer extends EntityViewer<Demand, DemandEvent> {
 		
 		line.setStroke(Color.GREEN);
 		
-		line.setOnMouseClicked(event -> {
-			event.consume();
-			// TODO
-		});
-		
 		getChildren().add(line);
 		
 		// Source
@@ -70,11 +65,6 @@ public class DemandViewer extends EntityViewer<Demand, DemandEvent> {
 		
 		source.setFill(Color.GREEN);
 		
-		source.setOnMouseClicked(event -> {
-			event.consume();
-			// TODO
-		});
-		
 		getChildren().add(source);
 		
 		// Target
@@ -87,11 +77,6 @@ public class DemandViewer extends EntityViewer<Demand, DemandEvent> {
 		target.centerYProperty().bind(end.y);
 		
 		target.setFill(Color.GREEN);
-		
-		target.setOnMouseClicked(event -> {
-			event.consume();
-			// TODO
-		});
 		
 		getChildren().add(target);
 	}

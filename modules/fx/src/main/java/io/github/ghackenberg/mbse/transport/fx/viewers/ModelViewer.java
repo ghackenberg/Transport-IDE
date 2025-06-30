@@ -9,15 +9,9 @@ import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
 import io.github.ghackenberg.mbse.transport.core.entities.Station;
 import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
-import io.github.ghackenberg.mbse.transport.fx.events.DemandEvent;
-import io.github.ghackenberg.mbse.transport.fx.events.IntersectionEvent;
-import io.github.ghackenberg.mbse.transport.fx.events.SegmentEvent;
-import io.github.ghackenberg.mbse.transport.fx.events.StationEvent;
-import io.github.ghackenberg.mbse.transport.fx.events.VehicleEvent;
 import io.github.ghackenberg.mbse.transport.fx.helpers.GenericListChangeListener;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
-import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.layout.Pane;
@@ -49,12 +43,6 @@ public class ModelViewer extends Pane {
 	private final Group outerTranslate = new Group(scale);
 	
 	private final Text text;
-	
-	private EventHandler<IntersectionEvent> onIntersectionSelected;
-	private EventHandler<SegmentEvent> onSegmentSelected;
-	private EventHandler<StationEvent> onStationSelected;
-	private EventHandler<VehicleEvent> onVehicleSelected;
-	private EventHandler<DemandEvent> onDemandSelected;
 
 	private final Map<Intersection, IntersectionViewer> intersectionViewers = new HashMap<>();
 	private final Map<Segment, SegmentViewer> segmentViewers = new HashMap<>();
@@ -179,12 +167,6 @@ public class ModelViewer extends Pane {
 		
 		IntersectionViewer viewer = new IntersectionViewer(model, intersection);
 		
-		viewer.setOnSelected(event -> {
-			if (onIntersectionSelected != null) {
-				onIntersectionSelected.handle(event);
-			}
-		});
-		
 		intersectionLayer.getChildren().add(viewer);
 		
 		intersectionViewers.put(intersection, viewer);
@@ -195,12 +177,6 @@ public class ModelViewer extends Pane {
 	private void add(Segment segment) {
 		SegmentViewer viewer = new SegmentViewer(model, segment);
 		
-		viewer.setOnSelected(event -> {
-			if (onSegmentSelected != null) {
-				onSegmentSelected.handle(event);
-			}
-		});
-		
 		segmentLayer.getChildren().add(viewer);
 		
 		segmentViewers.put(segment, viewer);
@@ -208,12 +184,6 @@ public class ModelViewer extends Pane {
 	
 	private void add(Station station) {
 		StationViewer viewer = new StationViewer(model, station);
-		
-		viewer.setOnSelected(event -> {
-			if (onStationSelected != null) {
-				onStationSelected.handle(event);
-			}
-		});
 		
 		stationLayer.getChildren().add(viewer);
 		
@@ -223,25 +193,13 @@ public class ModelViewer extends Pane {
 	private void add(Vehicle vehicle) {
 		VehicleViewer viewer = new VehicleViewer(model, vehicle);
 		
-		viewer.setOnSelected(event -> {
-			if (onVehicleSelected != null) {
-				onVehicleSelected.handle(event);
-			}
-		});
-		
 		vehicleLayer.getChildren().add(viewer);
 		
-		vehicleViewers.put(vehicle, viewer);		
+		vehicleViewers.put(vehicle, viewer);
 	}
 	
 	private void add(Demand demand) {
 		DemandViewer viewer = new DemandViewer(model, demand);
-		
-		viewer.setOnSelected(event -> {
-			if (onDemandSelected != null) {
-				onDemandSelected.handle(event);
-			}
-		});
 		
 		demandLayer.getChildren().add(viewer);
 		
@@ -274,28 +232,6 @@ public class ModelViewer extends Pane {
 		demandLayer.getChildren().remove(demandViewers.remove(demand));
 	}
 	
-	// On selected
-	
-	public void setOnIntersectionSelected(EventHandler<IntersectionEvent> handler) {
-		onIntersectionSelected = handler;
-	}
-	
-	public void setOnSegmentSelected(EventHandler<SegmentEvent> handler)  {
-		onSegmentSelected = handler;
-	}
-	
-	public void setOnStationSelected(EventHandler<StationEvent> handler) {
-		onStationSelected = handler;
-	}
-	
-	public void setOnVehicleSelected(EventHandler<VehicleEvent> handler) {
-		onVehicleSelected = handler;
-	}
-	
-	public void setOnDemandSelected(EventHandler<DemandEvent> handler) {
-		onDemandSelected = handler;
-	}
-	
 	// Update
 	
 	public void update() {
@@ -317,7 +253,7 @@ public class ModelViewer extends Pane {
 		text.setText("" + modelState.time);
 	}
 	
-	// Zoom
+	// Resize, recompute, zoom
 	
 	private void resize() {
 		
