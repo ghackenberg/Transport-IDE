@@ -36,6 +36,7 @@ public class Segment {
 	// Structures
 	
 	public final Coordinate center = new Coordinate();
+	public final Coordinate tangent = new Coordinate();
 	
 	// Constructors
 	
@@ -66,6 +67,7 @@ public class Segment {
 	private void recompute() {
 		recomputeCenter();
 		recomputeLength();
+		recomputeTangent();
 		recomputeAngle();
 	}
 	
@@ -85,6 +87,18 @@ public class Segment {
 		double dz = end.coordinate.z.get() - start.coordinate.z.get();
 		
 		length.set(Math.sqrt(dx * dx + dy * dy + dz * dz));
+	}
+	
+	private void recomputeTangent() {
+		double len = length.get();
+		
+		double dx = end.coordinate.x.get() - start.coordinate.x.get();
+		double dy = end.coordinate.y.get() - start.coordinate.y.get();
+		double dz = end.coordinate.z.get() - start.coordinate.z.get();
+		
+		tangent.x.set(dx / len);
+		tangent.y.set(dy / len);
+		tangent.z.set(dz / len);
 	}
 	
 	private void recomputeAngle() {
