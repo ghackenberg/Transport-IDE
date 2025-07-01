@@ -228,20 +228,24 @@ public class Editor extends Application {
 			selected.selected.set(false);
 		}
 		
-		viewer.selected.set(true);
+		right.getChildren().clear();
 		
-		selected = viewer;
-		
-		if (viewer instanceof IntersectionViewer) {
-			select((IntersectionViewer) viewer);
-		} else if (viewer instanceof SegmentViewer) {
-			select((SegmentViewer) viewer);
-		} else if (viewer instanceof StationViewer) {
-			select((StationViewer) viewer);
-		} else if (viewer instanceof VehicleViewer) {
-			select((VehicleViewer) viewer);
-		} else if (viewer instanceof DemandViewer) {
-			select((DemandViewer) viewer);
+		if (viewer != null) {
+			viewer.selected.set(true);
+			
+			selected = viewer;
+			
+			if (viewer instanceof IntersectionViewer) {
+				select((IntersectionViewer) viewer);
+			} else if (viewer instanceof SegmentViewer) {
+				select((SegmentViewer) viewer);
+			} else if (viewer instanceof StationViewer) {
+				select((StationViewer) viewer);
+			} else if (viewer instanceof VehicleViewer) {
+				select((VehicleViewer) viewer);
+			} else if (viewer instanceof DemandViewer) {
+				select((DemandViewer) viewer);
+			}
 		}
 	}
 	
@@ -283,8 +287,6 @@ public class Editor extends Application {
 			model.intersections.remove(viewer.entity);
 		});
 		
-		right.getChildren().clear();
-		
 		right.add(new Label("Type"), 0, 0);
 		right.add(type, 1, 0);
 		
@@ -304,22 +306,18 @@ public class Editor extends Application {
 	}
 	
 	private void select(SegmentViewer viewer) {
-		right.getChildren().clear();
 		// TODO
 	}
 	
 	private void select(StationViewer viewer) {
-		right.getChildren().clear();
 		// TODO
 	}
 	
 	private void select(VehicleViewer viewer) {
-		right.getChildren().clear();
 		// TODO
 	}
 	
 	private void select(DemandViewer viewer) {
-		right.getChildren().clear();
 		// TODO
 	}
 
