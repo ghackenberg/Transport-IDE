@@ -4,12 +4,11 @@ import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Demand;
 import io.github.ghackenberg.mbse.transport.core.structures.Coordinate;
 import io.github.ghackenberg.mbse.transport.core.structures.Location;
-import io.github.ghackenberg.mbse.transport.fx.events.DemandEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 
-public class DemandViewer extends EntityViewer<Demand, DemandEvent> {
+public class DemandViewer extends EntityViewer<Demand> {
 	
 	public final Demand.State entityState;
 	
@@ -24,8 +23,6 @@ public class DemandViewer extends EntityViewer<Demand, DemandEvent> {
 		super(model, demand);
 		
 		entityState = demand.state.get();
-		
-		setManaged(false);
 		
 		// Location
 		

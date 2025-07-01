@@ -3,11 +3,10 @@ package io.github.ghackenberg.mbse.transport.fx.viewers;
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
 import io.github.ghackenberg.mbse.transport.core.structures.Location;
-import io.github.ghackenberg.mbse.transport.fx.events.VehicleEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
-public class VehicleViewer extends EntityViewer<Vehicle, VehicleEvent> {
+public class VehicleViewer extends EntityViewer<Vehicle> {
 	
 	public final Vehicle.State entityState;
 	
@@ -19,8 +18,6 @@ public class VehicleViewer extends EntityViewer<Vehicle, VehicleEvent> {
 		super(model, vehicle);
 		
 		entityState = vehicle.state.get();
-		
-		setManaged(false);
 		
 		// Location
 		

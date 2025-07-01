@@ -2,18 +2,15 @@ package io.github.ghackenberg.mbse.transport.fx.viewers;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
-import io.github.ghackenberg.mbse.transport.fx.events.SegmentEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 
-public class SegmentViewer extends EntityViewer<Segment, SegmentEvent> {
+public class SegmentViewer extends EntityViewer<Segment> {
 	
 	public final Line line;
 	
 	public SegmentViewer(Model model, Segment segment) {
 		super(model, segment);
-		
-		setManaged(false);
 		
 		// Rectangle
 		

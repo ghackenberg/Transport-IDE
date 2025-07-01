@@ -3,11 +3,10 @@ package io.github.ghackenberg.mbse.transport.fx.viewers;
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Station;
 import io.github.ghackenberg.mbse.transport.core.structures.Coordinate;
-import io.github.ghackenberg.mbse.transport.fx.events.StationEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
-public class StationViewer extends EntityViewer<Station, StationEvent> {
+public class StationViewer extends EntityViewer<Station> {
 	
 	public final Circle circle;
 

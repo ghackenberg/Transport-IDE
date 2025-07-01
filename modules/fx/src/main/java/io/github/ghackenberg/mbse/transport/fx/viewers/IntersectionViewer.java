@@ -2,7 +2,7 @@ package io.github.ghackenberg.mbse.transport.fx.viewers;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
-import io.github.ghackenberg.mbse.transport.fx.events.IntersectionEvent;
+import javafx.beans.binding.Bindings;
 import javafx.geometry.VPos;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -10,7 +10,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
-public class IntersectionViewer extends EntityViewer<Intersection, IntersectionEvent> {
+public class IntersectionViewer extends EntityViewer<Intersection> {
 	
 	public final Circle circle;
 	
@@ -18,8 +18,6 @@ public class IntersectionViewer extends EntityViewer<Intersection, IntersectionE
 	
 	public IntersectionViewer(Model model, Intersection intersection) {
 		super(model, intersection);
-		
-		setManaged(false);
 		
 		// Circle
 		
@@ -30,7 +28,7 @@ public class IntersectionViewer extends EntityViewer<Intersection, IntersectionE
 		circle.centerXProperty().bind(intersection.coordinate.x);
 		circle.centerYProperty().bind(intersection.coordinate.y);
 		
-		circle.setFill(Color.BLACK);
+		circle.fillProperty().bind(Bindings.when(selected).then(Color.RED).otherwise(Color.PINK));
 		
 		getChildren().add(circle);
 		
@@ -45,11 +43,18 @@ public class IntersectionViewer extends EntityViewer<Intersection, IntersectionE
 		text.setTextAlignment(TextAlignment.CENTER);
 		text.setTextOrigin(VPos.CENTER);
 		
-		text.setFill(Color.WHITE);
+		text.setFill(Color.BLACK);
 
 		text.setFont(new Font(intersection.lanes.get() / 2));
 		text.setX(intersection.coordinate.x.get() - text.getBoundsInLocal().getWidth() / 2);
+		
+		getChildren().add(text);
+		
+		// Listeners
 
+		intersection.name.addListener(event -> {
+			text.setX(intersection.coordinate.x.get() - text.getBoundsInLocal().getWidth() / 2);
+		});
 		intersection.lanes.addListener(event -> {
 			text.setFont(new Font(intersection.lanes.get() / 2));
 			text.setX(intersection.coordinate.x.get() - text.getBoundsInLocal().getWidth() / 2);
@@ -57,8 +62,6 @@ public class IntersectionViewer extends EntityViewer<Intersection, IntersectionE
 		intersection.coordinate.x.addListener(event -> {
 			text.setX(intersection.coordinate.x.get() - text.getBoundsInLocal().getWidth() / 2);
 		});
-		
-		getChildren().add(text);
 	}
 
 	@Override

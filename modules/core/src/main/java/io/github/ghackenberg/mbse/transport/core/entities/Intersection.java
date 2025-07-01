@@ -71,4 +71,9 @@ public class Intersection {
 		lanes.set(max);
 	}
 	
+	@Override
+	public String toString() {
+		return name.get();
+	}
+	
 }

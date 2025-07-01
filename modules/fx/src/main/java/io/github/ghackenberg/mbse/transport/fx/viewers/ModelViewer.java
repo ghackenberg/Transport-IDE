@@ -10,13 +10,16 @@ import io.github.ghackenberg.mbse.transport.core.entities.Segment;
 import io.github.ghackenberg.mbse.transport.core.entities.Station;
 import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
 import io.github.ghackenberg.mbse.transport.fx.helpers.GenericListChangeListener;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Point2D;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.transform.NonInvertibleTransformException;
 
 public class ModelViewer extends Pane {
-	
-	private final double scrollFactor = 0.1;
 	
 	private double minX;
 	private double minY;
@@ -35,12 +38,18 @@ public class ModelViewer extends Pane {
 	public final Pane canvas = new Pane(segmentLayer, intersectionLayer, stationLayer, vehicleLayer, demandLayer);
 	
 	private final Rectangle clip = new Rectangle();
+	
+	public final ObservableList<IntersectionViewer> intersections = FXCollections.observableArrayList();
+	public final ObservableList<SegmentViewer> segments = FXCollections.observableArrayList();
+	public final ObservableList<StationViewer> stations = FXCollections.observableArrayList();
+	public final ObservableList<VehicleViewer> vehicles = FXCollections.observableArrayList();
+	public final ObservableList<DemandViewer> demands = FXCollections.observableArrayList();
 
-	private final Map<Intersection, IntersectionViewer> intersectionViewers = new HashMap<>();
-	private final Map<Segment, SegmentViewer> segmentViewers = new HashMap<>();
-	private final Map<Station, StationViewer> stationViewers = new HashMap<>();
-	private final Map<Vehicle, VehicleViewer> vehicleViewers = new HashMap<>();
-	private final Map<Demand, DemandViewer> demandViewers = new HashMap<>();
+	public final Map<Intersection, IntersectionViewer> intersectionViewers = new HashMap<>();
+	public final Map<Segment, SegmentViewer> segmentViewers = new HashMap<>();
+	public final Map<Station, StationViewer> stationViewers = new HashMap<>();
+	public final Map<Vehicle, VehicleViewer> vehicleViewers = new HashMap<>();
+	public final Map<Demand, DemandViewer> demandViewers = new HashMap<>();
 	
 	public ModelViewer(Model model) {
 		this(model, true);
@@ -71,15 +80,35 @@ public class ModelViewer extends Pane {
 		heightProperty().addListener(event -> updateTransform());
 		
 		setOnScroll(event -> {
-			if (deltaX + event.getDeltaY() * scrollFactor > 0 && deltaY + event.getDeltaY() * scrollFactor > 0) {
+			try {
+				double scrollX = -event.getDeltaX() * Math.max(deltaX, deltaY) * 0.005;
+				double scrollY = -event.getDeltaY() * Math.max(deltaX, deltaY) * 0.005;
 				
-				deltaX += event.getDeltaY() * scrollFactor;
-				deltaY += event.getDeltaY() * scrollFactor;
-				
-				minX -= event.getDeltaY() * scrollFactor / 2;
-				minY -= event.getDeltaY() * scrollFactor / 2;
+				if (event.isShiftDown()) {
+					// Horizontal scroll
+					
+					minX += scrollX;
+					
+				} else if (event.isControlDown()) {
+					// Vertical scroll
+					
+					minY += scrollY;
+					
+				} else if (deltaX + scrollY > 0 && deltaY + scrollY > 0) {
+					// Pan and zoom
+					
+					deltaX += scrollY;
+					deltaY += scrollY;
+					
+					Point2D point = canvas.getLocalToSceneTransform().createInverse().transform(event.getSceneX(), event.getSceneY());
+					
+					minX -= scrollY * (point.getX() - minX) / deltaX;
+					minY -= scrollY * (point.getY() - minY) / deltaY;
+				}
 				
 				updateTransform();
+			} catch (NonInvertibleTransformException e) {
+				e.printStackTrace();
 			}
 		});
 		
@@ -129,65 +158,61 @@ public class ModelViewer extends Pane {
 	// Add
 	
 	private void add(Intersection intersection) {
-		IntersectionViewer viewer = new IntersectionViewer(model, intersection);
-		
-		intersectionLayer.getChildren().add(viewer);
-		
-		intersectionViewers.put(intersection, viewer);
+		add(intersection, new IntersectionViewer(model, intersection), intersections, intersectionLayer, intersectionViewers);
 	}
 	
 	private void add(Segment segment) {
-		SegmentViewer viewer = new SegmentViewer(model, segment);
-		
-		segmentLayer.getChildren().add(viewer);
-		
-		segmentViewers.put(segment, viewer);
+		add(segment, new SegmentViewer(model, segment), segments, segmentLayer, segmentViewers);
 	}
 	
 	private void add(Station station) {
-		StationViewer viewer = new StationViewer(model, station);
-		
-		stationLayer.getChildren().add(viewer);
-		
-		stationViewers.put(station, viewer);
+		add(station, new StationViewer(model, station), stations, stationLayer, stationViewers);
 	}
 	
 	private void add(Vehicle vehicle) {
-		VehicleViewer viewer = new VehicleViewer(model, vehicle);
-		
-		vehicleLayer.getChildren().add(viewer);
-		
-		vehicleViewers.put(vehicle, viewer);
+		add(vehicle, new VehicleViewer(model, vehicle), vehicles, vehicleLayer, vehicleViewers);
 	}
 	
 	private void add(Demand demand) {
-		DemandViewer viewer = new DemandViewer(model, demand);
+		add(demand, new DemandViewer(model, demand), demands, demandLayer, demandViewers);
+	}
+	
+	private <T, S extends Node> void add(T entity, S viewer, ObservableList<S> viewers, Group layer, Map<T, S> viewerMap) {
+		viewers.add(viewer);
 		
-		demandLayer.getChildren().add(viewer);
+		layer.getChildren().add(viewer);
 		
-		demandViewers.put(demand, viewer);
+		viewerMap.put(entity, viewer);
 	}
 	
 	// Remove
 	
 	private void remove(Intersection intersection) {
-		intersectionLayer.getChildren().remove(intersectionViewers.remove(intersection));
+		remove(intersection, intersections, intersectionLayer, intersectionViewers);
 	}
 	
 	private void remove(Segment segment) {
-		segmentLayer.getChildren().remove(segmentViewers.remove(segment));
+		remove(segment, segments, segmentLayer, segmentViewers);
 	}
 	
 	private void remove(Station station) {
-		stationLayer.getChildren().remove(stationViewers.remove(station));
+		remove(station, stations, stationLayer, stationViewers);
 	}
 	
 	private void remove(Vehicle vehicle) {
-		vehicleLayer.getChildren().remove(vehicleViewers.remove(vehicle));
+		remove(vehicle, vehicles, vehicleLayer, vehicleViewers);
 	}
 	
 	private void remove(Demand demand) {
-		demandLayer.getChildren().remove(demandViewers.remove(demand));
+		remove(demand, demands, demandLayer, demandViewers);
+	}
+	
+	private <T, S extends Node> void remove(T entity, ObservableList<S> viewers, Group layer, Map<T, S> viewerMap) {
+		S viewer = viewerMap.remove(entity);
+		
+		layer.getChildren().remove(viewer);
+		
+		viewers.remove(viewer);
 	}
 	
 	// Update
