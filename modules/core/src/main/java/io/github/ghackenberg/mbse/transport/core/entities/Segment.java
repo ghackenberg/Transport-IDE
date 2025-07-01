@@ -27,8 +27,8 @@ public class Segment {
 	
 	// Properties
 	
-	public final DoubleProperty lanes = new SimpleDoubleProperty();
-	public final DoubleProperty speed = new SimpleDoubleProperty();
+	public final DoubleProperty lanes = new SimpleDoubleProperty(1);
+	public final DoubleProperty speed = new SimpleDoubleProperty(50);
 
 	public final DoubleProperty length = new SimpleDoubleProperty();
 	public final DoubleProperty angle = new SimpleDoubleProperty();

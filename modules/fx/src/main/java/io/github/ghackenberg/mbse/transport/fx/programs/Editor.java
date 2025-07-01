@@ -5,8 +5,10 @@ import java.io.File;
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.Parser;
 import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
+import io.github.ghackenberg.mbse.transport.core.entities.Segment;
 import io.github.ghackenberg.mbse.transport.core.exceptions.DirectoryException;
 import io.github.ghackenberg.mbse.transport.core.exceptions.MissingException;
+import io.github.ghackenberg.mbse.transport.fx.helpers.GenericListChangeListener;
 import io.github.ghackenberg.mbse.transport.fx.helpers.GridHelper;
 import io.github.ghackenberg.mbse.transport.fx.helpers.ImageViewHelper;
 import io.github.ghackenberg.mbse.transport.fx.viewers.DemandViewer;
@@ -17,9 +19,9 @@ import io.github.ghackenberg.mbse.transport.fx.viewers.SegmentViewer;
 import io.github.ghackenberg.mbse.transport.fx.viewers.StationViewer;
 import io.github.ghackenberg.mbse.transport.fx.viewers.VehicleViewer;
 import javafx.application.Application;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Alert;
@@ -49,7 +51,7 @@ public class Editor extends Application {
 	
 	private Model model = new Model();
 	
-	private ModelViewer viewer = null;
+	private ModelViewer modelViewer = null;
 	
 	private final MenuItem open = new MenuItem("Open", ImageViewHelper.load("open.png", 16, 16));
 	private final MenuItem save = new MenuItem("Save", ImageViewHelper.load("save.png", 16, 16));
@@ -82,7 +84,7 @@ public class Editor extends Application {
 	
 	private final GridPane right = new GridPane();
 	
-	private final BorderPane root = new BorderPane(viewer, top, right, bottom, left);
+	private final BorderPane root = new BorderPane(modelViewer, top, right, bottom, left);
 	
 	private final Scene scene = new Scene(root, 640, 480);
 
@@ -134,7 +136,7 @@ public class Editor extends Application {
 		right.getColumnConstraints().add(GridHelper.createColumnConstraints(false, Priority.NEVER));
 		right.getColumnConstraints().add(GridHelper.createColumnConstraints(true, Priority.ALWAYS));
 		
-		// Left
+		// Cell factories
 		
 		intersectionList.setCellFactory(event -> {
 			return new ListCell<>() {
@@ -152,6 +154,24 @@ public class Editor extends Application {
 				}
 			};
 		});
+		segmentList.setCellFactory(event -> {
+			return new ListCell<>() {
+				@Override
+				protected void updateItem(SegmentViewer viewer, boolean empty) {
+					super.updateItem(viewer, empty);
+					if (viewer != null) {
+						textProperty().bind(viewer.entity.start.name.concat(" - ").concat(viewer.entity.end.name));
+						setGraphic(ImageViewHelper.load("segment.png", 16, 16));
+					} else {
+						textProperty().unbind();
+						setText(null);
+						setGraphic(null);
+					}
+				}
+			};
+		});
+		
+		// Selection listeners
 		
 		intersectionList.getSelectionModel().selectedItemProperty().addListener((list, oldVal, newVal) -> {
 			select((EntityViewer<?>) newVal);
@@ -169,6 +189,8 @@ public class Editor extends Application {
 			select((EntityViewer<?>) newVal);
 		});
 		
+		// Left
+		
 		left.setExpandedPane(intersectionPane);
 		
 		// Stage
@@ -179,48 +201,130 @@ public class Editor extends Application {
 	}
 	
 	private void reload() {
-		viewer = new ModelViewer(model);
-		viewer.setOnMouseClicked(mouseEvent -> {
-			
-			Node node = mouseEvent.getPickResult().getIntersectedNode();
-			
-			while (node != null) {
-				if (node instanceof EntityViewer) {
-					select((EntityViewer<?>) node);
-					break;
-				} else if (node instanceof ModelViewer) {
-					try {
-						double x = mouseEvent.getSceneX();
-						double y = mouseEvent.getSceneY();
-						
-						Point2D world = ((ModelViewer) node).canvas.getLocalToSceneTransform().createInverse().transform(x, y);
-						
-						Intersection intersection = new Intersection();
-						intersection.name.set("Intersection " + (model.intersections.size() + 1));
-						intersection.coordinate.x.set(world.getX());
-						intersection.coordinate.y.set(world.getY());
-						intersection.coordinate.z.set(0);
-						
-						model.intersections.add(intersection);
-						
-						select((EntityViewer<?>) viewer.intersectionViewers.get(intersection));
-					} catch (NonInvertibleTransformException e) {
-						e.printStackTrace();
-					}
-					break;
-				} else {
-					node = node.getParent();	
+		modelViewer = new ModelViewer(model);
+		
+		setup(modelViewer.intersections, this::detach, this::attach);
+		setup(modelViewer.segments, this::detach, this::attach);
+		setup(modelViewer.stations, this::detach, this::attach);
+		setup(modelViewer.vehicles, this::detach, this::attach);
+		setup(modelViewer.demands, this::detach, this::attach);
+		
+		modelViewer.setOnMouseClicked(event -> {
+			if (event.isStillSincePress()) {
+				try {
+					double x = event.getSceneX();
+					double y = event.getSceneY();
+					
+					Point2D world = modelViewer.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
+					
+					Intersection intersection = new Intersection();
+					intersection.name.set("Intersection " + (model.intersections.size() + 1));
+					intersection.coordinate.x.set(world.getX());
+					intersection.coordinate.y.set(world.getY());
+					intersection.coordinate.z.set(0);
+					
+					model.intersections.add(intersection);
+					
+					select((EntityViewer<?>) modelViewer.intersectionViewers.get(intersection));
+					
+					event.consume();
+				} catch (NonInvertibleTransformException e) {
+					e.printStackTrace();
 				}
 			}
 		});
 		
-		root.setCenter(viewer);
+		intersectionList.setItems(modelViewer.intersections);
+		segmentList.setItems(modelViewer.segments);
+		stationList.setItems(modelViewer.stations);
+		vehicleList.setItems(modelViewer.vehicles);
+		demandList.setItems(modelViewer.demands);
 		
-		intersectionList.setItems(viewer.intersections);
-		segmentList.setItems(viewer.segments);
-		stationList.setItems(viewer.stations);
-		vehicleList.setItems(viewer.vehicles);
-		demandList.setItems(viewer.demands);
+		root.setCenter(modelViewer);
+	}
+	
+	private <T> void setup(ObservableList<T> list, GenericListChangeListener.Handler<T> remove, GenericListChangeListener.Handler<T> add) {
+		list.addListener(new GenericListChangeListener<T>(remove, add));
+		for (T item : list) {
+			add.handle(item);
+		}
+	}
+	
+	private void attach(IntersectionViewer viewer) {
+		viewer.setOnMouseClicked(event -> {
+			if (event.isStillSincePress()) {
+				select((EntityViewer<?>) viewer);
+				event.consume();
+			}
+		});
+		viewer.setOnDragDetected(event -> {
+			select((EntityViewer<?>) viewer);
+			viewer.startFullDrag();
+			event.consume();
+		});
+		viewer.setOnMouseDragEntered(event -> {
+			if (event.getGestureSource() instanceof IntersectionViewer && event.getGestureSource() != viewer) {
+				viewer.selected.set(true);
+				event.consume();
+			}
+		});
+		viewer.setOnMouseDragExited(event -> {
+			if (event.getGestureSource() instanceof IntersectionViewer && event.getGestureSource() != viewer) {
+				viewer.selected.set(false);
+				event.consume();
+			}
+		});
+		viewer.setOnMouseDragReleased(event -> {
+			if (event.getGestureSource() instanceof IntersectionViewer && event.getGestureSource() != viewer) {
+				IntersectionViewer other = (IntersectionViewer) event.getGestureSource();
+				
+				Segment segment = new Segment(other.entity, viewer.entity);
+				
+				other.entity.outgoing.add(segment);
+				viewer.entity.incoming.add(segment);
+				
+				model.segments.add(segment);
+				
+				select((EntityViewer<?>) modelViewer.segmentViewers.get(segment));
+				
+				event.consume();
+			}
+		});
+	}
+	private void attach(SegmentViewer viewer) {
+		viewer.setOnMouseClicked(event -> {
+			select((EntityViewer<?>) viewer);
+			event.consume();
+		});
+	}
+	private void attach(StationViewer viewer) {
+		// TODO
+	}
+	private void attach(VehicleViewer viewer) {
+		// TODO
+	}
+	private void attach(DemandViewer viewer) {
+		// TODO
+	}
+	
+	private void detach(IntersectionViewer viewer) {
+		viewer.setOnMouseClicked(null);
+		viewer.setOnDragDetected(null);
+		viewer.setOnMouseDragEntered(null);
+		viewer.setOnMouseDragExited(null);
+		viewer.setOnMouseDragReleased(null);
+	}
+	private void detach(SegmentViewer viewer) {
+		viewer.setOnMouseClicked(null);
+	}
+	private void detach(StationViewer viewer) {
+		// TODO
+	}
+	private void detach(VehicleViewer viewer) {
+		// TODO
+	}
+	private void detach(DemandViewer viewer) {
+		// TODO
 	}
 	
 	private void select(EntityViewer<?> viewer) {
@@ -252,7 +356,7 @@ public class Editor extends Application {
 	private void select(IntersectionViewer viewer) {
 		intersectionList.getSelectionModel().select(viewer);
 		
-		TextField type = new TextField("Intersecrtion");
+		TextField type = new TextField("Intersection");
 		type.setDisable(true);
 		
 		TextField name = new TextField(viewer.entity.name.get());
@@ -306,7 +410,49 @@ public class Editor extends Application {
 	}
 	
 	private void select(SegmentViewer viewer) {
-		// TODO
+		segmentList.getSelectionModel().select(viewer);
+
+		TextField type = new TextField("Segment");
+		type.setDisable(true);
+		
+		TextField start = new TextField();
+		start.textProperty().bind(viewer.entity.start.name);
+		start.setDisable(true);
+		
+		TextField end = new TextField();
+		end.textProperty().bind(viewer.entity.end.name);
+		end.setDisable(true);
+		
+		TextField lanes = new TextField("" + viewer.entity.lanes.get());
+		lanes.setOnAction(event -> {
+			viewer.entity.lanes.set(Double.parseDouble(lanes.getText()));
+		});
+		lanes.focusedProperty().addListener(event -> {
+			viewer.entity.lanes.set(Double.parseDouble(lanes.getText()));
+		});
+		
+		TextField speed = new TextField("" + viewer.entity.speed.get());
+		speed.setOnAction(event -> {
+			viewer.entity.speed.set(Double.parseDouble(speed.getText()));
+		});
+		speed.focusedProperty().addListener(event -> {
+			viewer.entity.speed.set(Double.parseDouble(speed.getText()));
+		});
+		
+		right.add(new Label("Type"), 0, 0);
+		right.add(type, 1, 0);
+		
+		right.add(new Label("Start"), 0, 1);
+		right.add(start, 1, 1);
+		
+		right.add(new Label("End"), 0, 2);
+		right.add(end, 1, 2);
+		
+		right.add(new Label("Lanes"), 0, 3);
+		right.add(lanes, 1, 3);
+		
+		right.add(new Label("Speed"), 0, 4);
+		right.add(speed, 1, 4);
 	}
 	
 	private void select(StationViewer viewer) {
