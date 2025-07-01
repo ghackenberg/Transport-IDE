@@ -10,39 +10,31 @@ import io.github.ghackenberg.mbse.transport.core.entities.Segment;
 import io.github.ghackenberg.mbse.transport.core.entities.Station;
 import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
 import io.github.ghackenberg.mbse.transport.fx.helpers.GenericListChangeListener;
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
-import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.layout.Pane;
-import javafx.scene.text.Text;
-import javafx.scene.transform.NonInvertibleTransformException;
+import javafx.scene.shape.Rectangle;
 
 public class ModelViewer extends Pane {
 	
-	private final Model model;
-	private final Model.State modelState;
+	private final double scrollFactor = 0.1;
 	
-	private double minX = Double.MAX_VALUE;
-	private double maxX = -Double.MAX_VALUE;
-	
-	private double minY = Double.MAX_VALUE;
-	private double maxY = -Double.MAX_VALUE;
+	private double minX;
+	private double minY;
 	
 	private double deltaX;
 	private double deltaY;
+	
+	private final Model model;
 	
 	private final Group intersectionLayer = new Group();
 	private final Group segmentLayer = new Group();
 	private final Group stationLayer = new Group();
 	private final Group vehicleLayer = new Group();
 	private final Group demandLayer = new Group();
-
-	private final Group innerTranslate = new Group(segmentLayer, intersectionLayer, stationLayer, demandLayer, vehicleLayer);
-	private final Group scale = new Group(innerTranslate);
-	private final Group outerTranslate = new Group(scale);
 	
-	private final Text text;
+	public final Pane canvas = new Pane(segmentLayer, intersectionLayer, stationLayer, vehicleLayer, demandLayer);
+	
+	private final Rectangle clip = new Rectangle();
 
 	private final Map<Intersection, IntersectionViewer> intersectionViewers = new HashMap<>();
 	private final Map<Segment, SegmentViewer> segmentViewers = new HashMap<>();
@@ -50,70 +42,46 @@ public class ModelViewer extends Pane {
 	private final Map<Vehicle, VehicleViewer> vehicleViewers = new HashMap<>();
 	private final Map<Demand, DemandViewer> demandViewers = new HashMap<>();
 	
-	private final InvalidationListener listener;
-	
 	public ModelViewer(Model model) {
 		this(model, true);
 	}
 	
-	public ModelViewer(Model model, boolean showDemands) {
+	public ModelViewer(Model model, boolean showDemands) {		
 		this.model = model;
-		this.modelState = model.state.get();
 		
-		final ModelViewer self = this;
+		minX = model.minX.get();
+		minY = model.minY.get();
 		
-		listener = new InvalidationListener() {
-			@Override
-			public void invalidated(Observable observable) {
-				self.resize();
-			}
-		};
+		deltaX = Math.max(model.deltaX.get(), 20);
+		deltaY = Math.max(model.deltaY.get(), 20);
+		
+		canvas.setPrefWidth(0);
+		canvas.setPrefHeight(0);
+
+		clip.widthProperty().bind(widthProperty());
+		clip.heightProperty().bind(heightProperty());
 		
 		setStyle("-fx-background-color: white;");
 		
-		setPrefWidth(200);
-		setPrefHeight(200);
+		getChildren().add(canvas);
 		
-		widthProperty().addListener(event -> zoom());
-		heightProperty().addListener(event -> zoom());
+		setClip(clip);
 		
-		setOnMouseClicked(event -> {
-			try {
-				event.consume();
+		widthProperty().addListener(event -> updateTransform());
+		heightProperty().addListener(event -> updateTransform());
+		
+		setOnScroll(event -> {
+			if (deltaX + event.getDeltaY() * scrollFactor > 0 && deltaY + event.getDeltaY() * scrollFactor > 0) {
 				
-				double x = event.getSceneX();
-				double y = event.getSceneY();
+				deltaX += event.getDeltaY() * scrollFactor;
+				deltaY += event.getDeltaY() * scrollFactor;
 				
-				Point2D world = innerTranslate.getLocalToSceneTransform().createInverse().transform(x, y);
+				minX -= event.getDeltaY() * scrollFactor / 2;
+				minY -= event.getDeltaY() * scrollFactor / 2;
 				
-				Intersection intersection = new Intersection();
-				intersection.name.set("Intersection " + (model.intersections.size() + 1));
-				intersection.coordinate.x.set(world.getX());
-				intersection.coordinate.y.set(world.getY());
-				intersection.coordinate.z.set(0);
-				
-				model.intersections.add(intersection);
-			} catch (NonInvertibleTransformException e) {
-				e.printStackTrace();
+				updateTransform();
 			}
 		});
-		
-		resize();
-		
-		// Text
-
-		if (modelState != null) {
-			text = new Text("" + modelState.time);
-		} else {
-			text = null;
-		}
-		
-		// Group
-		
-		getChildren().add(outerTranslate);
-		if (modelState != null) {
-			getChildren().add(text);
-		}
 		
 		// Intersections
 		
@@ -161,17 +129,11 @@ public class ModelViewer extends Pane {
 	// Add
 	
 	private void add(Intersection intersection) {
-		intersection.coordinate.x.addListener(listener);
-		intersection.coordinate.y.addListener(listener);
-		intersection.coordinate.z.addListener(listener);
-		
 		IntersectionViewer viewer = new IntersectionViewer(model, intersection);
 		
 		intersectionLayer.getChildren().add(viewer);
 		
 		intersectionViewers.put(intersection, viewer);
-		
-		resize();
 	}
 	
 	private void add(Segment segment) {
@@ -209,10 +171,6 @@ public class ModelViewer extends Pane {
 	// Remove
 	
 	private void remove(Intersection intersection) {
-		intersection.coordinate.x.removeListener(listener);
-		intersection.coordinate.y.removeListener(listener);
-		intersection.coordinate.z.removeListener(listener);
-		
 		intersectionLayer.getChildren().remove(intersectionViewers.remove(intersection));
 	}
 	
@@ -250,48 +208,21 @@ public class ModelViewer extends Pane {
 		for (VehicleViewer viewer : vehicleViewers.values()) {
 			viewer.update();
 		}
-		text.setText("" + modelState.time);
 	}
 	
-	// Resize, recompute, zoom
+	// Compute
 	
-	private void resize() {
-		
-		recompute();
-		
-		zoom();
-		
-	}
-	
-	private void recompute() {
-		for (Intersection intersection : model.intersections) {
-			minX = Math.min(minX, intersection.coordinate.x.get());
-			maxX = Math.max(maxX, intersection.coordinate.x.get());
-		}
-		
-		for (Intersection intersection : model.intersections) {
-			minY = Math.min(minY, intersection.coordinate.y.get());
-			maxY = Math.max(maxY, intersection.coordinate.y.get());
-		}
-		
-		deltaX = maxX - minX;
-		deltaY = maxY - minY;
-	}
-	
-	private void zoom() {
-		double width = getWidth() - 20;
-		double height = getHeight() - 20;
+	private void updateTransform() {
+		double width = getWidth();
+		double height = getHeight();
 		
 		double factor = Math.min(width / deltaX, height / deltaY);
 		
-		innerTranslate.setTranslateX(0 - minX - deltaX / 2);
-		innerTranslate.setTranslateY(0 - minY - deltaY / 2);
+		canvas.setTranslateX(- minX * factor + (width - deltaX * factor) / 2);
+		canvas.setTranslateY(- minY * factor + (height - deltaY * factor) / 2);
 		
-		scale.setScaleX(factor);
-		scale.setScaleY(factor);
-		
-		outerTranslate.setTranslateX(getWidth() / 2);
-		outerTranslate.setTranslateY(getHeight() / 2);
+		canvas.setScaleX(factor);
+		canvas.setScaleY(factor);
 	}
 	
 }

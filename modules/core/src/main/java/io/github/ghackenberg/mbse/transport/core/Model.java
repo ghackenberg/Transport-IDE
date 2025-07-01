@@ -5,9 +5,14 @@ import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
 import io.github.ghackenberg.mbse.transport.core.entities.Station;
 import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
 public class Model {
@@ -24,6 +29,18 @@ public class Model {
 	
 	public final StringProperty name = new SimpleStringProperty();
 	
+	public final DoubleProperty minX = new SimpleDoubleProperty();
+	public final DoubleProperty minY = new SimpleDoubleProperty();
+	public final DoubleProperty minZ = new SimpleDoubleProperty();
+	
+	public final DoubleProperty maxX = new SimpleDoubleProperty();
+	public final DoubleProperty maxY = new SimpleDoubleProperty();
+	public final DoubleProperty maxZ = new SimpleDoubleProperty();
+	
+	public final DoubleProperty deltaX = new SimpleDoubleProperty();
+	public final DoubleProperty deltaY = new SimpleDoubleProperty();
+	public final DoubleProperty deltaZ = new SimpleDoubleProperty();
+	
 	// Structures
 	
 	public ObservableList<Intersection> intersections = FXCollections.observableArrayList();
@@ -32,7 +49,103 @@ public class Model {
 	public ObservableList<Vehicle> vehicles = FXCollections.observableArrayList();
 	public ObservableList<Demand> demands = FXCollections.observableArrayList();
 	
+	// Constructors
+	
+	public Model() {
+		final InvalidationListener listener = new InvalidationListener() {
+			@Override
+			public void invalidated(Observable observable) {
+				recompute();	
+			}
+		};
+		intersections.addListener(new ListChangeListener<>() {
+			@Override
+			public void onChanged(Change<? extends Intersection> c) {
+				while (c.next()) {
+					for (Intersection intersection : c.getRemoved()) {
+						intersection.lanes.removeListener(listener);
+						
+						intersection.coordinate.x.removeListener(listener);
+						intersection.coordinate.y.removeListener(listener);
+						intersection.coordinate.z.removeListener(listener);
+					}
+					for (Intersection intersection : c.getAddedSubList()) {
+						intersection.lanes.addListener(listener);
+						
+						intersection.coordinate.x.addListener(listener);
+						intersection.coordinate.y.addListener(listener);
+						intersection.coordinate.z.addListener(listener);
+					}
+				}
+				recompute();
+			}
+		});
+		recompute();
+	}
+	
 	// Methods
+	
+	private void recompute() {
+		// X
+		
+		double minX = +Double.MAX_VALUE;
+		double maxX = -Double.MAX_VALUE;
+		
+		for (Intersection intersection : intersections) {
+			minX = Math.min(minX, intersection.coordinate.x.get() - intersection.lanes.get() / 2);
+			maxX = Math.max(maxX, intersection.coordinate.x.get() + intersection.lanes.get() / 2);
+		}
+		
+		if (intersections.size() == 0) {
+			minX = 0;
+			maxX = 0;
+		}
+		
+		this.minX.set(minX);
+		this.maxX.set(maxX);
+		
+		deltaX.set(maxX - minX);
+		
+		// Y
+		
+		double minY = +Double.MAX_VALUE;
+		double maxY = -Double.MAX_VALUE;
+		
+		for (Intersection intersection : intersections) {
+			minY = Math.min(minY, intersection.coordinate.y.get() - intersection.lanes.get() / 2);
+			maxY = Math.max(maxY, intersection.coordinate.y.get() + intersection.lanes.get() / 2);
+		}
+		
+		if (intersections.size() == 0) {
+			minY = 0;
+			maxY = 0;
+		}
+		
+		this.minY.set(minY);
+		this.maxY.set(maxY);
+		
+		deltaY.set(maxY - minY);
+		
+		// Z
+		
+		double minZ = +Double.MAX_VALUE;
+		double maxZ = -Double.MAX_VALUE;
+		
+		for (Intersection intersection : intersections) {
+			minZ = Math.min(minZ, intersection.coordinate.z.get() - intersection.lanes.get() / 2);
+			maxZ = Math.max(maxZ, intersection.coordinate.z.get() + intersection.lanes.get() / 2);
+		}
+		
+		if (intersections.size() == 0) {
+			minZ = 0;
+			maxZ = 0;
+		}
+		
+		this.minZ.set(minZ);
+		this.maxZ.set(maxZ);
+		
+		deltaZ.set(maxZ - minZ);
+	}
 	
 	public Intersection getIntersection(String name) {
 		for (Intersection intersection : intersections) {

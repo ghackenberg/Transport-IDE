@@ -2,7 +2,6 @@ package io.github.ghackenberg.mbse.transport.fx.viewers;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
-import io.github.ghackenberg.mbse.transport.core.entities.Segment;
 import io.github.ghackenberg.mbse.transport.fx.events.IntersectionEvent;
 import javafx.geometry.VPos;
 import javafx.scene.paint.Color;
@@ -22,20 +21,11 @@ public class IntersectionViewer extends EntityViewer<Intersection, IntersectionE
 		
 		setManaged(false);
 		
-		double radius = 0.5;
-		
-		for (Segment segment : intersection.incoming) {
-			radius = Math.max(radius, segment.lanes.get() / 2.);
-		}
-		for (Segment segment : intersection.outgoing) {
-			radius = Math.max(radius, segment.lanes.get() / 2.);
-		}
-		
 		// Circle
 		
 		circle = new Circle();
 		
-		circle.setRadius(radius);
+		circle.radiusProperty().bind(intersection.lanes.divide(2));
 		
 		circle.centerXProperty().bind(intersection.coordinate.x);
 		circle.centerYProperty().bind(intersection.coordinate.y);
@@ -50,15 +40,23 @@ public class IntersectionViewer extends EntityViewer<Intersection, IntersectionE
 		
 		text.textProperty().bind(intersection.name);
 		
-		text.setFont(new Font(radius));
-		
-		text.xProperty().bind(intersection.coordinate.x);
 		text.yProperty().bind(intersection.coordinate.y);
-		
+
 		text.setTextAlignment(TextAlignment.CENTER);
 		text.setTextOrigin(VPos.CENTER);
 		
 		text.setFill(Color.WHITE);
+
+		text.setFont(new Font(intersection.lanes.get() / 2));
+		text.setX(intersection.coordinate.x.get() - text.getBoundsInLocal().getWidth() / 2);
+
+		intersection.lanes.addListener(event -> {
+			text.setFont(new Font(intersection.lanes.get() / 2));
+			text.setX(intersection.coordinate.x.get() - text.getBoundsInLocal().getWidth() / 2);
+		});
+		intersection.coordinate.x.addListener(event -> {
+			text.setX(intersection.coordinate.x.get() - text.getBoundsInLocal().getWidth() / 2);
+		});
 		
 		getChildren().add(text);
 	}

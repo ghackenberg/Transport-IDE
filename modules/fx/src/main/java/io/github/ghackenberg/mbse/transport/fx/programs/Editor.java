@@ -15,7 +15,7 @@ import io.github.ghackenberg.mbse.transport.fx.viewers.StationViewer;
 import io.github.ghackenberg.mbse.transport.fx.viewers.VehicleViewer;
 import javafx.application.Application;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
+import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -26,10 +26,9 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToolBar;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.transform.NonInvertibleTransformException;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
@@ -39,9 +38,9 @@ public class Editor extends Application {
 		launch(args);
 	}
 	
-	private Model model;
+	private Model model = new Model();
 	
-	private ModelViewer viewer;
+	private ModelViewer viewer = null;
 	
 	private final MenuItem open = new MenuItem("Open");
 	private final MenuItem save = new MenuItem("Save");
@@ -54,20 +53,18 @@ public class Editor extends Application {
 	
 	private final MenuBar top = new MenuBar(file, edit, help);
 	
-	private final ToolBar bottom = new ToolBar();
+	private final ToolBar bottom = new ToolBar(new Label("(c) 2025 Dr. Georg Hackenberg, Professor for Industrial Informatics, School of Engineering, FH Upper Austria"));
 	
 	private final GridPane right = new GridPane();
-
-	private final ImageView info = new ImageView("info.png");
-
-	private final VBox welcome = new VBox(info, new Label("Open model to start editing!"));
 	
-	private final BorderPane root = new BorderPane(welcome, top, right, bottom, null);
+	private final BorderPane root = new BorderPane(viewer, top, right, bottom, null);
 	
 	private final Scene scene = new Scene(root, 640, 480);
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
+		
+		reloadModelViewer();
 		
 		// Menü
 		
@@ -87,101 +84,7 @@ public class Editor extends Application {
 				try {
 					model = new Parser().parse(intersections, segments, stations, vehicles, demands);
 					
-					viewer = new ModelViewer(model);
-					
-					viewer.setOnMouseClicked(mouseEvent -> {
-						
-						Node node = mouseEvent.getPickResult().getIntersectedNode();
-						
-						while (node != null) {
-							if (node instanceof IntersectionViewer) {
-								Intersection intersection = ((IntersectionViewer) node).entity;
-								
-								TextField name = new TextField(intersection.name.get());
-								intersection.name.bind(name.textProperty());
-								
-								TextField x = new TextField("" + intersection.coordinate.x.get());
-								x.setOnAction(event -> {
-									intersection.coordinate.x.set(Double.parseDouble(x.getText()));
-								});
-								x.focusedProperty().addListener(event -> {
-									intersection.coordinate.x.set(Double.parseDouble(x.getText()));
-								});
-								
-								TextField y = new TextField("" + intersection.coordinate.y.get());
-								y.setOnAction(event -> {
-									intersection.coordinate.y.set(Double.parseDouble(y.getText()));
-								});
-								y.focusedProperty().addListener(event -> {
-									intersection.coordinate.y.set(Double.parseDouble(y.getText()));
-								});
-								
-								TextField z = new TextField("" + intersection.coordinate.z.get());
-								z.setOnAction(event -> {
-									intersection.coordinate.z.set(Double.parseDouble(z.getText()));
-								});
-								z.focusedProperty().addListener(event -> {
-									intersection.coordinate.z.set(Double.parseDouble(z.getText()));
-								});
-								
-								right.getChildren().clear();
-								
-								right.add(new Label("Name"), 0, 0);
-								right.add(name, 1, 0);
-								
-								right.add(new Label("X"), 0, 1);
-								right.add(x, 1, 1);
-								
-								right.add(new Label("Y"), 0, 2);
-								right.add(y, 1, 2);
-								
-								right.add(new Label("Z"), 0, 3);
-								right.add(z, 1, 3);
-								
-								break;
-							} else if (node instanceof SegmentViewer) {
-								right.getChildren().clear();
-								
-								// TODO
-								
-								break;
-							} else if (node instanceof StationViewer) {
-								right.getChildren().clear();
-								
-								// TODO
-								
-								break;
-							} else if (node instanceof VehicleViewer) {
-								right.getChildren().clear();
-								
-								// TODO
-								
-								break;
-							} else if (node instanceof DemandViewer) {
-								right.getChildren().clear();
-								
-								// TODO
-								
-								break;
-							} else if (node instanceof ModelViewer) {
-								right.getChildren().clear();
-								
-								// TODO
-								
-								break;
-							} else {
-								node = node.getParent();	
-							}
-						}
-						
-						/*
-						
-						
-						
-						*/
-					});
-					
-					root.setCenter(viewer);
+					reloadModelViewer();
 				} catch (MissingException e) {
 					e.printStackTrace();
 				} catch (DirectoryException e) {
@@ -197,23 +100,121 @@ public class Editor extends Application {
 		// Right
 		
 		right.setPadding(new Insets(10));
-		
 		right.setHgap(10);
 		right.setVgap(10);
-		
-		// Welcome
-		
-		info.setFitWidth(64);
-		info.setFitHeight(64);
-		
-		welcome.setSpacing(10);
-		welcome.setAlignment(Pos.CENTER);
 		
 		// Stage
 		
 		primaryStage.setScene(scene);
 		primaryStage.setTitle("Transport-IDE Editor");
 		primaryStage.show();
+	}
+	
+	private void reloadModelViewer() {
+		viewer = new ModelViewer(model);
+		
+		viewer.setOnMouseClicked(mouseEvent -> {
+			
+			Node node = mouseEvent.getPickResult().getIntersectedNode();
+			
+			while (node != null) {
+				if (node instanceof IntersectionViewer) {
+					Intersection intersection = ((IntersectionViewer) node).entity;
+					
+					TextField name = new TextField(intersection.name.get());
+					intersection.name.bind(name.textProperty());
+					
+					TextField x = new TextField("" + intersection.coordinate.x.get());
+					x.setOnAction(event -> {
+						intersection.coordinate.x.set(Double.parseDouble(x.getText()));
+					});
+					x.focusedProperty().addListener(event -> {
+						intersection.coordinate.x.set(Double.parseDouble(x.getText()));
+					});
+					
+					TextField y = new TextField("" + intersection.coordinate.y.get());
+					y.setOnAction(event -> {
+						intersection.coordinate.y.set(Double.parseDouble(y.getText()));
+					});
+					y.focusedProperty().addListener(event -> {
+						intersection.coordinate.y.set(Double.parseDouble(y.getText()));
+					});
+					
+					TextField z = new TextField("" + intersection.coordinate.z.get());
+					z.setOnAction(event -> {
+						intersection.coordinate.z.set(Double.parseDouble(z.getText()));
+					});
+					z.focusedProperty().addListener(event -> {
+						intersection.coordinate.z.set(Double.parseDouble(z.getText()));
+					});
+					
+					right.getChildren().clear();
+					
+					right.add(new Label("Name"), 0, 0);
+					right.add(name, 1, 0);
+					
+					right.add(new Label("X"), 0, 1);
+					right.add(x, 1, 1);
+					
+					right.add(new Label("Y"), 0, 2);
+					right.add(y, 1, 2);
+					
+					right.add(new Label("Z"), 0, 3);
+					right.add(z, 1, 3);
+					
+					break;
+				} else if (node instanceof SegmentViewer) {
+					right.getChildren().clear();
+					
+					// TODO
+					
+					break;
+				} else if (node instanceof StationViewer) {
+					right.getChildren().clear();
+					
+					// TODO
+					
+					break;
+				} else if (node instanceof VehicleViewer) {
+					right.getChildren().clear();
+					
+					// TODO
+					
+					break;
+				} else if (node instanceof DemandViewer) {
+					right.getChildren().clear();
+					
+					// TODO
+					
+					break;
+				} else if (node instanceof ModelViewer) {
+					right.getChildren().clear();
+
+					try {
+						double x = mouseEvent.getSceneX();
+						double y = mouseEvent.getSceneY();
+						
+						Point2D world = ((ModelViewer) node).canvas.getLocalToSceneTransform().createInverse().transform(x, y);
+						
+						Intersection intersection = new Intersection();
+						intersection.name.set("" + (model.intersections.size() + 1));
+						intersection.coordinate.x.set(world.getX());
+						intersection.coordinate.y.set(world.getY());
+						intersection.coordinate.z.set(0);
+						
+						model.intersections.add(intersection);
+					} catch (NonInvertibleTransformException e) {
+						e.printStackTrace();
+					}
+					
+					break;
+				} else {
+					node = node.getParent();	
+				}
+			}
+		});
+		
+		root.setCenter(viewer);
 	}
 
 }
