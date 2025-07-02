@@ -23,18 +23,14 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.Scene;
-import javafx.scene.control.Accordion;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -68,23 +64,9 @@ public class Editor extends Application {
 	
 	private EntityViewer<?> selected;
 	
-	private final ListView<IntersectionViewer> intersectionList = new ListView<>();
-	private final ListView<SegmentViewer> segmentList = new ListView<>();
-	private final ListView<StationViewer> stationList = new ListView<>();
-	private final ListView<VehicleViewer> vehicleList = new ListView<>();
-	private final ListView<DemandViewer> demandList = new ListView<>();
-	
-	private final TitledPane intersectionPane = new TitledPane("Intersections", intersectionList);
-	private final TitledPane segmentPane = new TitledPane("Segments", segmentList);
-	private final TitledPane stationPane = new TitledPane("Stations", stationList);
-	private final TitledPane vehiclePane = new TitledPane("Vehicles", vehicleList);
-	private final TitledPane demandPane = new TitledPane("Demands", demandList);
-	
-	private final Accordion left = new Accordion(intersectionPane, segmentPane, stationPane, vehiclePane, demandPane);
-	
 	private final GridPane right = new GridPane();
 	
-	private final BorderPane root = new BorderPane(modelViewer, top, right, bottom, left);
+	private final BorderPane root = new BorderPane(modelViewer, top, right, bottom, null);
 	
 	private final Scene scene = new Scene(root, 640, 480);
 
@@ -136,63 +118,6 @@ public class Editor extends Application {
 		right.getColumnConstraints().add(GridHelper.createColumnConstraints(false, Priority.NEVER));
 		right.getColumnConstraints().add(GridHelper.createColumnConstraints(true, Priority.ALWAYS));
 		
-		// Cell factories
-		
-		intersectionList.setCellFactory(event -> {
-			return new ListCell<>() {
-				@Override
-				protected void updateItem(IntersectionViewer viewer, boolean empty) {
-					super.updateItem(viewer, empty);
-					if (viewer != null) {
-						textProperty().bind(viewer.entity.name);
-						setGraphic(ImageViewHelper.load("intersection.png", 16, 16));
-					} else {
-						textProperty().unbind();
-						setText(null);
-						setGraphic(null);
-					}
-				}
-			};
-		});
-		segmentList.setCellFactory(event -> {
-			return new ListCell<>() {
-				@Override
-				protected void updateItem(SegmentViewer viewer, boolean empty) {
-					super.updateItem(viewer, empty);
-					if (viewer != null) {
-						textProperty().bind(viewer.entity.start.name.concat(" - ").concat(viewer.entity.end.name));
-						setGraphic(ImageViewHelper.load("segment.png", 16, 16));
-					} else {
-						textProperty().unbind();
-						setText(null);
-						setGraphic(null);
-					}
-				}
-			};
-		});
-		
-		// Selection listeners
-		
-		intersectionList.getSelectionModel().selectedItemProperty().addListener((list, oldVal, newVal) -> {
-			select((EntityViewer<?>) newVal);
-		});
-		segmentList.getSelectionModel().selectedItemProperty().addListener((list, oldVal, newVal) -> {
-			select((EntityViewer<?>) newVal);
-		});
-		stationList.getSelectionModel().selectedItemProperty().addListener((list, oldVal, newVal) -> {
-			select((EntityViewer<?>) newVal);
-		});
-		vehicleList.getSelectionModel().selectedItemProperty().addListener((list, oldVal, newVal) -> {
-			select((EntityViewer<?>) newVal);
-		});
-		demandList.getSelectionModel().selectedItemProperty().addListener((list, oldVal, newVal) -> {
-			select((EntityViewer<?>) newVal);
-		});
-		
-		// Left
-		
-		left.setExpandedPane(intersectionPane);
-		
 		// Stage
 		
 		primaryStage.setScene(scene);
@@ -233,12 +158,25 @@ public class Editor extends Application {
 				}
 			}
 		});
-		
-		intersectionList.setItems(modelViewer.intersections);
-		segmentList.setItems(modelViewer.segments);
-		stationList.setItems(modelViewer.stations);
-		vehicleList.setItems(modelViewer.vehicles);
-		demandList.setItems(modelViewer.demands);
+		modelViewer.setOnMouseDragOver(event -> {
+			if (event.getGestureSource() instanceof IntersectionViewer) {
+				IntersectionViewer viewer = (IntersectionViewer) event.getGestureSource();
+				
+				if (!event.isControlDown()) {
+					try {
+						double x = event.getSceneX();
+						double y = event.getSceneY();
+						
+						Point2D world = modelViewer.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
+						
+						viewer.entity.coordinate.x.set(world.getX());
+						viewer.entity.coordinate.y.set(world.getY());
+					} catch (NonInvertibleTransformException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
 		
 		root.setCenter(modelViewer);
 	}
@@ -264,37 +202,45 @@ public class Editor extends Application {
 		});
 		viewer.setOnMouseDragEntered(event -> {
 			if (event.getGestureSource() instanceof IntersectionViewer && event.getGestureSource() != viewer) {
-				viewer.selected.set(true);
-				event.consume();
+				if (event.isControlDown()) {
+					viewer.selected.set(true);
+					event.consume();
+				}
 			}
 		});
 		viewer.setOnMouseDragExited(event -> {
 			if (event.getGestureSource() instanceof IntersectionViewer && event.getGestureSource() != viewer) {
-				viewer.selected.set(false);
-				event.consume();
+				if (event.isControlDown()) {
+					viewer.selected.set(false);
+					event.consume();
+				}
 			}
 		});
 		viewer.setOnMouseDragReleased(event -> {
 			if (event.getGestureSource() instanceof IntersectionViewer && event.getGestureSource() != viewer) {
-				IntersectionViewer other = (IntersectionViewer) event.getGestureSource();
-				
-				Segment segment = new Segment(other.entity, viewer.entity);
-				
-				other.entity.outgoing.add(segment);
-				viewer.entity.incoming.add(segment);
-				
-				model.segments.add(segment);
-				
-				select((EntityViewer<?>) modelViewer.segmentViewers.get(segment));
-				
-				event.consume();
+				if (event.isControlDown()) {
+					IntersectionViewer other = (IntersectionViewer) event.getGestureSource();
+					
+					Segment segment = new Segment(other.entity, viewer.entity);
+					
+					other.entity.outgoing.add(segment);
+					viewer.entity.incoming.add(segment);
+					
+					model.segments.add(segment);
+					
+					select((EntityViewer<?>) modelViewer.segmentViewers.get(segment));
+					
+					event.consume();
+				}
 			}
 		});
 	}
 	private void attach(SegmentViewer viewer) {
 		viewer.setOnMouseClicked(event -> {
-			select((EntityViewer<?>) viewer);
-			event.consume();
+			if (event.isStillSincePress()) {
+				select((EntityViewer<?>) viewer);
+				event.consume();
+			}
 		});
 	}
 	private void attach(StationViewer viewer) {
@@ -354,8 +300,6 @@ public class Editor extends Application {
 	}
 	
 	private void select(IntersectionViewer viewer) {
-		intersectionList.getSelectionModel().select(viewer);
-		
 		TextField type = new TextField("Intersection");
 		type.setDisable(true);
 		
@@ -410,8 +354,6 @@ public class Editor extends Application {
 	}
 	
 	private void select(SegmentViewer viewer) {
-		segmentList.getSelectionModel().select(viewer);
-
 		TextField type = new TextField("Segment");
 		type.setDisable(true);
 		
