@@ -45,7 +45,7 @@ public class IntersectionViewer extends EntityViewer<Intersection> {
 		
 		text.setFill(Color.BLACK);
 
-		text.setFont(new Font(intersection.lanes.get() / 2));
+		text.setFont(new Font(0.5));
 		text.setX(intersection.coordinate.x.get() - text.getBoundsInLocal().getWidth() / 2);
 		
 		getChildren().add(text);
@@ -53,10 +53,6 @@ public class IntersectionViewer extends EntityViewer<Intersection> {
 		// Listeners
 
 		intersection.name.addListener(event -> {
-			text.setX(intersection.coordinate.x.get() - text.getBoundsInLocal().getWidth() / 2);
-		});
-		intersection.lanes.addListener(event -> {
-			text.setFont(new Font(intersection.lanes.get() / 2));
 			text.setX(intersection.coordinate.x.get() - text.getBoundsInLocal().getWidth() / 2);
 		});
 		intersection.coordinate.x.addListener(event -> {

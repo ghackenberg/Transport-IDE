@@ -19,6 +19,10 @@ import io.github.ghackenberg.mbse.transport.fx.viewers.SegmentViewer;
 import io.github.ghackenberg.mbse.transport.fx.viewers.StationViewer;
 import io.github.ghackenberg.mbse.transport.fx.viewers.VehicleViewer;
 import javafx.application.Application;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
@@ -35,6 +39,10 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.transform.NonInvertibleTransformException;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
@@ -48,6 +56,13 @@ public class Editor extends Application {
 	private Model model = new Model();
 	
 	private ModelViewer modelViewer = null;
+	
+	private final BooleanProperty segmentPreviewVisible = new SimpleBooleanProperty(false);
+	private final DoubleProperty segmentPreviewEndX = new SimpleDoubleProperty();
+	private final DoubleProperty segmentPreviewEndY = new SimpleDoubleProperty();
+	
+	private final Line segmentPreviewLine = new Line();
+	private final Circle segmentPreviewHead = new Circle();
 	
 	private final MenuItem open = new MenuItem("Open", ImageViewHelper.load("open.png", 16, 16));
 	private final MenuItem save = new MenuItem("Save", ImageViewHelper.load("save.png", 16, 16));
@@ -75,7 +90,7 @@ public class Editor extends Application {
 		
 		reload();
 		
-		// Menü
+		// Top
 		
 		open.setOnAction(menuEvent -> {			
 			DirectoryChooser chooser = new DirectoryChooser();
@@ -118,6 +133,24 @@ public class Editor extends Application {
 		right.getColumnConstraints().add(GridHelper.createColumnConstraints(false, Priority.NEVER));
 		right.getColumnConstraints().add(GridHelper.createColumnConstraints(true, Priority.ALWAYS));
 		
+		// Center
+		
+		segmentPreviewLine.visibleProperty().bind(segmentPreviewVisible);
+		segmentPreviewLine.endXProperty().bind(segmentPreviewEndX);
+		segmentPreviewLine.endYProperty().bind(segmentPreviewEndY);
+	
+		segmentPreviewLine.setStroke(Color.LIGHTGRAY);
+		segmentPreviewLine.setStrokeWidth(1);
+		segmentPreviewLine.setStrokeDashOffset(1);
+		segmentPreviewLine.setStrokeLineCap(StrokeLineCap.BUTT);
+		
+		segmentPreviewHead.visibleProperty().bind(segmentPreviewVisible);
+		segmentPreviewHead.centerXProperty().bind(segmentPreviewEndX);
+		segmentPreviewHead.centerYProperty().bind(segmentPreviewEndY);
+		
+		segmentPreviewHead.setRadius(0.5);
+		segmentPreviewHead.setFill(Color.GRAY);
+		
 		// Stage
 		
 		primaryStage.setScene(scene);
@@ -127,6 +160,9 @@ public class Editor extends Application {
 	
 	private void reload() {
 		modelViewer = new ModelViewer(model);
+		
+		modelViewer.segmentLayer.getChildren().add(segmentPreviewLine);
+		modelViewer.segmentLayer.getChildren().add(segmentPreviewHead);
 		
 		setup(modelViewer.intersections, this::detach, this::attach);
 		setup(modelViewer.segments, this::detach, this::attach);
@@ -150,7 +186,7 @@ public class Editor extends Application {
 					
 					model.intersections.add(intersection);
 					
-					select((EntityViewer<?>) modelViewer.intersectionViewers.get(intersection));
+					select(modelViewer.intersectionViewers.get(intersection));
 					
 					event.consume();
 				} catch (NonInvertibleTransformException e) {
@@ -158,23 +194,73 @@ public class Editor extends Application {
 				}
 			}
 		});
-		modelViewer.setOnMouseDragOver(event -> {
+		modelViewer.setOnMouseDragEntered(event -> {
 			if (event.getGestureSource() instanceof IntersectionViewer) {
-				IntersectionViewer viewer = (IntersectionViewer) event.getGestureSource();
-				
-				if (!event.isControlDown()) {
-					try {
+				if (event.isControlDown()) {
+					segmentPreviewVisible.set(true);
+					event.consume();
+				}
+			}
+		});
+		modelViewer.setOnMouseDragOver(event -> {
+			try {
+				if (event.getGestureSource() instanceof IntersectionViewer) {
+					IntersectionViewer viewer = (IntersectionViewer) event.getGestureSource();
+					
+					double x = event.getSceneX();
+					double y = event.getSceneY();
+					
+					Point2D world = modelViewer.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
+	
+					if (event.isControlDown()) {
+						segmentPreviewEndX.set(world.getX());
+						segmentPreviewEndY.set(world.getY());
+					} else {
+						viewer.entity.coordinate.x.set(world.getX());
+						viewer.entity.coordinate.y.set(world.getY());
+					}
+
+					event.consume();
+				}
+			} catch (NonInvertibleTransformException e) {
+				e.printStackTrace();
+			}
+		});
+		modelViewer.setOnMouseDragExited(event -> {
+			segmentPreviewVisible.set(false);
+			event.consume();
+		});
+		modelViewer.setOnMouseDragReleased(event -> {
+			try {
+				if (event.getGestureSource() instanceof IntersectionViewer) {
+					if (event.isControlDown()) {
+						IntersectionViewer viewer = (IntersectionViewer) event.getGestureSource();
+						
 						double x = event.getSceneX();
 						double y = event.getSceneY();
 						
 						Point2D world = modelViewer.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
+		
+						Intersection other = new Intersection();
 						
-						viewer.entity.coordinate.x.set(world.getX());
-						viewer.entity.coordinate.y.set(world.getY());
-					} catch (NonInvertibleTransformException e) {
-						e.printStackTrace();
+						other.name.set("Intersection " + (model.intersections.size() + 1));
+						other.coordinate.x.set(world.getX());
+						other.coordinate.y.set(world.getY());
+						other.coordinate.z.set(world.getY());
+						
+						model.intersections.add(other);
+						
+						Segment segment = new Segment(viewer.entity, other);
+						
+						model.segments.add(segment);
+						
+						select(modelViewer.segmentViewers.get(segment));
+		
+						event.consume();
 					}
 				}
+			} catch (NonInvertibleTransformException e) {
+				e.printStackTrace();
 			}
 		});
 		
@@ -191,19 +277,39 @@ public class Editor extends Application {
 	private void attach(IntersectionViewer viewer) {
 		viewer.setOnMouseClicked(event -> {
 			if (event.isStillSincePress()) {
-				select((EntityViewer<?>) viewer);
+				select(viewer);
 				event.consume();
 			}
 		});
 		viewer.setOnDragDetected(event -> {
-			select((EntityViewer<?>) viewer);
+			select(viewer);
 			viewer.startFullDrag();
+			if (event.isControlDown()) {
+				segmentPreviewVisible.set(true);
+				
+				segmentPreviewLine.startXProperty().bind(viewer.entity.coordinate.x);
+				segmentPreviewLine.startYProperty().bind(viewer.entity.coordinate.y);
+				
+				segmentPreviewEndX.set(viewer.entity.coordinate.x.get());
+				segmentPreviewEndY.set(viewer.entity.coordinate.y.get());
+			}
 			event.consume();
 		});
 		viewer.setOnMouseDragEntered(event -> {
 			if (event.getGestureSource() instanceof IntersectionViewer && event.getGestureSource() != viewer) {
 				if (event.isControlDown()) {
 					viewer.selected.set(true);
+					
+					segmentPreviewEndX.set(viewer.entity.coordinate.x.get());
+					segmentPreviewEndY.set(viewer.entity.coordinate.y.get());
+					
+					event.consume();
+				}
+			}
+		});
+		viewer.setOnMouseDragOver(event -> {
+			if (event.getGestureSource() instanceof IntersectionViewer && event.getGestureSource() != viewer) {
+				if (event.isControlDown()) {
 					event.consume();
 				}
 			}
@@ -219,6 +325,8 @@ public class Editor extends Application {
 		viewer.setOnMouseDragReleased(event -> {
 			if (event.getGestureSource() instanceof IntersectionViewer && event.getGestureSource() != viewer) {
 				if (event.isControlDown()) {
+					segmentPreviewVisible.set(false);
+					
 					IntersectionViewer other = (IntersectionViewer) event.getGestureSource();
 					
 					Segment segment = new Segment(other.entity, viewer.entity);
@@ -228,7 +336,7 @@ public class Editor extends Application {
 					
 					model.segments.add(segment);
 					
-					select((EntityViewer<?>) modelViewer.segmentViewers.get(segment));
+					select(modelViewer.segmentViewers.get(segment));
 					
 					event.consume();
 				}
@@ -238,7 +346,7 @@ public class Editor extends Application {
 	private void attach(SegmentViewer viewer) {
 		viewer.setOnMouseClicked(event -> {
 			if (event.isStillSincePress()) {
-				select((EntityViewer<?>) viewer);
+				select(viewer);
 				event.consume();
 			}
 		});
@@ -286,20 +394,20 @@ public class Editor extends Application {
 			selected = viewer;
 			
 			if (viewer instanceof IntersectionViewer) {
-				select((IntersectionViewer) viewer);
+				show((IntersectionViewer) viewer);
 			} else if (viewer instanceof SegmentViewer) {
-				select((SegmentViewer) viewer);
+				show((SegmentViewer) viewer);
 			} else if (viewer instanceof StationViewer) {
-				select((StationViewer) viewer);
+				show((StationViewer) viewer);
 			} else if (viewer instanceof VehicleViewer) {
-				select((VehicleViewer) viewer);
+				show((VehicleViewer) viewer);
 			} else if (viewer instanceof DemandViewer) {
-				select((DemandViewer) viewer);
+				show((DemandViewer) viewer);
 			}
 		}
 	}
 	
-	private void select(IntersectionViewer viewer) {
+	private void show(IntersectionViewer viewer) {
 		TextField type = new TextField("Intersection");
 		type.setDisable(true);
 		
@@ -353,7 +461,7 @@ public class Editor extends Application {
 		right.add(delete, 1, 5);
 	}
 	
-	private void select(SegmentViewer viewer) {
+	private void show(SegmentViewer viewer) {
 		TextField type = new TextField("Segment");
 		type.setDisable(true);
 		
@@ -397,15 +505,15 @@ public class Editor extends Application {
 		right.add(speed, 1, 4);
 	}
 	
-	private void select(StationViewer viewer) {
+	private void show(StationViewer viewer) {
 		// TODO
 	}
 	
-	private void select(VehicleViewer viewer) {
+	private void show(VehicleViewer viewer) {
 		// TODO
 	}
 	
-	private void select(DemandViewer viewer) {
+	private void show(DemandViewer viewer) {
 		// TODO
 	}
 

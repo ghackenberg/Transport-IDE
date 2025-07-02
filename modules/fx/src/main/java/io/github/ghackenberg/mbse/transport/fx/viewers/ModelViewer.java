@@ -29,11 +29,11 @@ public class ModelViewer extends Pane {
 	
 	private final Model model;
 	
-	private final Group intersectionLayer = new Group();
-	private final Group segmentLayer = new Group();
-	private final Group stationLayer = new Group();
-	private final Group vehicleLayer = new Group();
-	private final Group demandLayer = new Group();
+	public final Group intersectionLayer = new Group();
+	public final Group segmentLayer = new Group();
+	public final Group stationLayer = new Group();
+	public final Group vehicleLayer = new Group();
+	public final Group demandLayer = new Group();
 	
 	public final Pane canvas = new Pane(segmentLayer, intersectionLayer, stationLayer, vehicleLayer, demandLayer);
 	
