@@ -3,6 +3,7 @@ package io.github.ghackenberg.mbse.transport.fx.viewers;
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
 import io.github.ghackenberg.mbse.transport.core.structures.Location;
+import javafx.beans.binding.Bindings;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
@@ -41,7 +42,7 @@ public class VehicleViewer extends EntityViewer<Vehicle> {
 		
 		rectangle.rotateProperty().bind(location.angle.divide(Math.PI).multiply(180));
 		
-		rectangle.setFill(Color.BLUE);
+		rectangle.fillProperty().bind(Bindings.when(selected).then(Color.BLUE).otherwise(Color.DODGERBLUE));
 		
 		getChildren().add(rectangle);
 	}

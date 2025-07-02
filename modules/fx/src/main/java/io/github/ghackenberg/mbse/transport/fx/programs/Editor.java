@@ -6,6 +6,7 @@ import java.util.Map;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.Parser;
+import io.github.ghackenberg.mbse.transport.core.entities.Demand;
 import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
 import io.github.ghackenberg.mbse.transport.core.entities.Station;
@@ -67,6 +68,8 @@ public class Editor extends Application {
 	
 	private final Line segmentPreviewLine = new Line();
 	private final Circle segmentPreviewHead = new Circle();
+	
+	private double demandDot;
 	
 	private final MenuItem open = new MenuItem("Open", ImageViewHelper.load("open.png", 16, 16));
 	private final MenuItem save = new MenuItem("Save", ImageViewHelper.load("save.png", 16, 16));
@@ -222,12 +225,18 @@ public class Editor extends Application {
 					} else {
 						Map<Station, Double> stationDist = new HashMap<>();
 						Map<Vehicle, Double> vehicleDist = new HashMap<>();
+						Map<Demand, Double> demandPickDist = new HashMap<>();
+						Map<Demand, Double> demandDropDist = new HashMap<>();
 						
 						for (Station station : model.stations) {
 							stationDist.put(station, station.location.distance.get() / station.location.segment.get().length.get());
 						}
 						for (Vehicle vehicle : model.vehicles) {
 							vehicleDist.put(vehicle, vehicle.initialLocation.distance.get() / vehicle.initialLocation.segment.get().length.get());
+						}
+						for (Demand demand : model.demands) {
+							demandPickDist.put(demand, demand.pick.location.distance.get() / demand.pick.location.segment.get().length.get());
+							demandDropDist.put(demand, demand.drop.location.distance.get() / demand.drop.location.segment.get().length.get());
 						}
 							
 						viewer.entity.coordinate.x.set(world.getX());
@@ -238,6 +247,10 @@ public class Editor extends Application {
 						}
 						for (Vehicle vehicle : model.vehicles) {
 							vehicle.initialLocation.distance.set(vehicleDist.get(vehicle) * vehicle.initialLocation.segment.get().length.get());
+						}
+						for (Demand demand : model.demands) {
+							demand.pick.location.distance.set(demandPickDist.get(demand) * demand.pick.location.segment.get().length.get());
+							demand.drop.location.distance.set(demandDropDist.get(demand) * demand.drop.location.segment.get().length.get());
 						}
 					}
 
@@ -414,6 +427,71 @@ public class Editor extends Application {
 					} else {
 						select(viewer);
 					}
+					event.consume();
+				}
+			} catch (NonInvertibleTransformException e) {
+				e.printStackTrace();
+			}
+		});
+		viewer.setOnDragDetected(event -> {
+			try {
+				double x = event.getSceneX();
+				double y = event.getSceneY();
+				
+				Point2D world = modelViewer.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
+	
+				double sx = viewer.entity.start.coordinate.x.get();
+				double sy = viewer.entity.start.coordinate.y.get();
+				
+				double tx = viewer.entity.tangent.x.get();
+				double ty = viewer.entity.tangent.y.get();
+				
+				double dx = world.getX() - sx;
+				double dy = world.getY() - sy;
+				
+				demandDot = tx * dx + ty * dy;
+				
+				viewer.startFullDrag();
+				event.consume();
+			} catch (NonInvertibleTransformException e) {
+				e.printStackTrace();
+			}
+		});
+		viewer.setOnMouseDragReleased(event -> {
+			try {
+				if (event.getGestureSource() instanceof SegmentViewer) {
+					double x = event.getSceneX();
+					double y = event.getSceneY();
+					
+					Point2D world = modelViewer.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
+	
+					double sx = viewer.entity.start.coordinate.x.get();
+					double sy = viewer.entity.start.coordinate.y.get();
+					
+					double tx = viewer.entity.tangent.x.get();
+					double ty = viewer.entity.tangent.y.get();
+					
+					double dx = world.getX() - sx;
+					double dy = world.getY() - sy;
+					
+					double dot = tx * dx + ty * dy;
+					
+					SegmentViewer other = (SegmentViewer) event.getGestureSource();
+					
+					Demand demand = new Demand();
+					
+					demand.size.set(1);
+					
+					demand.pick.location.segment.set(other.entity);
+					demand.pick.location.distance.set(demandDot);
+					
+					demand.drop.location.segment.set(viewer.entity);
+					demand.drop.location.distance.set(dot);
+					
+					model.demands.add(demand);
+					
+					select(modelViewer.demandViewers.get(demand));
+					
 					event.consume();
 				}
 			} catch (NonInvertibleTransformException e) {
@@ -714,6 +792,30 @@ public class Editor extends Application {
 		TextField type = new TextField("Demand");
 		type.setDisable(true);
 		
+		TextField size = new TextField("" + viewer.entity.size.get());
+		size.setOnAction(event -> {
+			viewer.entity.size.set(Double.parseDouble(size.getText()));
+		});
+		size.focusedProperty().addListener(event -> {
+			viewer.entity.size.set(Double.parseDouble(size.getText()));
+		});
+		
+		TextField pick = new TextField("" + viewer.entity.pick.time.get());
+		pick.setOnAction(event -> {
+			viewer.entity.pick.time.set(Double.parseDouble(pick.getText()));
+		});
+		pick.focusedProperty().addListener(event -> {
+			viewer.entity.pick.time.set(Double.parseDouble(pick.getText()));
+		});
+		
+		TextField drop = new TextField("" + viewer.entity.drop.time.get());
+		drop.setOnAction(event -> {
+			viewer.entity.drop.time.set(Double.parseDouble(drop.getText()));
+		});
+		drop.focusedProperty().addListener(event -> {
+			viewer.entity.drop.time.set(Double.parseDouble(drop.getText()));
+		});
+		
 		Button delete = new Button("Delete");
 		delete.setOnAction(event -> {
 			model.demands.remove(viewer.entity);
@@ -724,7 +826,16 @@ public class Editor extends Application {
 		right.add(new Label("Type"), 0, 0);
 		right.add(type, 1, 0);
 		
-		right.add(delete, 1, 1);
+		right.add(new Label("Size"), 0, 1);
+		right.add(size, 1, 1);
+		
+		right.add(new Label("Pick"), 0, 2);
+		right.add(pick, 1, 2);
+		
+		right.add(new Label("Drop"), 0, 3);
+		right.add(drop, 1, 3);
+		
+		right.add(delete, 1, 4);
 	}
 
 }

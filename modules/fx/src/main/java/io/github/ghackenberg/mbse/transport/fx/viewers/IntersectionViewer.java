@@ -28,7 +28,7 @@ public class IntersectionViewer extends EntityViewer<Intersection> {
 		circle.centerXProperty().bind(intersection.coordinate.x);
 		circle.centerYProperty().bind(intersection.coordinate.y);
 		
-		circle.fillProperty().bind(Bindings.when(selected).then(Color.RED).otherwise(Color.PINK));
+		circle.fillProperty().bind(Bindings.when(selected).then(Color.RED).otherwise(Color.ORANGE));
 		
 		getChildren().add(circle);
 		

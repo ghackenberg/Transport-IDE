@@ -4,9 +4,14 @@ import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Demand;
 import io.github.ghackenberg.mbse.transport.core.structures.Coordinate;
 import io.github.ghackenberg.mbse.transport.core.structures.Location;
+import javafx.beans.binding.Bindings;
+import javafx.geometry.VPos;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 
 public class DemandViewer extends EntityViewer<Demand> {
 	
@@ -18,6 +23,9 @@ public class DemandViewer extends EntityViewer<Demand> {
 	
 	public final Circle source;
 	public final Circle target;
+	
+	public final Text sourceText;
+	public final Text targetText;
 	
 	public DemandViewer(Model model, Demand demand) {
 		super(model, demand);
@@ -47,7 +55,8 @@ public class DemandViewer extends EntityViewer<Demand> {
 		line.endXProperty().bind(end.x);
 		line.endYProperty().bind(end.y);
 		
-		line.setStroke(Color.GREEN);
+		line.strokeProperty().bind(Bindings.when(selected).then(Color.GREEN).otherwise(Color.LIMEGREEN));
+		line.strokeWidthProperty().bind(demand.size.divide(2));
 		
 		getChildren().add(line);
 		
@@ -55,12 +64,12 @@ public class DemandViewer extends EntityViewer<Demand> {
 		
 		source = new Circle();
 		
-		source.radiusProperty().bind(demand.size);
+		source.radiusProperty().bind(demand.size.divide(2));
 		
 		source.centerXProperty().bind(start.x);
 		source.centerYProperty().bind(start.y);
 		
-		source.setFill(Color.GREEN);
+		source.fillProperty().bind(Bindings.when(selected).then(Color.GREEN).otherwise(Color.LIMEGREEN));
 		
 		getChildren().add(source);
 		
@@ -68,14 +77,55 @@ public class DemandViewer extends EntityViewer<Demand> {
 		
 		target = new Circle();
 		
-		target.radiusProperty().bind(demand.size);
+		target.radiusProperty().bind(demand.size.divide(2));
 		
 		target.centerXProperty().bind(end.x);
 		target.centerYProperty().bind(end.y);
 		
-		target.setFill(Color.GREEN);
+		target.fillProperty().bind(Bindings.when(selected).then(Color.GREEN).otherwise(Color.LIMEGREEN));
 		
 		getChildren().add(target);
+		
+		// Source text
+		
+		sourceText = new Text("S");
+
+		sourceText.yProperty().bind(demand.pick.location.coordinate.y);
+
+		sourceText.setTextAlignment(TextAlignment.CENTER);
+		sourceText.setTextOrigin(VPos.CENTER);
+		
+		sourceText.setFill(Color.WHITE);
+
+		sourceText.setFont(new Font(0.5));
+		sourceText.setX(demand.pick.location.coordinate.x.get() - sourceText.getBoundsInLocal().getWidth() / 2);
+		
+		getChildren().add(sourceText);
+		
+		// Target text
+		
+		targetText = new Text("T");
+
+		targetText.yProperty().bind(demand.drop.location.coordinate.y);
+
+		targetText.setTextAlignment(TextAlignment.CENTER);
+		targetText.setTextOrigin(VPos.CENTER);
+		
+		targetText.setFill(Color.WHITE);
+
+		targetText.setFont(new Font(0.5));
+		targetText.setX(demand.drop.location.coordinate.x.get() - targetText.getBoundsInLocal().getWidth() / 2);
+		
+		getChildren().add(targetText);
+		
+		// Listeners
+
+		demand.pick.location.coordinate.x.addListener(event -> {
+			sourceText.setX(demand.pick.location.coordinate.x.get() - sourceText.getBoundsInLocal().getWidth() / 2);
+		});
+		demand.drop.location.coordinate.x.addListener(event -> {
+			targetText.setX(demand.drop.location.coordinate.x.get() - targetText.getBoundsInLocal().getWidth() / 2);
+		});
 	}
 	
 	@Override
