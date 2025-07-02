@@ -489,6 +489,14 @@ public class Editor extends Application {
 			viewer.entity.speed.set(Double.parseDouble(speed.getText()));
 		});
 		
+		Button delete = new Button("Delete");
+		delete.setOnAction(event -> {
+			viewer.entity.start.outgoing.remove(viewer.entity);
+			viewer.entity.end.incoming.remove(viewer.entity);
+			
+			model.segments.remove(viewer.entity);
+		});
+		
 		right.add(new Label("Type"), 0, 0);
 		right.add(type, 1, 0);
 		
@@ -503,6 +511,8 @@ public class Editor extends Application {
 		
 		right.add(new Label("Speed"), 0, 4);
 		right.add(speed, 1, 4);
+		
+		right.add(delete, 1, 5);
 	}
 	
 	private void show(StationViewer viewer) {
