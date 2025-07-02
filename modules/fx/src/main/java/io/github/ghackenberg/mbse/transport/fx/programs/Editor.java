@@ -6,6 +6,8 @@ import java.util.Map;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.Parser;
+import io.github.ghackenberg.mbse.transport.core.Simulator;
+import io.github.ghackenberg.mbse.transport.core.controllers.SmartController;
 import io.github.ghackenberg.mbse.transport.core.entities.Demand;
 import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
@@ -23,7 +25,9 @@ import io.github.ghackenberg.mbse.transport.fx.viewers.ModelViewer;
 import io.github.ghackenberg.mbse.transport.fx.viewers.SegmentViewer;
 import io.github.ghackenberg.mbse.transport.fx.viewers.StationViewer;
 import io.github.ghackenberg.mbse.transport.fx.viewers.VehicleViewer;
+import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -37,9 +41,6 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
@@ -51,6 +52,7 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.transform.NonInvertibleTransformException;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class Editor extends Application {
@@ -74,16 +76,11 @@ public class Editor extends Application {
 	
 	private Node demandNode;
 	
-	private final MenuItem open = new MenuItem("Open", ImageViewHelper.load("open.png", 16, 16));
-	private final MenuItem save = new MenuItem("Save", ImageViewHelper.load("save.png", 16, 16));
-	private final MenuItem saveAs = new MenuItem("Save as ...", ImageViewHelper.load("save.png", 16, 16));
-	private final MenuItem close = new MenuItem("Close", ImageViewHelper.load("close.png", 16, 16));
-
-	private final Menu file = new Menu("File", null, open, save, saveAs, close);
-	private final Menu edit = new Menu("Edit");
-	private final Menu help = new Menu("Help");
+	private final Button open = new Button("Open", ImageViewHelper.load("open.png", 16, 16));
+	private final Button save = new Button("Save", ImageViewHelper.load("save.png", 16, 16));
+	private final Button run = new Button("Run", ImageViewHelper.load("run.png", 16, 16));
 	
-	private final MenuBar top = new MenuBar(file, edit, help);
+	private final ToolBar top = new ToolBar(open, save, run);
 	
 	private final ToolBar bottom = new ToolBar(new Label("© 2025 Dr. Georg Hackenberg, Professor for Industrial Informatics, School of Engineering, FH Upper Austria"));
 	
@@ -131,6 +128,64 @@ public class Editor extends Application {
 			new Alert(AlertType.ERROR, "Not implemented yet!").showAndWait();
 		});
 		
+		run.setOnAction(event -> {
+			BorderPane root = new BorderPane();
+			
+			Scene scene = new Scene(root);
+			
+			Stage stage = new Stage();
+			
+			stage.initModality(Modality.APPLICATION_MODAL);
+			stage.initOwner(primaryStage);
+			stage.setTitle("Run");
+			stage.setScene(scene);
+			stage.setMaximized(true);
+			stage.show();
+			
+			new Thread(() -> {
+				model.initialize();
+				
+				ModelViewer viewer = new ModelViewer(model);
+				
+				AnimationTimer timer = new AnimationTimer() {
+					@Override
+					public void handle(long now) {
+						viewer.update();
+					}
+				};
+				
+				Platform.runLater(() -> {
+					timer.start();
+					root.setCenter(viewer);
+				});
+				
+				Simulator simulator = new Simulator("Run", model, new SmartController(model), 1, 1, new File("."));
+				simulator.loop();
+				
+				AlertType type;
+				String text;
+				
+				if (simulator.isFinished()) {	
+					type = AlertType.INFORMATION;
+					text = "Finished!";
+				} else if (simulator.isEmpty()) {
+					type = AlertType.ERROR;
+					text = "Empty!";
+				} else if (Double.isInfinite(model.state.get().time)) {
+					type = AlertType.ERROR;
+					text = "Infinite!";
+				} else {
+					type = AlertType.ERROR;
+					text = "Collision!";
+				}
+				
+				Platform.runLater(() -> {
+					timer.stop();
+					new Alert(type, text).showAndWait();
+				});
+			}).start();
+		});
+		
 		// Right
 		
 		right.setPrefWidth(300);
@@ -165,6 +220,7 @@ public class Editor extends Application {
 		
 		primaryStage.setScene(scene);
 		primaryStage.setTitle("Intelligent Transportation System Modeling and Simulation Environment (ITS-MSE)");
+		primaryStage.setMaximized(true);
 		primaryStage.show();
 	}
 	
@@ -413,6 +469,9 @@ public class Editor extends Application {
 						
 						Segment segment = new Segment(viewer.entity, other);
 						
+						viewer.entity.outgoing.add(segment);
+						other.incoming.add(segment);
+						
 						model.segments.add(segment);
 						
 						select(modelViewer.segmentViewers.get(segment));
@@ -523,8 +582,6 @@ public class Editor extends Application {
 					double dy = world.getY() - sy;
 					
 					double dot = tx * dx + ty * dy;
-					
-					System.out.println(tx + " " + ty + " " + (tx * tx + ty * ty) + " " + dot);
 					
 					if (event.isControlDown()) {
 						Station station = new Station();
@@ -749,8 +806,7 @@ public class Editor extends Application {
 		
 		Button delete = new Button("Delete");
 		delete.setOnAction(event -> {
-			model.intersections.remove(viewer.entity);
-			
+			model.delete(viewer.entity);
 			select(null);
 		});
 		
@@ -802,32 +858,7 @@ public class Editor extends Application {
 		
 		Button delete = new Button("Delete");
 		delete.setOnAction(event -> {
-			for (int i = 0; i < model.stations.size(); i++) {
-				Station station = model.stations.get(i);
-				if (station.location.segment.get() == viewer.entity) {
-					model.stations.remove(i--);
-				}
-			}
-			
-			for (int i = 0; i < model.vehicles.size(); i++) {
-				Vehicle vehicle = model.vehicles.get(i);
-				if (vehicle.initialLocation.segment.get() == viewer.entity) {
-					model.vehicles.remove(i--);
-				}
-			}
-			
-			for (int i = 0; i < model.demands.size(); i++) {
-				Demand demand = model.demands.get(i);
-				if (demand.pick.location.segment.get() == viewer.entity || demand.drop.location.segment.get() == viewer.entity) {
-					model.demands.remove(i--);
-				}
-			}
-			
-			viewer.entity.start.outgoing.remove(viewer.entity);
-			viewer.entity.end.incoming.remove(viewer.entity);
-			
-			model.segments.remove(viewer.entity);
-			
+			model.delete(viewer.entity);
 			select(null);
 		});
 		
@@ -863,8 +894,7 @@ public class Editor extends Application {
 		
 		Button delete = new Button("Delete");
 		delete.setOnAction(event -> {
-			model.stations.remove(viewer.entity);
-			
+			model.delete(viewer.entity);
 			select(null);
 		});
 		
@@ -926,8 +956,7 @@ public class Editor extends Application {
 		
 		Button delete = new Button("Delete");
 		delete.setOnAction(event -> {
-			model.vehicles.remove(viewer.entity);
-			
+			model.delete(viewer.entity);
 			select(null);
 		});
 		
@@ -985,8 +1014,7 @@ public class Editor extends Application {
 		
 		Button delete = new Button("Delete");
 		delete.setOnAction(event -> {
-			model.demands.remove(viewer.entity);
-			
+			model.delete(viewer.entity);
 			select(null);
 		});
 		

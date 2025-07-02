@@ -334,6 +334,11 @@ public class Simulator {
 				vehicle.state.get().distance = 0;
 				// Update speed
 				vehicle.state.get().speed = controller.selectSpeed(vehicle);
+				// Update demand distances
+				for (Demand demand : vehicle.state.get().demands) {
+					demand.state.get().segment = next;
+					demand.state.get().distance = 0;
+				}
 				// Update statistics
 				statistics.recordCrossing(vehicle, previous, next, model.state.get().time);
 				statistics.recordSpeed(vehicle, vehicle.state.get().speed, model.state.get().time);
@@ -746,6 +751,10 @@ public class Simulator {
 			}
 			// Update distance
 			vehicle.state.get().distance += delta;
+			// Update demand distances
+			for (Demand demand : vehicle.state.get().demands) {
+				demand.state.get().distance += delta;
+			}
 			// Update statistics
 			statistics.recordDistance(vehicle, delta, model.state.get().time);
 		}

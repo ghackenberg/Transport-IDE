@@ -90,7 +90,7 @@ public class DemandViewer extends EntityViewer<Demand> {
 		
 		sourceText = new Text("S");
 
-		sourceText.yProperty().bind(demand.pick.location.coordinate.y);
+		sourceText.yProperty().bind(location.coordinate.y);
 
 		sourceText.setTextAlignment(TextAlignment.CENTER);
 		sourceText.setTextOrigin(VPos.CENTER);
@@ -98,7 +98,7 @@ public class DemandViewer extends EntityViewer<Demand> {
 		sourceText.setFill(Color.WHITE);
 
 		sourceText.setFont(new Font(0.5));
-		sourceText.setX(demand.pick.location.coordinate.x.get() - sourceText.getBoundsInLocal().getWidth() / 2);
+		sourceText.setX(location.coordinate.x.get() - sourceText.getBoundsInLocal().getWidth() / 2);
 		
 		getChildren().add(sourceText);
 		
@@ -120,8 +120,8 @@ public class DemandViewer extends EntityViewer<Demand> {
 		
 		// Listeners
 
-		demand.pick.location.coordinate.x.addListener(event -> {
-			sourceText.setX(demand.pick.location.coordinate.x.get() - sourceText.getBoundsInLocal().getWidth() / 2);
+		location.coordinate.x.addListener(event -> {
+			sourceText.setX(location.coordinate.x.get() - sourceText.getBoundsInLocal().getWidth() / 2);
 		});
 		demand.drop.location.coordinate.x.addListener(event -> {
 			targetText.setX(demand.drop.location.coordinate.x.get() - targetText.getBoundsInLocal().getWidth() / 2);
@@ -135,18 +135,6 @@ public class DemandViewer extends EntityViewer<Demand> {
 		
 		if (!entityState.done && modelState.time >= entity.pick.time.get()) {
 			setVisible(true);
-			
-			if (modelState.time > entity.drop.time.get()) {
-				line.setStroke(Color.RED);
-				
-				source.setFill(Color.RED);
-				target.setFill(Color.RED);
-			} else {
-				line.setStroke(Color.GREEN);
-				
-				source.setFill(Color.GREEN);
-				target.setFill(Color.GREEN);
-			}
 		} else {
 			setVisible(false);
 		}
