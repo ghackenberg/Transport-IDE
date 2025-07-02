@@ -31,6 +31,7 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -70,6 +71,8 @@ public class Editor extends Application {
 	private final Circle segmentPreviewHead = new Circle();
 	
 	private double demandDot;
+	
+	private Node demandNode;
 	
 	private final MenuItem open = new MenuItem("Open", ImageViewHelper.load("open.png", 16, 16));
 	private final MenuItem save = new MenuItem("Save", ImageViewHelper.load("save.png", 16, 16));
@@ -331,6 +334,51 @@ public class Editor extends Application {
 					if (minSeg != null) {
 						viewer.entity.initialLocation.segment.set(minSeg);
 						viewer.entity.initialLocation.distance.set(minDot);
+					}
+					
+					event.consume();
+				} else if (event.getGestureSource() instanceof DemandViewer) {
+					DemandViewer viewer = (DemandViewer) event.getGestureSource();
+					
+					double minLen = Double.MAX_VALUE;
+					double minDot = 0;
+					Segment minSeg = null;
+					
+					for (Segment segment : model.segments) {
+						double sx = segment.start.coordinate.x.get();
+						double sy = segment.start.coordinate.y.get();
+						
+						double tx = segment.tangent.x.get();
+						double ty = segment.tangent.y.get();
+						
+						double dx = world.getX() - sx;
+						double dy = world.getY() - sy;
+						
+						double dot = Math.min(segment.length.get(), Math.max(0, tx * dx + ty * dy));
+						
+						double lx = sx + dot * tx;
+						double ly = sy + dot * ty;
+						
+						double nx = world.getX() - lx;
+						double ny = world.getY() - ly;
+						
+						double len = Math.sqrt(nx * nx + ny * ny);
+						
+						if (len < minLen) {
+							minLen = len;
+							minSeg = segment;
+							minDot = dot;
+						}
+					}
+					
+					if (minSeg != null) {
+						if (demandNode == viewer.source || demandNode == viewer.sourceText) {
+							viewer.entity.pick.location.segment.set(minSeg);
+							viewer.entity.pick.location.distance.set(minDot);
+						} else {
+							viewer.entity.drop.location.segment.set(minSeg);
+							viewer.entity.drop.location.distance.set(minDot);
+						}
 					}
 					
 					event.consume();
@@ -609,7 +657,13 @@ public class Editor extends Application {
 				event.consume();
 			}
 		});
-		// TODO Drag and drop
+		viewer.setOnDragDetected(event -> {
+			demandNode = event.getPickResult().getIntersectedNode();
+			if (demandNode == viewer.source || demandNode == viewer.sourceText || demandNode == viewer.target || demandNode == viewer.targetText) {
+				viewer.startFullDrag();
+				event.consume();	
+			}
+		});
 	}
 	
 	private void detach(IntersectionViewer viewer) {
