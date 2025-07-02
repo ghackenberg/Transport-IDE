@@ -1,11 +1,15 @@
 package io.github.ghackenberg.mbse.transport.fx.programs;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.Parser;
 import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
+import io.github.ghackenberg.mbse.transport.core.entities.Station;
+import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
 import io.github.ghackenberg.mbse.transport.core.exceptions.DirectoryException;
 import io.github.ghackenberg.mbse.transport.core.exceptions.MissingException;
 import io.github.ghackenberg.mbse.transport.fx.helpers.GenericListChangeListener;
@@ -123,7 +127,7 @@ public class Editor extends Application {
 		
 		// Right
 		
-		right.setPrefWidth(220);
+		right.setPrefWidth(300);
 		
 		right.setPadding(new Insets(10));
 		
@@ -216,8 +220,25 @@ public class Editor extends Application {
 						segmentPreviewEndX.set(world.getX());
 						segmentPreviewEndY.set(world.getY());
 					} else {
+						Map<Station, Double> stationDist = new HashMap<>();
+						Map<Vehicle, Double> vehicleDist = new HashMap<>();
+						
+						for (Station station : model.stations) {
+							stationDist.put(station, station.location.distance.get() / station.location.segment.get().length.get());
+						}
+						for (Vehicle vehicle : model.vehicles) {
+							vehicleDist.put(vehicle, vehicle.initialLocation.distance.get() / vehicle.initialLocation.segment.get().length.get());
+						}
+							
 						viewer.entity.coordinate.x.set(world.getX());
 						viewer.entity.coordinate.y.set(world.getY());
+						
+						for (Station station : model.stations) {
+							station.location.distance.set(stationDist.get(station) * station.location.segment.get().length.get());
+						}
+						for (Vehicle vehicle : model.vehicles) {
+							vehicle.initialLocation.distance.set(vehicleDist.get(vehicle) * vehicle.initialLocation.segment.get().length.get());
+						}
 					}
 
 					event.consume();
@@ -345,20 +366,82 @@ public class Editor extends Application {
 	}
 	private void attach(SegmentViewer viewer) {
 		viewer.setOnMouseClicked(event -> {
+			try {
+				if (event.isStillSincePress()) {
+					double x = event.getSceneX();
+					double y = event.getSceneY();
+					
+					Point2D world = modelViewer.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
+
+					double sx = viewer.entity.start.coordinate.x.get();
+					double sy = viewer.entity.start.coordinate.y.get();
+					
+					double tx = viewer.entity.tangent.x.get();
+					double ty = viewer.entity.tangent.y.get();
+					
+					double dx = world.getX() - sx;
+					double dy = world.getY() - sy;
+					
+					double dot = tx * dx + ty * dy;
+					
+					if (event.isControlDown()) {
+						Station station = new Station();
+						
+						station.speed.set(1);
+						station.location.segment.set(viewer.entity);
+						station.location.distance.set(dot);
+						
+						model.stations.add(station);
+						
+						select(modelViewer.stationViewers.get(station));
+					} else if (event.isShiftDown()) {
+						Vehicle vehicle = new Vehicle();
+						
+						vehicle.name.set("Vehicle " + (model.vehicles.size() + 1));
+						vehicle.length.set(1);
+						vehicle.loadCapacity.set(1);
+						vehicle.batteryCapacity.set(1);
+						vehicle.initialBatteryLevel.set(1);
+						vehicle.initialSpeed.set(1);
+						vehicle.initialLocation.segment.set(viewer.entity);
+						vehicle.initialLocation.distance.set(dot);
+						
+						model.vehicles.add(vehicle);
+						
+						select(modelViewer.vehicleViewers.get(vehicle));
+					} else {
+						select(viewer);
+					}
+					event.consume();
+				}
+			} catch (NonInvertibleTransformException e) {
+				e.printStackTrace();
+			}
+		});
+	}
+	private void attach(StationViewer viewer) {
+		viewer.setOnMouseClicked(event -> {
 			if (event.isStillSincePress()) {
 				select(viewer);
 				event.consume();
 			}
 		});
 	}
-	private void attach(StationViewer viewer) {
-		// TODO
-	}
 	private void attach(VehicleViewer viewer) {
-		// TODO
+		viewer.setOnMouseClicked(event -> {
+			if (event.isStillSincePress()) {
+				select(viewer);
+				event.consume();
+			}
+		});
 	}
 	private void attach(DemandViewer viewer) {
-		// TODO
+		viewer.setOnMouseClicked(event -> {
+			if (event.isStillSincePress()) {
+				select(viewer);
+				event.consume();
+			}
+		});
 	}
 	
 	private void detach(IntersectionViewer viewer) {
@@ -372,13 +455,13 @@ public class Editor extends Application {
 		viewer.setOnMouseClicked(null);
 	}
 	private void detach(StationViewer viewer) {
-		// TODO
+		viewer.setOnMouseClicked(null);
 	}
 	private void detach(VehicleViewer viewer) {
-		// TODO
+		viewer.setOnMouseClicked(null);
 	}
 	private void detach(DemandViewer viewer) {
-		// TODO
+		viewer.setOnMouseClicked(null);
 	}
 	
 	private void select(EntityViewer<?> viewer) {
@@ -441,6 +524,8 @@ public class Editor extends Application {
 		Button delete = new Button("Delete");
 		delete.setOnAction(event -> {
 			model.intersections.remove(viewer.entity);
+			
+			select(null);
 		});
 		
 		right.add(new Label("Type"), 0, 0);
@@ -495,6 +580,8 @@ public class Editor extends Application {
 			viewer.entity.end.incoming.remove(viewer.entity);
 			
 			model.segments.remove(viewer.entity);
+			
+			select(null);
 		});
 		
 		right.add(new Label("Type"), 0, 0);
@@ -516,15 +603,126 @@ public class Editor extends Application {
 	}
 	
 	private void show(StationViewer viewer) {
-		// TODO
+		TextField type = new TextField("Station");
+		type.setDisable(true);
+		
+		TextField speed = new TextField("" + viewer.entity.speed.get());
+		speed.setOnAction(event -> {
+			viewer.entity.speed.set(Double.parseDouble(speed.getText()));
+		});
+		speed.focusedProperty().addListener(event -> {
+			viewer.entity.speed.set(Double.parseDouble(speed.getText()));
+		});
+		
+		Button delete = new Button("Delete");
+		delete.setOnAction(event -> {
+			model.stations.remove(viewer.entity);
+			
+			select(null);
+		});
+		
+		right.add(new Label("Type"), 0, 0);
+		right.add(type, 1, 0);
+		
+		right.add(new Label("Speed"), 0, 1);
+		right.add(speed, 1, 1);
+		
+		right.add(delete, 1, 2);
 	}
 	
 	private void show(VehicleViewer viewer) {
-		// TODO
+		TextField type = new TextField("Vehicle");
+		type.setDisable(true);
+		
+		TextField name = new TextField(viewer.entity.name.get());
+		viewer.entity.name.bind(name.textProperty());
+		
+		TextField length = new TextField("" + viewer.entity.length.get());
+		length.setOnAction(event -> {
+			viewer.entity.length.set(Double.parseDouble(length.getText()));
+		});
+		length.focusedProperty().addListener(event -> {
+			viewer.entity.length.set(Double.parseDouble(length.getText()));
+		});
+		
+		TextField batteryCapacity = new TextField("" + viewer.entity.batteryCapacity.get());
+		batteryCapacity.setOnAction(event -> {
+			viewer.entity.batteryCapacity.set(Double.parseDouble(batteryCapacity.getText()));
+		});
+		batteryCapacity.focusedProperty().addListener(event -> {
+			viewer.entity.batteryCapacity.set(Double.parseDouble(batteryCapacity.getText()));
+		});
+		
+		TextField loadCapacity = new TextField("" + viewer.entity.loadCapacity.get());
+		loadCapacity.setOnAction(event -> {
+			viewer.entity.loadCapacity.set(Double.parseDouble(loadCapacity.getText()));
+		});
+		loadCapacity.focusedProperty().addListener(event -> {
+			viewer.entity.loadCapacity.set(Double.parseDouble(loadCapacity.getText()));
+		});
+		
+		TextField initialBatteryLevel = new TextField("" + viewer.entity.initialBatteryLevel.get());
+		initialBatteryLevel.setOnAction(event -> {
+			viewer.entity.initialBatteryLevel.set(Double.parseDouble(initialBatteryLevel.getText()));
+		});
+		initialBatteryLevel.focusedProperty().addListener(event -> {
+			viewer.entity.initialBatteryLevel.set(Double.parseDouble(initialBatteryLevel.getText()));
+		});
+		
+		TextField initialSpeed = new TextField("" + viewer.entity.initialSpeed.get());
+		initialSpeed.setOnAction(event -> {
+			viewer.entity.initialSpeed.set(Double.parseDouble(initialSpeed.getText()));
+		});
+		initialSpeed.focusedProperty().addListener(event -> {
+			viewer.entity.initialSpeed.set(Double.parseDouble(initialSpeed.getText()));
+		});
+		
+		Button delete = new Button("Delete");
+		delete.setOnAction(event -> {
+			model.vehicles.remove(viewer.entity);
+			
+			select(null);
+		});
+		
+		right.add(new Label("Type"), 0, 0);
+		right.add(type, 1, 0);
+		
+		right.add(new Label("Name"), 0, 1);
+		right.add(name, 1, 1);
+		
+		right.add(new Label("Length"), 0, 2);
+		right.add(length, 1, 2);
+		
+		right.add(new Label("Battery capacity"), 0, 3);
+		right.add(batteryCapacity, 1, 3);
+		
+		right.add(new Label("Load capacity"), 0, 4);
+		right.add(loadCapacity, 1, 4);
+		
+		right.add(new Label("Initial battery level"), 0, 5);
+		right.add(initialBatteryLevel, 1, 5);
+		
+		right.add(new Label("Initial speed"), 0, 6);
+		right.add(initialSpeed, 1, 6);
+		
+		right.add(delete, 1, 7);
 	}
 	
 	private void show(DemandViewer viewer) {
-		// TODO
+		TextField type = new TextField("Demand");
+		type.setDisable(true);
+		
+		Button delete = new Button("Delete");
+		delete.setOnAction(event -> {
+			model.demands.remove(viewer.entity);
+			
+			select(null);
+		});
+		
+		right.add(new Label("Type"), 0, 0);
+		right.add(type, 1, 0);
+		
+		right.add(delete, 1, 1);
 	}
 
 }
