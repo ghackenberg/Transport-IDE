@@ -131,16 +131,17 @@ public class Editor extends Application {
 		run.setOnAction(event -> {
 			BorderPane root = new BorderPane();
 			
-			Scene scene = new Scene(root);
+			Scene subScene = new Scene(root, scene.getWidth(), scene.getHeight());
 			
-			Stage stage = new Stage();
+			Stage subStage = new Stage();
 			
-			stage.initModality(Modality.APPLICATION_MODAL);
-			stage.initOwner(primaryStage);
-			stage.setTitle("Run");
-			stage.setScene(scene);
-			stage.setMaximized(true);
-			stage.show();
+			subStage.initModality(Modality.APPLICATION_MODAL);
+			subStage.initOwner(primaryStage);
+			subStage.setTitle("Run");
+			subStage.setScene(subScene);
+			subStage.setX(primaryStage.getX() + 20);
+			subStage.setY(primaryStage.getY() + 20);
+			subStage.show();
 			
 			new Thread(() -> {
 				model.initialize();
@@ -220,7 +221,6 @@ public class Editor extends Application {
 		
 		primaryStage.setScene(scene);
 		primaryStage.setTitle("Intelligent Transportation System Modeling and Simulation Environment (ITS-MSE)");
-		primaryStage.setMaximized(true);
 		primaryStage.show();
 	}
 	
@@ -599,8 +599,8 @@ public class Editor extends Application {
 						vehicle.name.set("Vehicle " + (model.vehicles.size() + 1));
 						vehicle.length.set(1);
 						vehicle.loadCapacity.set(1);
-						vehicle.batteryCapacity.set(1);
-						vehicle.initialBatteryLevel.set(1);
+						vehicle.batteryCapacity.set(1000);
+						vehicle.initialBatteryLevel.set(1000);
 						vehicle.initialSpeed.set(1);
 						vehicle.initialLocation.segment.set(viewer.entity);
 						vehicle.initialLocation.distance.set(dot);
