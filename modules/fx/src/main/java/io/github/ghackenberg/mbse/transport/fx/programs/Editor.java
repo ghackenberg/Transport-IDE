@@ -267,7 +267,7 @@ public class Editor extends Application {
 						other.name.set("Intersection " + (model.intersections.size() + 1));
 						other.coordinate.x.set(world.getX());
 						other.coordinate.y.set(world.getY());
-						other.coordinate.z.set(world.getY());
+						other.coordinate.z.set(0);
 						
 						model.intersections.add(other);
 						
@@ -383,6 +383,8 @@ public class Editor extends Application {
 					double dy = world.getY() - sy;
 					
 					double dot = tx * dx + ty * dy;
+					
+					System.out.println(tx + " " + ty + " " + (tx * tx + ty * ty) + " " + dot);
 					
 					if (event.isControlDown()) {
 						Station station = new Station();

@@ -42,9 +42,9 @@ public class Location {
 				oldValue.start.coordinate.z.removeListener(listener);
 				
 				// Change of end intersection
-				oldValue.end.coordinate.x.removeListener(listener);
-				oldValue.end.coordinate.y.removeListener(listener);
-				oldValue.end.coordinate.z.removeListener(listener);
+				oldValue.tangent.x.removeListener(listener);
+				oldValue.tangent.y.removeListener(listener);
+				oldValue.tangent.z.removeListener(listener);
 			}
 			
 			// New value
@@ -56,9 +56,9 @@ public class Location {
 				newValue.start.coordinate.z.addListener(listener);
 				
 				// Change coordinate of end intersection
-				newValue.end.coordinate.x.addListener(listener);
-				newValue.end.coordinate.y.addListener(listener);
-				newValue.end.coordinate.z.addListener(listener);
+				newValue.tangent.x.addListener(listener);
+				newValue.tangent.y.addListener(listener);
+				newValue.tangent.z.addListener(listener);
 			}
 			
 			recompute();
@@ -79,14 +79,12 @@ public class Location {
 	private void recompute() {
 		if (segment.get() != null) {
 			Coordinate start = segment.get().start.coordinate;
-			Coordinate end = segment.get().end.coordinate;
 			
-			double len = segment.get().length.get();
-			double prg = distance.get() / len;
+			Coordinate tangent = segment.get().tangent;
 			
-			coordinate.x.set(start.x.get() + (end.x.get() - start.x.get()) * prg);
-			coordinate.y.set(start.y.get() + (end.y.get() - start.y.get()) * prg);
-			coordinate.z.set(start.z.get() + (end.z.get() - start.z.get()) * prg);
+			coordinate.x.set(start.x.get() + tangent.x.get() * distance.get());
+			coordinate.y.set(start.y.get() + tangent.y.get() * distance.get());
+			coordinate.z.set(start.z.get() + tangent.z.get() * distance.get());
 			
 			angle.set(segment.get().angle.get());
 		} else {
