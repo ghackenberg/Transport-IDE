@@ -4,8 +4,12 @@ import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
 import io.github.ghackenberg.mbse.transport.core.structures.Location;
 import javafx.beans.binding.Bindings;
+import javafx.geometry.VPos;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 
 public class VehicleViewer extends EntityViewer<Vehicle> {
 	
@@ -14,6 +18,8 @@ public class VehicleViewer extends EntityViewer<Vehicle> {
 	public final Location location;
 	
 	public final Rectangle rectangle;
+	
+	public final Text text;
 	
 	public VehicleViewer(Model model, Vehicle vehicle) {
 		super(model, vehicle);
@@ -42,9 +48,35 @@ public class VehicleViewer extends EntityViewer<Vehicle> {
 		
 		rectangle.rotateProperty().bind(location.angle.divide(Math.PI).multiply(180));
 		
-		rectangle.fillProperty().bind(Bindings.when(selected).then(Color.BLUE).otherwise(Color.DODGERBLUE));
+		rectangle.fillProperty().bind(Bindings.when(selected).then(Color.DODGERBLUE).otherwise(Color.DEEPSKYBLUE));
 		
 		getChildren().add(rectangle);
+		
+		// Text
+		
+		text = new Text();
+		
+		text.textProperty().bind(vehicle.name);
+		text.yProperty().bind(location.coordinate.y);
+		
+		text.setTextAlignment(TextAlignment.CENTER);
+		text.setTextOrigin(VPos.CENTER);
+		
+		text.setFill(Color.BLACK);
+
+		text.setFont(new Font(0.5));
+		text.setX(location.coordinate.x.get() - text.getBoundsInLocal().getWidth() / 2);
+		
+		getChildren().add(text);
+		
+		// Listeners
+
+		vehicle.name.addListener(event -> {
+			text.setX(location.coordinate.x.get() - text.getBoundsInLocal().getWidth() / 2);
+		});
+		location.coordinate.x.addListener(event -> {
+			text.setX(location.coordinate.x.get() - text.getBoundsInLocal().getWidth() / 2);
+		});
 	}
 
 	@Override

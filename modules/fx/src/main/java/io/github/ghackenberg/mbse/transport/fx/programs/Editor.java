@@ -161,7 +161,7 @@ public class Editor extends Application {
 		// Stage
 		
 		primaryStage.setScene(scene);
-		primaryStage.setTitle("Transport-IDE");
+		primaryStage.setTitle("Intelligent Transportation System Modeling and Simulation Environment (ITS-MSE)");
 		primaryStage.show();
 	}
 	
@@ -211,14 +211,13 @@ public class Editor extends Application {
 		});
 		modelViewer.setOnMouseDragOver(event -> {
 			try {
+				double x = event.getSceneX();
+				double y = event.getSceneY();
+				
+				Point2D world = modelViewer.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
+				
 				if (event.getGestureSource() instanceof IntersectionViewer) {
 					IntersectionViewer viewer = (IntersectionViewer) event.getGestureSource();
-					
-					double x = event.getSceneX();
-					double y = event.getSceneY();
-					
-					Point2D world = modelViewer.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
-	
 					if (event.isControlDown()) {
 						segmentPreviewEndX.set(world.getX());
 						segmentPreviewEndY.set(world.getY());
@@ -254,6 +253,86 @@ public class Editor extends Application {
 						}
 					}
 
+					event.consume();
+				} else if (event.getGestureSource() instanceof StationViewer) {
+					StationViewer viewer = (StationViewer) event.getGestureSource();
+					
+					double minLen = Double.MAX_VALUE;
+					double minDot = 0;
+					Segment minSeg = null;
+					
+					for (Segment segment : model.segments) {
+						double sx = segment.start.coordinate.x.get();
+						double sy = segment.start.coordinate.y.get();
+						
+						double tx = segment.tangent.x.get();
+						double ty = segment.tangent.y.get();
+						
+						double dx = world.getX() - sx;
+						double dy = world.getY() - sy;
+						
+						double dot = Math.min(segment.length.get(), Math.max(0, tx * dx + ty * dy));
+						
+						double lx = sx + dot * tx;
+						double ly = sy + dot * ty;
+						
+						double nx = world.getX() - lx;
+						double ny = world.getY() - ly;
+						
+						double len = Math.sqrt(nx * nx + ny * ny);
+						
+						if (len < minLen) {
+							minLen = len;
+							minSeg = segment;
+							minDot = dot;
+						}
+					}
+					
+					if (minSeg != null) {
+						viewer.entity.location.segment.set(minSeg);
+						viewer.entity.location.distance.set(minDot);
+					}
+					
+					event.consume();
+				} else if (event.getGestureSource() instanceof VehicleViewer) {
+					VehicleViewer viewer = (VehicleViewer) event.getGestureSource();
+					
+					double minLen = Double.MAX_VALUE;
+					double minDot = 0;
+					Segment minSeg = null;
+					
+					for (Segment segment : model.segments) {
+						double sx = segment.start.coordinate.x.get();
+						double sy = segment.start.coordinate.y.get();
+						
+						double tx = segment.tangent.x.get();
+						double ty = segment.tangent.y.get();
+						
+						double dx = world.getX() - sx;
+						double dy = world.getY() - sy;
+						
+						double dot = Math.min(segment.length.get(), Math.max(0, tx * dx + ty * dy));
+						
+						double lx = sx + dot * tx;
+						double ly = sy + dot * ty;
+						
+						double nx = world.getX() - lx;
+						double ny = world.getY() - ly;
+						
+						double len = Math.sqrt(nx * nx + ny * ny);
+						
+						if (len < minLen) {
+							minLen = len;
+							minSeg = segment;
+							minDot = dot;
+						}
+					}
+					
+					if (minSeg != null) {
+						viewer.entity.initialLocation.segment.set(minSeg);
+						viewer.entity.initialLocation.distance.set(minDot);
+					}
+					
 					event.consume();
 				}
 			} catch (NonInvertibleTransformException e) {
@@ -506,6 +585,10 @@ public class Editor extends Application {
 				event.consume();
 			}
 		});
+		viewer.setOnDragDetected(event -> {
+			viewer.startFullDrag();
+			event.consume();
+		});
 	}
 	private void attach(VehicleViewer viewer) {
 		viewer.setOnMouseClicked(event -> {
@@ -513,6 +596,10 @@ public class Editor extends Application {
 				select(viewer);
 				event.consume();
 			}
+		});
+		viewer.setOnDragDetected(event -> {
+			viewer.startFullDrag();
+			event.consume();
 		});
 	}
 	private void attach(DemandViewer viewer) {
@@ -522,6 +609,7 @@ public class Editor extends Application {
 				event.consume();
 			}
 		});
+		// TODO Drag and drop
 	}
 	
 	private void detach(IntersectionViewer viewer) {
@@ -533,15 +621,19 @@ public class Editor extends Application {
 	}
 	private void detach(SegmentViewer viewer) {
 		viewer.setOnMouseClicked(null);
+		viewer.setOnDragDetected(null);
 	}
 	private void detach(StationViewer viewer) {
 		viewer.setOnMouseClicked(null);
+		viewer.setOnDragDetected(null);
 	}
 	private void detach(VehicleViewer viewer) {
 		viewer.setOnMouseClicked(null);
+		viewer.setOnDragDetected(null);
 	}
 	private void detach(DemandViewer viewer) {
 		viewer.setOnMouseClicked(null);
+		viewer.setOnDragDetected(null);
 	}
 	
 	private void select(EntityViewer<?> viewer) {
@@ -656,6 +748,27 @@ public class Editor extends Application {
 		
 		Button delete = new Button("Delete");
 		delete.setOnAction(event -> {
+			for (int i = 0; i < model.stations.size(); i++) {
+				Station station = model.stations.get(i);
+				if (station.location.segment.get() == viewer.entity) {
+					model.stations.remove(i--);
+				}
+			}
+			
+			for (int i = 0; i < model.vehicles.size(); i++) {
+				Vehicle vehicle = model.vehicles.get(i);
+				if (vehicle.initialLocation.segment.get() == viewer.entity) {
+					model.vehicles.remove(i--);
+				}
+			}
+			
+			for (int i = 0; i < model.demands.size(); i++) {
+				Demand demand = model.demands.get(i);
+				if (demand.pick.location.segment.get() == viewer.entity || demand.drop.location.segment.get() == viewer.entity) {
+					model.demands.remove(i--);
+				}
+			}
+			
 			viewer.entity.start.outgoing.remove(viewer.entity);
 			viewer.entity.end.incoming.remove(viewer.entity);
 			
