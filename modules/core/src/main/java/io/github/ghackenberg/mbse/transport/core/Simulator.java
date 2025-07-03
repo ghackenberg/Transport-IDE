@@ -348,8 +348,8 @@ public class Simulator {
 					demand.state.get().distance = 0;
 				}
 				// Update statistics
-				statistics.recordCrossing(vehicle, previous, next, model.state.get().time);
-				statistics.recordSpeed(vehicle, vehicle.state.get().speed, model.state.get().time);
+				statistics.recordVehicleIntersectionCrossing(vehicle, previous, next, model.state.get().time);
+				statistics.recordVehicleSpeed(vehicle, vehicle.state.get().speed, model.state.get().time);
 				// Update model time step
 				modelTimeStep = 0;
 			}
@@ -368,7 +368,7 @@ public class Simulator {
 					// Unassign station
 					vehicle.state.get().station = null;
 					// Update statistics
-					statistics.recordChargeEnd(vehicle, station, modelTimeStep);
+					statistics.recordVehicleStationChargeEnd(vehicle, station, modelTimeStep);
 				}
 			}
 		}
@@ -392,7 +392,7 @@ public class Simulator {
 									// Assign vehicle
 									station.state.get().vehicle = vehicle;
 									// Update statistics
-									statistics.recordChargeStart(vehicle, station, modelTimeStep);
+									statistics.recordVehicleStationChargeStart(vehicle, station, modelTimeStep);
 								}
 							}
 						}
@@ -425,7 +425,7 @@ public class Simulator {
 											vehicle.state.get().loadLevel += demand.size.get();
 											vehicle.state.get().demands.add(demand);
 											// Update statistics
-											statistics.recordPickupAccept(vehicle, demand, model.state.get().time);
+											statistics.recordVehicleDemandPickAccept(vehicle, demand, model.state.get().time);
 											// Update model time step
 											modelTimeStep = 0;
 										} else {
@@ -437,7 +437,7 @@ public class Simulator {
 											// Update declines
 											declines.get(demand).get(model.state.get().time).add(vehicle);
 											// Update statistics
-											statistics.recordPickupDecline(vehicle, demand, model.state.get().time);
+											statistics.recordVehicleDemandPickDecline(vehicle, demand, model.state.get().time);
 											// Update model time step
 											modelTimeStep = 0;
 										}
@@ -471,7 +471,7 @@ public class Simulator {
 						vehicle.state.get().loadLevel -= demand.size.get();
 						vehicle.state.get().demands.remove(index--);
 						// Update statistics
-						statistics.recordDropoff(vehicle, demand, model.state.get().time);
+						statistics.recordVehicleDemandDrop(vehicle, demand, model.state.get().time);
 						// Update model time step
 						modelTimeStep = 0;
 					}
@@ -512,7 +512,7 @@ public class Simulator {
 			// Update speed
 			vehicle.state.get().speed = speed;
 			// Update statistics
-			statistics.recordSpeed(vehicle, speed, model.state.get().time);
+			statistics.recordVehicleSpeed(vehicle, speed, model.state.get().time);
 		}
 		
 		// Duration until speed selection
@@ -747,15 +747,21 @@ public class Simulator {
 		// Update vehicle state
 		for (Vehicle vehicle : model.vehicles) {
 			// Speed in meter per millisecond
-			double speed = vehicle.state.get().speed * 1000.0 / 60.0 / 60.0 / 1000.0;
+			double driveSpeed = vehicle.state.get().speed * 1000.0 / 60.0 / 60.0 / 1000.0;
 			// Delta in meter
-			double delta = speed * modelTimeStep;
+			double delta = driveSpeed * modelTimeStep;
 			// Decrease battery level
 			vehicle.state.get().batteryLevel -= delta;
 			// Check vehicle station
 			if (vehicle.state.get().station != null) {
+				// Compute charge amount
+				double chargeSpeed = vehicle.state.get().station.speed.get();
+				double chargeAmount = chargeSpeed * 1000.0 / 60.0 / 60.0 / 1000.0 * modelTimeStep;
 				// Increase battery level
-				vehicle.state.get().batteryLevel += vehicle.state.get().station.speed.get() * 1000.0 / 60.0 / 60.0 / 1000.0 * modelTimeStep;
+				vehicle.state.get().batteryLevel += chargeAmount;
+				// Update statistics
+				statistics.recordVehicleCharge(vehicle, chargeAmount);
+				statistics.recordStationCharge(vehicle.state.get().station, chargeAmount);
 			}
 			// Update distance
 			vehicle.state.get().distance += delta;
@@ -764,7 +770,7 @@ public class Simulator {
 				demand.state.get().distance += delta;
 			}
 			// Update statistics
-			statistics.recordDistance(vehicle, delta, model.state.get().time);
+			statistics.recordVehicleAndDemandDistance(vehicle, delta, model.state.get().time);
 		}
 		
 		// Update model time

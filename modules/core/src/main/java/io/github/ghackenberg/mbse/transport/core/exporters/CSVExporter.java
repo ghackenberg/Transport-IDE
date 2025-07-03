@@ -64,7 +64,7 @@ public class CSVExporter implements Exporter {
 			// Process demands
 			for (Demand demand : model.demands) {
 				// Write row
-				writer.write("\n" + demand.size.get() + ";" + demand.pick.time.get() + ";" + demand.drop.time.get() + ";" + statistics.demandPickupAcceptTimes.get(demand) + ";" + statistics.demandDropoffTimes.get(demand) + ";" + statistics.demandDistances.get(demand));
+				writer.write("\n" + demand.size.get() + ";" + demand.pick.time.get() + ";" + demand.drop.time.get() + ";" + statistics.demandPickAcceptTimes.get(demand) + ";" + statistics.demandDropTimes.get(demand) + ";" + statistics.demandDistances.get(demand));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

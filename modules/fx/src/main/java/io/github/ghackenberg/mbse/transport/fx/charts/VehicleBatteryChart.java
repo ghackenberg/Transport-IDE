@@ -10,7 +10,7 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.StackedBarChart;
 import javafx.scene.chart.XYChart;
 
-public class BatteryChart extends StackedBarChart<String, Number> {
+public class VehicleBatteryChart extends StackedBarChart<String, Number> {
 	
 	private final Model model;
 	
@@ -19,26 +19,26 @@ public class BatteryChart extends StackedBarChart<String, Number> {
 	private final XYChart.Series<String, Number> a = new XYChart.Series<>();
 	private final XYChart.Series<String, Number> b = new XYChart.Series<>();
 
-	public BatteryChart(Model model) {
+	public VehicleBatteryChart(Model model) {
 		super(new CategoryAxis(), new NumberAxis());
 		
 		this.model = model;
 		
-		setTitle("Battery chart");
+		setTitle("Vehicle batteries");
 		setAnimated(false);
 		setLegendVisible(false);
-		
-		getXAxis().setLabel("Vehicle");
-		getYAxis().setLabel("Energy units");
+		setStyle("-fx-background-color: white;");
 		
 		getData().add(a);
 		getData().add(b);
 		
-		for (Vehicle vehicle : model.vehicles) {
+		for (int i = 0; i < model.vehicles.size(); i++) {
+			Vehicle vehicle = model.vehicles.get(i);
+			
 			states.add(vehicle.state.get());
 			
-			a.getData().add(new XYChart.Data<>(vehicle.name.get(), vehicle.initialBatteryLevel.get()));
-			b.getData().add(new XYChart.Data<>(vehicle.name.get(), vehicle.batteryCapacity.get() - vehicle.initialBatteryLevel.get()));
+			a.getData().add(new XYChart.Data<>("V" + i, vehicle.initialBatteryLevel.get()));
+			b.getData().add(new XYChart.Data<>("V" + i, vehicle.batteryCapacity.get() - vehicle.initialBatteryLevel.get()));
 		}
 	}
 	

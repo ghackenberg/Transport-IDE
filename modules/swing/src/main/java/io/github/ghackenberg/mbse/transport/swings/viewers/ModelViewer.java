@@ -444,14 +444,14 @@ public class ModelViewer implements Viewer {
 		double vehicleBack = vehicle.state.get().distance - vehicle.length.get() / 2;
 		
 		boolean decline = false;
-		for (Entry<Demand, Map<Double, Vehicle>> entry : statistics.demandPickupDeclineTimes.entrySet()) {
+		for (Entry<Demand, Map<Double, Vehicle>> entry : statistics.demandPickDeclineTimes.entrySet()) {
 			if (entry.getValue().containsKey(model.state.get().time) && entry.getValue().get(model.state.get().time) == vehicle) {
 				decline = true;
 				break;
 			}
 		}
 		boolean accept = false;
-		for (Entry<Demand, Map<Double, Vehicle>> entry : statistics.demandPickupAcceptTimes.entrySet()) {
+		for (Entry<Demand, Map<Double, Vehicle>> entry : statistics.demandPickAcceptTimes.entrySet()) {
 			if (entry.getValue().containsKey(model.state.get().time) && entry.getValue().get(model.state.get().time) == vehicle) {
 				accept = true;
 				break;
@@ -501,11 +501,11 @@ public class ModelViewer implements Viewer {
 		}
 		boolean charge = false;
 		for (Station station : model.stations) {
-			if (statistics.chargeStartTimes.get(station).get(model.state.get().time) == vehicle) {
+			if (statistics.stationVehicleChargeStartTimes.get(station).get(model.state.get().time) == vehicle) {
 				charge = true;
 				break;
 			}
-			if (statistics.chargeEndTimes.get(station).get(model.state.get().time) == vehicle) {
+			if (statistics.stationVehicleCargeEndTimes.get(station).get(model.state.get().time) == vehicle) {
 				charge = true;
 				break;
 			}

@@ -4,9 +4,15 @@ import java.io.File;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.Simulator;
+import io.github.ghackenberg.mbse.transport.core.Statistics;
 import io.github.ghackenberg.mbse.transport.core.controllers.SmartController;
-import io.github.ghackenberg.mbse.transport.fx.charts.BatteryChart;
+import io.github.ghackenberg.mbse.transport.fx.charts.DemandDistanceChart;
+import io.github.ghackenberg.mbse.transport.fx.charts.IntersectionCrossingChart;
+import io.github.ghackenberg.mbse.transport.fx.charts.SegmentTraversalChart;
+import io.github.ghackenberg.mbse.transport.fx.charts.StationChargeChart;
+import io.github.ghackenberg.mbse.transport.fx.charts.VehicleBatteryChart;
 import io.github.ghackenberg.mbse.transport.fx.helpers.GridHelper;
+import io.github.ghackenberg.mbse.transport.fx.helpers.ImageViewHelper;
 import io.github.ghackenberg.mbse.transport.fx.viewers.ModelViewer;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -15,6 +21,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -24,16 +31,18 @@ public class SimulatorScene extends Scene {
 	
 	private final Thread thread;
 	
-	private final Button start = new Button("Start");
-	private final Button stop = new Button("Stop");
-	private final Button pause = new Button("Pause");
-	private final Button resume = new Button("Resume");
+	private final Button start = new Button("Start", ImageViewHelper.load("start.png", 16, 16));
+	private final Button stop = new Button("Stop", ImageViewHelper.load("stop.png", 16, 16));
+	private final Button pause = new Button("Pause", ImageViewHelper.load("pause.png", 16, 16));
+	private final Button resume = new Button("Resume", ImageViewHelper.load("resume.png", 16, 16));
 	
 	private final ToolBar top = new ToolBar(start, stop, pause, resume);
 	
 	private final ToolBar bottom = new ToolBar(new Label("© 2025 Dr. Georg Hackenberg, Professor for Industrial Informatics, School of Engineering, FH Upper Austria"));
 	
-	private final GridPane right = new GridPane();
+	private final GridPane grid = new GridPane();
+	
+	private final ScrollPane right = new ScrollPane(grid);
 	
 	private final BorderPane root = new BorderPane(null, top, right, bottom, null);
 
@@ -60,15 +69,21 @@ public class SimulatorScene extends Scene {
 		
 		// Right
 		
-		right.setPrefWidth(300);
+		grid.setPrefWidth(300);
 		
-		right.setPadding(new Insets(10));
+		grid.setPadding(new Insets(10));
 		
-		right.setHgap(10);
-		right.setVgap(10);
+		grid.setHgap(10);
+		grid.setVgap(10);
 		
-		right.getColumnConstraints().add(GridHelper.createColumnConstraints(false, Priority.NEVER));
-		right.getColumnConstraints().add(GridHelper.createColumnConstraints(true, Priority.ALWAYS));
+		grid.getColumnConstraints().add(GridHelper.createColumnConstraints(false, Priority.ALWAYS));
+		
+		grid.getRowConstraints().add(GridHelper.createRowConstraints(true, Priority.ALWAYS));
+		grid.getRowConstraints().add(GridHelper.createRowConstraints(true, Priority.ALWAYS));
+		grid.getRowConstraints().add(GridHelper.createRowConstraints(true, Priority.ALWAYS));
+		
+		right.setFitToWidth(true);
+		right.setFitToHeight(true);
 		
 		// Root
 		
@@ -79,19 +94,34 @@ public class SimulatorScene extends Scene {
 		thread = new Thread(() -> {
 			model.initialize();
 			
+			Simulator simulator = new Simulator("Run", model, new SmartController(model), 1, 1, folder);
+			Statistics statistics = simulator.getStatistics();
+			
 			ModelViewer viewer = new ModelViewer(model);
-			BatteryChart chart = new BatteryChart(model);
+			IntersectionCrossingChart intersectionChart = new IntersectionCrossingChart(model, statistics);
+			SegmentTraversalChart segmentChart = new SegmentTraversalChart(model, statistics);
+			StationChargeChart stationChart = new StationChargeChart(model, statistics);
+			VehicleBatteryChart vehicleBatteryChart = new VehicleBatteryChart(model);
+			DemandDistanceChart demandChart = new DemandDistanceChart(model, statistics);
 			
 			Platform.runLater(() -> {
 				root.setCenter(viewer);
-				right.add(chart, 0, 0);
+				
+				grid.add(intersectionChart, 0, 0);
+				grid.add(segmentChart, 0, 1);
+				grid.add(stationChart, 0, 2);
+				grid.add(vehicleBatteryChart, 0, 3);
+				grid.add(demandChart, 0, 4);
 			});
 			
-			Simulator simulator = new Simulator("Run", model, new SmartController(model), 1, 1, folder);
 			simulator.setHandleUpdated(() -> {
 				Platform.runLater(() -> {
 					viewer.update();
-					chart.update();
+					intersectionChart.update();
+					segmentChart.update();
+					stationChart.update();
+					vehicleBatteryChart.update();
+					demandChart.update();
 				});
 			});
 			simulator.loop();

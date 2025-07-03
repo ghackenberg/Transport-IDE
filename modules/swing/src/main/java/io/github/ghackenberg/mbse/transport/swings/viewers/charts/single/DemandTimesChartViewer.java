@@ -38,13 +38,13 @@ public class DemandTimesChartViewer extends SingleChartViewer {
 			} else {
 				
 				double pickup = model.state.get().time;
-				if (statistics.demandPickupAcceptTimes.get(demand).size() == 1) {
-					pickup = statistics.demandPickupAcceptTimes.get(demand).entrySet().iterator().next().getKey();
+				if (statistics.demandPickAcceptTimes.get(demand).size() == 1) {
+					pickup = statistics.demandPickAcceptTimes.get(demand).entrySet().iterator().next().getKey();
 				}
 				
 				double dropoff = model.state.get().time;
-				if (statistics.demandDropoffTimes.get(demand).size() == 1) {
-					dropoff = statistics.demandDropoffTimes.get(demand).entrySet().iterator().next().getKey();
+				if (statistics.demandDropTimes.get(demand).size() == 1) {
+					dropoff = statistics.demandDropTimes.get(demand).entrySet().iterator().next().getKey();
 				}
 				
 				double underdueWait = Math.min(demand.drop.time.get(), pickup) - demand.pick.time.get();
@@ -72,8 +72,8 @@ public class DemandTimesChartViewer extends SingleChartViewer {
 			for (Demand demand : model.demands) {
 				if (demand.pick.time.get() < model.state.get().time) {
 					double dropoff = model.state.get().time;
-					if (statistics.demandDropoffTimes.get(demand).size() == 1) {
-						dropoff = statistics.demandDropoffTimes.get(demand).entrySet().iterator().next().getKey();
+					if (statistics.demandDropTimes.get(demand).size() == 1) {
+						dropoff = statistics.demandDropTimes.get(demand).entrySet().iterator().next().getKey();
 					}
 					max = Math.max((dropoff - demand.pick.time.get()) / 1000, max);
 				}

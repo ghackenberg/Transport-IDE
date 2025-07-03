@@ -2,6 +2,7 @@ package io.github.ghackenberg.mbse.transport.fx.helpers;
 
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.RowConstraints;
 
 public class GridHelper {
 
@@ -10,6 +11,15 @@ public class GridHelper {
 		
 		result.setFillWidth(fillWidth);
 		result.setHgrow(hgrow);
+		
+		return result;
+	}
+
+	public static RowConstraints createRowConstraints(boolean fillHeight, Priority vgrow) {
+		RowConstraints result = new RowConstraints();
+		
+		result.setFillHeight(fillHeight);
+		result.setVgrow(vgrow);
 		
 		return result;
 	}

@@ -23,6 +23,7 @@ import io.github.ghackenberg.mbse.transport.fx.viewers.ModelViewer;
 import io.github.ghackenberg.mbse.transport.fx.viewers.SegmentViewer;
 import io.github.ghackenberg.mbse.transport.fx.viewers.StationViewer;
 import io.github.ghackenberg.mbse.transport.fx.viewers.VehicleViewer;
+import javafx.application.HostServices;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -34,9 +35,9 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.image.Image;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
@@ -74,18 +75,21 @@ public class EditorScene extends Scene {
 	private final Button open = new Button("Open", ImageViewHelper.load("open.png", 16, 16));
 	private final Button save = new Button("Save", ImageViewHelper.load("save.png", 16, 16));
 	private final Button run = new Button("Run", ImageViewHelper.load("run.png", 16, 16));
+	private final Button help = new Button("Help", ImageViewHelper.load("help.png", 16, 16));
 	
-	private final ToolBar top = new ToolBar(clear, open, save, run);
+	private final ToolBar top = new ToolBar(clear, open, save, run, help);
 	
 	private final ToolBar bottom = new ToolBar(new Label("© 2025 Dr. Georg Hackenberg, Professor for Industrial Informatics, School of Engineering, FH Upper Austria"));
 	
 	private EntityViewer<?> selected;
 	
-	private final GridPane right = new GridPane();
+	private final GridPane grid = new GridPane();
+	
+	private final ScrollPane right = new ScrollPane(grid);
 	
 	private final BorderPane root = new BorderPane(modelViewer, top, right, bottom, null);
 	
-	public EditorScene() {
+	public EditorScene(HostServices hostServices) {
 		super(new Label("Loading ..."), 800, 600);
 		
 		if (!folder.exists()) {
@@ -138,31 +142,61 @@ public class EditorScene extends Scene {
 		});
 		
 		run.setOnAction(event -> {
-			SimulatorScene subScene = new SimulatorScene(model, folder, getWidth(), getHeight());
+			Stage parentStage = (Stage) getWindow();
 			
-			Stage subStage = new Stage();
+			SimulatorScene scene = new SimulatorScene(model, folder, 800, 600);
 			
-			subStage.initModality(Modality.APPLICATION_MODAL);
-			subStage.initOwner(getWindow());
-			subStage.getIcons().add(new Image("app.png"));
-			subStage.setTitle("ITS-MSE Simulator");
-			subStage.setScene(subScene);
-			subStage.setX(getWindow().getX() + 20);
-			subStage.setY(getWindow().getY() + 20);
-			subStage.show();
+			Stage stage = new Stage();
+
+			stage.initModality(Modality.APPLICATION_MODAL);
+			stage.initOwner(parentStage);
+			
+			stage.getIcons().addAll(parentStage.getIcons());
+			
+			stage.setTitle("ITS-MSE Simulator");
+			stage.setMaximized(parentStage.isMaximized());
+			stage.setX(getWindow().getX() + 20);
+			stage.setY(getWindow().getY() + 20);
+			stage.setScene(scene);
+			
+			stage.show();
+		});
+		
+		help.setOnAction(event -> {
+			Stage parentStage = (Stage) getWindow();
+			
+			HelpScene scene = new HelpScene(800, 600);
+			
+			Stage stage = new Stage();
+
+			stage.initModality(Modality.APPLICATION_MODAL);
+			stage.initOwner(parentStage);
+			
+			stage.getIcons().addAll(parentStage.getIcons());
+			
+			stage.setTitle("ITS-MSE Help");
+			stage.setMaximized(parentStage.isMaximized());
+			stage.setX(getWindow().getX() + 20);
+			stage.setY(getWindow().getY() + 20);
+			stage.setScene(scene);
+			
+			stage.show();
 		});
 		
 		// Right
 		
-		right.setPrefWidth(300);
+		grid.setPrefWidth(300);
 		
-		right.setPadding(new Insets(10));
+		grid.setPadding(new Insets(10));
 		
-		right.setHgap(10);
-		right.setVgap(10);
+		grid.setHgap(10);
+		grid.setVgap(10);
 		
-		right.getColumnConstraints().add(GridHelper.createColumnConstraints(false, Priority.NEVER));
-		right.getColumnConstraints().add(GridHelper.createColumnConstraints(true, Priority.ALWAYS));
+		grid.getColumnConstraints().add(GridHelper.createColumnConstraints(false, Priority.NEVER));
+		grid.getColumnConstraints().add(GridHelper.createColumnConstraints(true, Priority.ALWAYS));
+		
+		right.setFitToWidth(true);
+		right.setFitToHeight(true);
 		
 		// Center
 		
@@ -719,7 +753,7 @@ public class EditorScene extends Scene {
 			selected.selected.set(false);
 		}
 		
-		right.getChildren().clear();
+		grid.getChildren().clear();
 		
 		if (viewer != null) {
 			viewer.selected.set(true);
@@ -777,22 +811,22 @@ public class EditorScene extends Scene {
 			select(null);
 		});
 		
-		right.add(new Label("Type"), 0, 0);
-		right.add(type, 1, 0);
+		grid.add(new Label("Type"), 0, 0);
+		grid.add(type, 1, 0);
 		
-		right.add(new Label("Name"), 0, 1);
-		right.add(name, 1, 1);
+		grid.add(new Label("Name"), 0, 1);
+		grid.add(name, 1, 1);
 		
-		right.add(new Label("X"), 0, 2);
-		right.add(x, 1, 2);
+		grid.add(new Label("X"), 0, 2);
+		grid.add(x, 1, 2);
 		
-		right.add(new Label("Y"), 0, 3);
-		right.add(y, 1, 3);
+		grid.add(new Label("Y"), 0, 3);
+		grid.add(y, 1, 3);
 		
-		right.add(new Label("Z"), 0, 4);
-		right.add(z, 1, 4);
+		grid.add(new Label("Z"), 0, 4);
+		grid.add(z, 1, 4);
 		
-		right.add(delete, 1, 5);
+		grid.add(delete, 1, 5);
 	}
 	
 	private void show(SegmentViewer viewer) {
@@ -829,22 +863,22 @@ public class EditorScene extends Scene {
 			select(null);
 		});
 		
-		right.add(new Label("Type"), 0, 0);
-		right.add(type, 1, 0);
+		grid.add(new Label("Type"), 0, 0);
+		grid.add(type, 1, 0);
 		
-		right.add(new Label("Start"), 0, 1);
-		right.add(start, 1, 1);
+		grid.add(new Label("Start"), 0, 1);
+		grid.add(start, 1, 1);
 		
-		right.add(new Label("End"), 0, 2);
-		right.add(end, 1, 2);
+		grid.add(new Label("End"), 0, 2);
+		grid.add(end, 1, 2);
 		
-		right.add(new Label("Lanes"), 0, 3);
-		right.add(lanes, 1, 3);
+		grid.add(new Label("Lanes"), 0, 3);
+		grid.add(lanes, 1, 3);
 		
-		right.add(new Label("Speed"), 0, 4);
-		right.add(speed, 1, 4);
+		grid.add(new Label("Speed"), 0, 4);
+		grid.add(speed, 1, 4);
 		
-		right.add(delete, 1, 5);
+		grid.add(delete, 1, 5);
 	}
 	
 	private void show(StationViewer viewer) {
@@ -865,13 +899,13 @@ public class EditorScene extends Scene {
 			select(null);
 		});
 		
-		right.add(new Label("Type"), 0, 0);
-		right.add(type, 1, 0);
+		grid.add(new Label("Type"), 0, 0);
+		grid.add(type, 1, 0);
 		
-		right.add(new Label("Speed"), 0, 1);
-		right.add(speed, 1, 1);
+		grid.add(new Label("Speed"), 0, 1);
+		grid.add(speed, 1, 1);
 		
-		right.add(delete, 1, 2);
+		grid.add(delete, 1, 2);
 	}
 	
 	private void show(VehicleViewer viewer) {
@@ -927,28 +961,28 @@ public class EditorScene extends Scene {
 			select(null);
 		});
 		
-		right.add(new Label("Type"), 0, 0);
-		right.add(type, 1, 0);
+		grid.add(new Label("Type"), 0, 0);
+		grid.add(type, 1, 0);
 		
-		right.add(new Label("Name"), 0, 1);
-		right.add(name, 1, 1);
+		grid.add(new Label("Name"), 0, 1);
+		grid.add(name, 1, 1);
 		
-		right.add(new Label("Length"), 0, 2);
-		right.add(length, 1, 2);
+		grid.add(new Label("Length"), 0, 2);
+		grid.add(length, 1, 2);
 		
-		right.add(new Label("Battery capacity"), 0, 3);
-		right.add(batteryCapacity, 1, 3);
+		grid.add(new Label("Battery capacity"), 0, 3);
+		grid.add(batteryCapacity, 1, 3);
 		
-		right.add(new Label("Load capacity"), 0, 4);
-		right.add(loadCapacity, 1, 4);
+		grid.add(new Label("Load capacity"), 0, 4);
+		grid.add(loadCapacity, 1, 4);
 		
-		right.add(new Label("Initial battery level"), 0, 5);
-		right.add(initialBatteryLevel, 1, 5);
+		grid.add(new Label("Initial battery level"), 0, 5);
+		grid.add(initialBatteryLevel, 1, 5);
 		
-		right.add(new Label("Initial speed"), 0, 6);
-		right.add(initialSpeed, 1, 6);
+		grid.add(new Label("Initial speed"), 0, 6);
+		grid.add(initialSpeed, 1, 6);
 		
-		right.add(delete, 1, 7);
+		grid.add(delete, 1, 7);
 	}
 	
 	private void show(DemandViewer viewer) {
@@ -985,19 +1019,19 @@ public class EditorScene extends Scene {
 			select(null);
 		});
 		
-		right.add(new Label("Type"), 0, 0);
-		right.add(type, 1, 0);
+		grid.add(new Label("Type"), 0, 0);
+		grid.add(type, 1, 0);
 		
-		right.add(new Label("Size"), 0, 1);
-		right.add(size, 1, 1);
+		grid.add(new Label("Size"), 0, 1);
+		grid.add(size, 1, 1);
 		
-		right.add(new Label("Pick"), 0, 2);
-		right.add(pick, 1, 2);
+		grid.add(new Label("Pick"), 0, 2);
+		grid.add(pick, 1, 2);
 		
-		right.add(new Label("Drop"), 0, 3);
-		right.add(drop, 1, 3);
+		grid.add(new Label("Drop"), 0, 3);
+		grid.add(drop, 1, 3);
 		
-		right.add(delete, 1, 4);
+		grid.add(delete, 1, 4);
 	}
 	
 }
