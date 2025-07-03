@@ -143,7 +143,7 @@ public class EditorScene extends Scene {
 			
 			subStage.initModality(Modality.APPLICATION_MODAL);
 			subStage.initOwner(getWindow());
-			subStage.setTitle("Run");
+			subStage.setTitle("ITS-MSE Simulator");
 			subStage.setScene(subScene);
 			subStage.setX(getWindow().getX() + 20);
 			subStage.setY(getWindow().getY() + 20);
