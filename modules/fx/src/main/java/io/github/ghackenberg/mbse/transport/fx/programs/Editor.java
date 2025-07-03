@@ -25,7 +25,6 @@ import io.github.ghackenberg.mbse.transport.fx.viewers.ModelViewer;
 import io.github.ghackenberg.mbse.transport.fx.viewers.SegmentViewer;
 import io.github.ghackenberg.mbse.transport.fx.viewers.StationViewer;
 import io.github.ghackenberg.mbse.transport.fx.viewers.VehicleViewer;
-import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -61,6 +60,8 @@ public class Editor extends Application {
 		launch(args);
 	}
 	
+	private File folder = new File("runs");
+	
 	private Model model = new Model();
 	
 	private ModelViewer modelViewer = null;
@@ -72,9 +73,9 @@ public class Editor extends Application {
 	private final Line segmentPreviewLine = new Line();
 	private final Circle segmentPreviewHead = new Circle();
 	
-	private double demandDot;
+	private double dragDemandDot;
 	
-	private Node demandNode;
+	private Node dragDemandNode;
 	
 	private final Button open = new Button("Open", ImageViewHelper.load("open.png", 16, 16));
 	private final Button save = new Button("Save", ImageViewHelper.load("save.png", 16, 16));
@@ -95,6 +96,10 @@ public class Editor extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		
+		if (!folder.exists()) {
+			folder.mkdir();
+		}
+		
 		reload();
 		
 		// Top
@@ -114,6 +119,12 @@ public class Editor extends Application {
 				
 				try {
 					model = new Parser().parse(intersections, segments, stations, vehicles, demands);
+					
+					folder = new File(directory, "runs");
+					
+					if (!folder.exists()) {
+						folder.mkdir();
+					}
 					
 					reload();
 				} catch (MissingException e) {
@@ -148,19 +159,16 @@ public class Editor extends Application {
 				
 				ModelViewer viewer = new ModelViewer(model);
 				
-				AnimationTimer timer = new AnimationTimer() {
-					@Override
-					public void handle(long now) {
-						viewer.update();
-					}
-				};
-				
 				Platform.runLater(() -> {
-					timer.start();
 					root.setCenter(viewer);
 				});
 				
-				Simulator simulator = new Simulator("Run", model, new SmartController(model), 1, 1, new File("."));
+				Simulator simulator = new Simulator("Run", model, new SmartController(model), 1, 1, folder);
+				simulator.setHandleUpdated(() -> {
+					Platform.runLater(() -> {
+						viewer.update();
+					});
+				});
 				simulator.loop();
 				
 				AlertType type;
@@ -181,7 +189,6 @@ public class Editor extends Application {
 				}
 				
 				Platform.runLater(() -> {
-					timer.stop();
 					new Alert(type, text).showAndWait();
 				});
 			}).start();
@@ -428,7 +435,7 @@ public class Editor extends Application {
 					}
 					
 					if (minSeg != null) {
-						if (demandNode == viewer.source || demandNode == viewer.sourceText) {
+						if (dragDemandNode == viewer.source || dragDemandNode == viewer.sourceText) {
 							viewer.entity.pick.location.segment.set(minSeg);
 							viewer.entity.pick.location.distance.set(minDot);
 						} else {
@@ -633,7 +640,7 @@ public class Editor extends Application {
 				double dx = world.getX() - sx;
 				double dy = world.getY() - sy;
 				
-				demandDot = tx * dx + ty * dy;
+				dragDemandDot = tx * dx + ty * dy;
 				
 				viewer.startFullDrag();
 				event.consume();
@@ -667,7 +674,7 @@ public class Editor extends Application {
 					demand.size.set(1);
 					
 					demand.pick.location.segment.set(other.entity);
-					demand.pick.location.distance.set(demandDot);
+					demand.pick.location.distance.set(dragDemandDot);
 					
 					demand.drop.location.segment.set(viewer.entity);
 					demand.drop.location.distance.set(dot);
@@ -715,8 +722,8 @@ public class Editor extends Application {
 			}
 		});
 		viewer.setOnDragDetected(event -> {
-			demandNode = event.getPickResult().getIntersectedNode();
-			if (demandNode == viewer.source || demandNode == viewer.sourceText || demandNode == viewer.target || demandNode == viewer.targetText) {
+			dragDemandNode = event.getPickResult().getIntersectedNode();
+			if (dragDemandNode == viewer.source || dragDemandNode == viewer.sourceText || dragDemandNode == viewer.target || dragDemandNode == viewer.targetText) {
 				viewer.startFullDrag();
 				event.consume();	
 			}
