@@ -5,6 +5,7 @@ import java.io.File;
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.Simulator;
 import io.github.ghackenberg.mbse.transport.core.controllers.SmartController;
+import io.github.ghackenberg.mbse.transport.fx.charts.BatteryChart;
 import io.github.ghackenberg.mbse.transport.fx.helpers.GridHelper;
 import io.github.ghackenberg.mbse.transport.fx.viewers.ModelViewer;
 import javafx.application.Platform;
@@ -30,7 +31,7 @@ public class SimulatorScene extends Scene {
 	
 	private final ToolBar top = new ToolBar(start, stop, pause, resume);
 	
-	private final ToolBar bottom = new ToolBar();
+	private final ToolBar bottom = new ToolBar(new Label("© 2025 Dr. Georg Hackenberg, Professor for Industrial Informatics, School of Engineering, FH Upper Austria"));
 	
 	private final GridPane right = new GridPane();
 	
@@ -79,15 +80,18 @@ public class SimulatorScene extends Scene {
 			model.initialize();
 			
 			ModelViewer viewer = new ModelViewer(model);
+			BatteryChart chart = new BatteryChart(model);
 			
 			Platform.runLater(() -> {
 				root.setCenter(viewer);
+				right.add(chart, 0, 0);
 			});
 			
 			Simulator simulator = new Simulator("Run", model, new SmartController(model), 1, 1, folder);
 			simulator.setHandleUpdated(() -> {
 				Platform.runLater(() -> {
 					viewer.update();
+					chart.update();
 				});
 			});
 			simulator.loop();

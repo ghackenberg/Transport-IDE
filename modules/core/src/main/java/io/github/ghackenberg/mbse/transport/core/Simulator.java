@@ -66,10 +66,18 @@ public class Simulator {
 	private Thread thread;
 	
 	public Simulator(String name, Model model, Controller controller, double maxModelTimeStep, double ratioModelRealTime, File runsFolder) {
-		this(name, model, controller, maxModelTimeStep, ratioModelRealTime, runsFolder, new Synchronizer(1));
+		this(name, model, controller, maxModelTimeStep, ratioModelRealTime, runsFolder, new Statistics(model));
+	}
+	
+	public Simulator(String name, Model model, Controller controller, double maxModelTimeStep, double ratioModelRealTime, File runsFolder, Statistics statistics) {
+		this(name, model, controller, maxModelTimeStep, ratioModelRealTime, runsFolder, statistics, new Synchronizer(1));
 	}
 	
 	public Simulator(String name, Model model, Controller controller, double maxModelTimeStep, double ratioModelRealTime, File runsFolder, Synchronizer synchronizer) {
+		this(name, model, controller, maxModelTimeStep, ratioModelRealTime, runsFolder, new Statistics(model), synchronizer);
+	}
+	
+	public Simulator(String name, Model model, Controller controller, double maxModelTimeStep, double ratioModelRealTime, File runsFolder, Statistics statistics, Synchronizer synchronizer) {
 		this.name = name;
 		this.model = model;
 		this.controller = controller;
@@ -77,7 +85,7 @@ public class Simulator {
 		this.ratioModelRealTime = ratioModelRealTime;
 		this.runsFolder = runsFolder;
 		this.synchronizer = synchronizer;
-		this.statistics = new Statistics(model);
+		this.statistics = statistics;
 	}
 	
 	public String getName() {
