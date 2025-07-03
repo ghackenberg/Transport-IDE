@@ -13,10 +13,12 @@ import io.github.ghackenberg.mbse.transport.fx.helpers.GenericListChangeListener
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Point2D;
+import javafx.geometry.VPos;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Text;
 import javafx.scene.transform.NonInvertibleTransformException;
 
 public class ModelViewer extends Pane {
@@ -28,12 +30,15 @@ public class ModelViewer extends Pane {
 	private double deltaY;
 	
 	private final Model model;
+	private final Model.State modelState;
 	
 	public final Group intersectionLayer = new Group();
 	public final Group segmentLayer = new Group();
 	public final Group stationLayer = new Group();
 	public final Group vehicleLayer = new Group();
 	public final Group demandLayer = new Group();
+	
+	private final Text time = new Text();
 	
 	public final Pane canvas = new Pane(segmentLayer, intersectionLayer, stationLayer, vehicleLayer, demandLayer);
 	
@@ -57,6 +62,7 @@ public class ModelViewer extends Pane {
 	
 	public ModelViewer(Model model, boolean showDemands) {		
 		this.model = model;
+		this.modelState = model.state.get();
 		
 		minX = model.intersections.size() > 0 ? model.minX.get() - 3 : -10;
 		minY = model.intersections.size() > 0 ? model.minY.get() - 3 : -10;
@@ -66,6 +72,10 @@ public class ModelViewer extends Pane {
 		
 		canvas.setPrefWidth(0);
 		canvas.setPrefHeight(0);
+		
+		time.setX(10);
+		time.setY(10);
+		time.setTextOrigin(VPos.TOP);
 
 		clip.widthProperty().bind(widthProperty());
 		clip.heightProperty().bind(heightProperty());
@@ -73,6 +83,7 @@ public class ModelViewer extends Pane {
 		setStyle("-fx-background-color: white;");
 		
 		getChildren().add(canvas);
+		getChildren().add(time);
 		
 		setClip(clip);
 		
@@ -232,6 +243,9 @@ public class ModelViewer extends Pane {
 		}
 		for (VehicleViewer viewer : vehicleViewers.values()) {
 			viewer.update();
+		}
+		if (modelState != null) {
+			time.setText("" + Math.round(modelState.time) + " ms");
 		}
 	}
 	
