@@ -58,11 +58,11 @@ public class ModelViewer extends Pane {
 	public ModelViewer(Model model, boolean showDemands) {		
 		this.model = model;
 		
-		minX = model.minX.get();
-		minY = model.minY.get();
+		minX = model.intersections.size() > 0 ? model.minX.get() - 3 : -10;
+		minY = model.intersections.size() > 0 ? model.minY.get() - 3 : -10;
 		
-		deltaX = Math.max(model.deltaX.get(), 20);
-		deltaY = Math.max(model.deltaY.get(), 20);
+		deltaX = model.intersections.size() > 0 ? model.deltaX.get() + 6 : 20;
+		deltaY = model.intersections.size() > 0 ? model.deltaY.get() + 6 : 20;
 		
 		canvas.setPrefWidth(0);
 		canvas.setPrefHeight(0);
