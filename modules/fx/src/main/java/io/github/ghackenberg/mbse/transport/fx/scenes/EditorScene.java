@@ -1,4 +1,4 @@
-package io.github.ghackenberg.mbse.transport.fx.programs;
+package io.github.ghackenberg.mbse.transport.fx.scenes;
 
 import java.io.File;
 import java.util.HashMap;
@@ -6,8 +6,6 @@ import java.util.Map;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.Parser;
-import io.github.ghackenberg.mbse.transport.core.Simulator;
-import io.github.ghackenberg.mbse.transport.core.controllers.SmartController;
 import io.github.ghackenberg.mbse.transport.core.entities.Demand;
 import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
@@ -25,8 +23,6 @@ import io.github.ghackenberg.mbse.transport.fx.viewers.ModelViewer;
 import io.github.ghackenberg.mbse.transport.fx.viewers.SegmentViewer;
 import io.github.ghackenberg.mbse.transport.fx.viewers.StationViewer;
 import io.github.ghackenberg.mbse.transport.fx.viewers.VehicleViewer;
-import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -54,12 +50,8 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-public class Editor extends Application {
+public class EditorScene extends Scene {
 
-	public static void main(String[] args) {
-		launch(args);
-	}
-	
 	private File folder = new File("runs");
 	
 	private Model model = new Model();
@@ -76,12 +68,13 @@ public class Editor extends Application {
 	private double dragDemandDot;
 	
 	private Node dragDemandNode;
-	
+
+	private final Button clear = new Button("Clear", ImageViewHelper.load("clear.png", 16, 16));
 	private final Button open = new Button("Open", ImageViewHelper.load("open.png", 16, 16));
 	private final Button save = new Button("Save", ImageViewHelper.load("save.png", 16, 16));
 	private final Button run = new Button("Run", ImageViewHelper.load("run.png", 16, 16));
 	
-	private final ToolBar top = new ToolBar(open, save, run);
+	private final ToolBar top = new ToolBar(clear, open, save, run);
 	
 	private final ToolBar bottom = new ToolBar(new Label("© 2025 Dr. Georg Hackenberg, Professor for Industrial Informatics, School of Engineering, FH Upper Austria"));
 	
@@ -91,24 +84,28 @@ public class Editor extends Application {
 	
 	private final BorderPane root = new BorderPane(modelViewer, top, right, bottom, null);
 	
-	private final Scene scene = new Scene(root, 640, 480);
-
-	@Override
-	public void start(Stage primaryStage) throws Exception {
+	public EditorScene() {
+		super(new Label("Loading ..."), 800, 600);
 		
 		if (!folder.exists()) {
 			folder.mkdir();
 		}
 		
-		reload();
-		
 		// Top
 		
-		open.setOnAction(menuEvent -> {			
+		clear.setOnAction(event -> {
+			folder = new File("runs");
+			
+			model = new Model();
+			
+			reload();
+		});
+		
+		open.setOnAction(event -> {			
 			DirectoryChooser chooser = new DirectoryChooser();
 			chooser.setInitialDirectory(new File("."));
 			
-			File directory = chooser.showDialog(primaryStage);
+			File directory = chooser.showDialog(getWindow());
 			
 			if (directory != null) {
 				File demands = new File(directory, "demands.txt");
@@ -140,58 +137,17 @@ public class Editor extends Application {
 		});
 		
 		run.setOnAction(event -> {
-			BorderPane root = new BorderPane();
-			
-			Scene subScene = new Scene(root, scene.getWidth(), scene.getHeight());
+			SimulatorScene subScene = new SimulatorScene(model, folder, getWidth(), getHeight());
 			
 			Stage subStage = new Stage();
 			
 			subStage.initModality(Modality.APPLICATION_MODAL);
-			subStage.initOwner(primaryStage);
+			subStage.initOwner(getWindow());
 			subStage.setTitle("Run");
 			subStage.setScene(subScene);
-			subStage.setX(primaryStage.getX() + 20);
-			subStage.setY(primaryStage.getY() + 20);
+			subStage.setX(getWindow().getX() + 20);
+			subStage.setY(getWindow().getY() + 20);
 			subStage.show();
-			
-			new Thread(() -> {
-				model.initialize();
-				
-				ModelViewer viewer = new ModelViewer(model);
-				
-				Platform.runLater(() -> {
-					root.setCenter(viewer);
-				});
-				
-				Simulator simulator = new Simulator("Run", model, new SmartController(model), 1, 1, folder);
-				simulator.setHandleUpdated(() -> {
-					Platform.runLater(() -> {
-						viewer.update();
-					});
-				});
-				simulator.loop();
-				
-				AlertType type;
-				String text;
-				
-				if (simulator.isFinished()) {	
-					type = AlertType.INFORMATION;
-					text = "Finished!";
-				} else if (simulator.isEmpty()) {
-					type = AlertType.ERROR;
-					text = "Empty!";
-				} else if (Double.isInfinite(model.state.get().time)) {
-					type = AlertType.ERROR;
-					text = "Infinite!";
-				} else {
-					type = AlertType.ERROR;
-					text = "Collision!";
-				}
-				
-				Platform.runLater(() -> {
-					new Alert(type, text).showAndWait();
-				});
-			}).start();
 		});
 		
 		// Right
@@ -224,14 +180,16 @@ public class Editor extends Application {
 		segmentPreviewHead.setRadius(0.5);
 		segmentPreviewHead.setFill(Color.GRAY);
 		
-		// Stage
+		reload();
 		
-		primaryStage.setScene(scene);
-		primaryStage.setTitle("Intelligent Transportation System Modeling and Simulation Environment (ITS-MSE)");
-		primaryStage.show();
+		// Root
+		
+		setRoot(root);
 	}
 	
 	private void reload() {
+		select(null);
+		
 		modelViewer = new ModelViewer(model);
 		
 		modelViewer.segmentLayer.getChildren().add(segmentPreviewLine);
@@ -1039,5 +997,5 @@ public class Editor extends Application {
 		
 		right.add(delete, 1, 4);
 	}
-
+	
 }
