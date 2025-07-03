@@ -34,6 +34,7 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.image.Image;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -143,6 +144,7 @@ public class EditorScene extends Scene {
 			
 			subStage.initModality(Modality.APPLICATION_MODAL);
 			subStage.initOwner(getWindow());
+			subStage.getIcons().add(new Image("app.png"));
 			subStage.setTitle("ITS-MSE Simulator");
 			subStage.setScene(subScene);
 			subStage.setX(getWindow().getX() + 20);

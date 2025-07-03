@@ -2,6 +2,7 @@ package io.github.ghackenberg.mbse.transport.fx.programs;
 
 import io.github.ghackenberg.mbse.transport.fx.scenes.EditorScene;
 import javafx.application.Application;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 public class Workbench extends Application {
@@ -12,6 +13,7 @@ public class Workbench extends Application {
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
+		primaryStage.getIcons().add(new Image("app.png"));
 		primaryStage.setScene(new EditorScene());
 		primaryStage.setTitle("ITS-MSE Editor");
 		primaryStage.show();
