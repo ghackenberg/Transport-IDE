@@ -1,17 +1,18 @@
-package io.github.ghackenberg.mbse.transport.fx.viewers;
+package io.github.ghackenberg.mbse.transport.fx.viewers.flat;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Station;
 import io.github.ghackenberg.mbse.transport.core.structures.Coordinate;
+import io.github.ghackenberg.mbse.transport.fx.viewers.EntityViewer;
 import javafx.beans.binding.Bindings;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
-public class StationViewer extends EntityViewer<Station> {
+public class StationViewerFlat extends EntityViewer<Station> {
 	
 	public final Circle circle;
 
-	public StationViewer(Model model, Station station) {
+	public StationViewerFlat(Model model, Station station) {
 		super(model, station);
 		
 		Coordinate location = station.location.coordinate;

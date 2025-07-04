@@ -1,13 +1,14 @@
-package io.github.ghackenberg.mbse.transport.fx.viewers;
+package io.github.ghackenberg.mbse.transport.fx.viewers.flat;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
+import io.github.ghackenberg.mbse.transport.fx.viewers.EntityViewer;
 import javafx.beans.binding.Bindings;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.StrokeLineCap;
 
-public class SegmentViewer extends EntityViewer<Segment> {
+public class SegmentViewerFlat extends EntityViewer<Segment> {
 	
 	private static final double FACTOR = 3;
 	
@@ -17,7 +18,7 @@ public class SegmentViewer extends EntityViewer<Segment> {
 	public final Line arrowHeadLeft = new Line();
 	public final Line arrowHeadRight = new Line();
 	
-	public SegmentViewer(Model model, Segment segment) {
+	public SegmentViewerFlat(Model model, Segment segment) {
 		super(model, segment);
 		
 		// Rectangle

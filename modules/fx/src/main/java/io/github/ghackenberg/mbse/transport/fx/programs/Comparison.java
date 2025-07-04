@@ -19,7 +19,7 @@ import io.github.ghackenberg.mbse.transport.core.structures.Location;
 import io.github.ghackenberg.mbse.transport.core.structures.LocationTime;
 import io.github.ghackenberg.mbse.transport.fx.charts.HistogramChart;
 import io.github.ghackenberg.mbse.transport.fx.charts.PercentageChart;
-import io.github.ghackenberg.mbse.transport.fx.viewers.ModelViewer;
+import io.github.ghackenberg.mbse.transport.fx.viewers.flat.ModelViewerFlat;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -77,7 +77,7 @@ public class Comparison extends Application {
 	
 	AnimationTimer animation;
 	
-	final List<ModelViewer> modelViewers = new ArrayList<>();
+	final List<ModelViewerFlat> modelViewers = new ArrayList<>();
 	final ObservableList<String> simulatorPaneLeftItems = FXCollections.observableArrayList();
 	final ListView<String> simulatorPaneLeft = new ListView<>(simulatorPaneLeftItems);
 	final List<BorderPane> simulatorPaneCenter = new ArrayList<>();
@@ -287,7 +287,7 @@ public class Comparison extends Application {
 		chartPane.getRowConstraints().add(createRowConstraints(100 / 2.));
 		
 		for (int i = 0; i < models.size(); i++) {
-			chartPane.add(new ModelViewer(models.get(i), false), i * controllerClasses.size(), 0, controllerClasses.size(), 1);	
+			chartPane.add(new ModelViewerFlat(models.get(i), false), i * controllerClasses.size(), 0, controllerClasses.size(), 1);	
 			for (int j = 0; j < controllerClasses.size(); j++) {
 				chartPane.add(percentageViewers.get(i).get(j), i * controllerClasses.size() + j, 1);
 				chartPane.add(histogramViewers.get(i).get(j), i * controllerClasses.size() + j, 2);	
@@ -315,7 +315,7 @@ public class Comparison extends Application {
 			@Override
 			public void handle(long now) {
 				synchronized (modelViewers) {
-					for (ModelViewer viewer : modelViewers) {
+					for (ModelViewerFlat viewer : modelViewers) {
 						viewer.update();
 					}
 				}
@@ -413,10 +413,10 @@ public class Comparison extends Application {
 					
 					// Create model viewer
 					
-					ModelViewer viewer;
+					ModelViewerFlat viewer;
 					
 					synchronized (modelViewers) {
-						viewer = new ModelViewer(model);
+						viewer = new ModelViewerFlat(model);
 						
 						modelViewers.add(viewer);
 					}

@@ -18,13 +18,14 @@ import io.github.ghackenberg.mbse.transport.fx.helpers.GenericListChangeListener
 import io.github.ghackenberg.mbse.transport.fx.helpers.GridHelper;
 import io.github.ghackenberg.mbse.transport.fx.helpers.ImageViewHelper;
 import io.github.ghackenberg.mbse.transport.fx.helpers.PersistentMemoryHelper;
-import io.github.ghackenberg.mbse.transport.fx.viewers.DemandViewer;
 import io.github.ghackenberg.mbse.transport.fx.viewers.EntityViewer;
-import io.github.ghackenberg.mbse.transport.fx.viewers.IntersectionViewer;
-import io.github.ghackenberg.mbse.transport.fx.viewers.ModelViewer;
-import io.github.ghackenberg.mbse.transport.fx.viewers.SegmentViewer;
-import io.github.ghackenberg.mbse.transport.fx.viewers.StationViewer;
-import io.github.ghackenberg.mbse.transport.fx.viewers.VehicleViewer;
+import io.github.ghackenberg.mbse.transport.fx.viewers.deep.ModelViewerDeep;
+import io.github.ghackenberg.mbse.transport.fx.viewers.flat.DemandViewerFlat;
+import io.github.ghackenberg.mbse.transport.fx.viewers.flat.IntersectionViewerFlat;
+import io.github.ghackenberg.mbse.transport.fx.viewers.flat.ModelViewerFlat;
+import io.github.ghackenberg.mbse.transport.fx.viewers.flat.SegmentViewerFlat;
+import io.github.ghackenberg.mbse.transport.fx.viewers.flat.StationViewerFlat;
+import io.github.ghackenberg.mbse.transport.fx.viewers.flat.VehicleViewerFlat;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -40,6 +41,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -55,11 +57,12 @@ import javafx.stage.Stage;
 
 public class EditorScene extends Scene {
 
-	private File modelRunsFolder;
+	private File modelRunsFolder = new File("runs");
 	
 	private Model model = new Model();
 	
-	private ModelViewer modelViewer;
+	private ModelViewerFlat modelViewerFlat;
+	private ModelViewerDeep modelViewerDeep;
 	
 	private final BooleanProperty segmentPreviewVisible = new SimpleBooleanProperty(false);
 	private final DoubleProperty segmentPreviewEndX = new SimpleDoubleProperty();
@@ -78,7 +81,9 @@ public class EditorScene extends Scene {
 	private final Button run = new Button("Run", ImageViewHelper.load("run.png", 16, 16));
 	private final Button help = new Button("Help", ImageViewHelper.load("help.png", 16, 16));
 	
-	private final ToolBar top = new ToolBar(clear, open, save, run, help);
+	private final ToggleButton deep = new ToggleButton("3D", ImageViewHelper.load("deep.png", 16, 16));
+	
+	private final ToolBar top = new ToolBar(clear, open, save, run, help, deep);
 	
 	private final ToolBar bottom = new ToolBar(new Label("© 2025 Dr. Georg Hackenberg, Professor for Industrial Informatics, School of Engineering, FH Upper Austria"));
 	
@@ -88,10 +93,14 @@ public class EditorScene extends Scene {
 	
 	private final ScrollPane right = new ScrollPane(grid);
 	
-	private final BorderPane root = new BorderPane(modelViewer, top, right, bottom, null);
+	private final BorderPane root = new BorderPane(null, top, right, bottom, null);
 	
 	public EditorScene() {
 		super(new Label("Loading ..."), 800, 600);
+		
+		if (!modelRunsFolder.exists()) {
+			modelRunsFolder.mkdirs();
+		}
 		
 		// Top
 		
@@ -201,6 +210,14 @@ public class EditorScene extends Scene {
 			stage.show();
 		});
 		
+		deep.setOnAction(event -> {
+			if (deep.isSelected()) {
+				root.setCenter(modelViewerDeep);
+			} else {
+				root.setCenter(modelViewerFlat);
+			}
+		});
+		
 		// Right
 		
 		grid.setPrefWidth(300);
@@ -244,24 +261,25 @@ public class EditorScene extends Scene {
 	private void reload() {
 		select(null);
 		
-		modelViewer = new ModelViewer(model);
+		modelViewerFlat = new ModelViewerFlat(model);
+		modelViewerDeep = new ModelViewerDeep(model);
 		
-		modelViewer.segmentLayer.getChildren().add(segmentPreviewLine);
-		modelViewer.segmentLayer.getChildren().add(segmentPreviewHead);
+		modelViewerFlat.segmentLayer.getChildren().add(segmentPreviewLine);
+		modelViewerFlat.segmentLayer.getChildren().add(segmentPreviewHead);
 		
-		setup(modelViewer.intersections, this::detach, this::attach);
-		setup(modelViewer.segments, this::detach, this::attach);
-		setup(modelViewer.stations, this::detach, this::attach);
-		setup(modelViewer.vehicles, this::detach, this::attach);
-		setup(modelViewer.demands, this::detach, this::attach);
+		setup(modelViewerFlat.intersections, this::detach, this::attach);
+		setup(modelViewerFlat.segments, this::detach, this::attach);
+		setup(modelViewerFlat.stations, this::detach, this::attach);
+		setup(modelViewerFlat.vehicles, this::detach, this::attach);
+		setup(modelViewerFlat.demands, this::detach, this::attach);
 		
-		modelViewer.setOnMouseClicked(event -> {
+		modelViewerFlat.setOnMouseClicked(event -> {
 			if (event.isStillSincePress()) {
 				try {
 					double x = event.getSceneX();
 					double y = event.getSceneY();
 					
-					Point2D world = modelViewer.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
+					Point2D world = modelViewerFlat.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
 					
 					Intersection intersection = new Intersection();
 					intersection.name.set("Intersection " + (model.intersections.size() + 1));
@@ -271,7 +289,7 @@ public class EditorScene extends Scene {
 					
 					model.intersections.add(intersection);
 					
-					select(modelViewer.intersectionViewers.get(intersection));
+					select(modelViewerFlat.intersectionViewers.get(intersection));
 					
 					event.consume();
 				} catch (NonInvertibleTransformException e) {
@@ -279,23 +297,23 @@ public class EditorScene extends Scene {
 				}
 			}
 		});
-		modelViewer.setOnMouseDragEntered(event -> {
-			if (event.getGestureSource() instanceof IntersectionViewer) {
+		modelViewerFlat.setOnMouseDragEntered(event -> {
+			if (event.getGestureSource() instanceof IntersectionViewerFlat) {
 				if (event.isControlDown()) {
 					segmentPreviewVisible.set(true);
 					event.consume();
 				}
 			}
 		});
-		modelViewer.setOnMouseDragOver(event -> {
+		modelViewerFlat.setOnMouseDragOver(event -> {
 			try {
 				double x = event.getSceneX();
 				double y = event.getSceneY();
 				
-				Point2D world = modelViewer.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
+				Point2D world = modelViewerFlat.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
 				
-				if (event.getGestureSource() instanceof IntersectionViewer) {
-					IntersectionViewer viewer = (IntersectionViewer) event.getGestureSource();
+				if (event.getGestureSource() instanceof IntersectionViewerFlat) {
+					IntersectionViewerFlat viewer = (IntersectionViewerFlat) event.getGestureSource();
 					if (event.isControlDown()) {
 						segmentPreviewEndX.set(world.getX());
 						segmentPreviewEndY.set(world.getY());
@@ -332,8 +350,8 @@ public class EditorScene extends Scene {
 					}
 
 					event.consume();
-				} else if (event.getGestureSource() instanceof StationViewer) {
-					StationViewer viewer = (StationViewer) event.getGestureSource();
+				} else if (event.getGestureSource() instanceof StationViewerFlat) {
+					StationViewerFlat viewer = (StationViewerFlat) event.getGestureSource();
 					
 					double minLen = Double.MAX_VALUE;
 					double minDot = 0;
@@ -372,8 +390,8 @@ public class EditorScene extends Scene {
 					}
 					
 					event.consume();
-				} else if (event.getGestureSource() instanceof VehicleViewer) {
-					VehicleViewer viewer = (VehicleViewer) event.getGestureSource();
+				} else if (event.getGestureSource() instanceof VehicleViewerFlat) {
+					VehicleViewerFlat viewer = (VehicleViewerFlat) event.getGestureSource();
 					
 					double minLen = Double.MAX_VALUE;
 					double minDot = 0;
@@ -412,8 +430,8 @@ public class EditorScene extends Scene {
 					}
 					
 					event.consume();
-				} else if (event.getGestureSource() instanceof DemandViewer) {
-					DemandViewer viewer = (DemandViewer) event.getGestureSource();
+				} else if (event.getGestureSource() instanceof DemandViewerFlat) {
+					DemandViewerFlat viewer = (DemandViewerFlat) event.getGestureSource();
 					
 					double minLen = Double.MAX_VALUE;
 					double minDot = 0;
@@ -462,20 +480,20 @@ public class EditorScene extends Scene {
 				e.printStackTrace();
 			}
 		});
-		modelViewer.setOnMouseDragExited(event -> {
+		modelViewerFlat.setOnMouseDragExited(event -> {
 			segmentPreviewVisible.set(false);
 			event.consume();
 		});
-		modelViewer.setOnMouseDragReleased(event -> {
+		modelViewerFlat.setOnMouseDragReleased(event -> {
 			try {
-				if (event.getGestureSource() instanceof IntersectionViewer) {
+				if (event.getGestureSource() instanceof IntersectionViewerFlat) {
 					if (event.isControlDown()) {
-						IntersectionViewer viewer = (IntersectionViewer) event.getGestureSource();
+						IntersectionViewerFlat viewer = (IntersectionViewerFlat) event.getGestureSource();
 						
 						double x = event.getSceneX();
 						double y = event.getSceneY();
 						
-						Point2D world = modelViewer.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
+						Point2D world = modelViewerFlat.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
 		
 						Intersection other = new Intersection();
 						
@@ -493,7 +511,7 @@ public class EditorScene extends Scene {
 						
 						model.segments.add(segment);
 						
-						select(modelViewer.segmentViewers.get(segment));
+						select(modelViewerFlat.segmentViewers.get(segment));
 		
 						event.consume();
 					}
@@ -503,7 +521,11 @@ public class EditorScene extends Scene {
 			}
 		});
 		
-		root.setCenter(modelViewer);
+		if (deep.isSelected()) {
+			root.setCenter(modelViewerDeep);
+		} else {
+			root.setCenter(modelViewerFlat);
+		}
 	}
 	
 	private <T> void setup(ObservableList<T> list, GenericListChangeListener.Handler<T> remove, GenericListChangeListener.Handler<T> add) {
@@ -513,7 +535,7 @@ public class EditorScene extends Scene {
 		}
 	}
 	
-	private void attach(IntersectionViewer viewer) {
+	private void attach(IntersectionViewerFlat viewer) {
 		viewer.setOnMouseClicked(event -> {
 			if (event.isStillSincePress()) {
 				select(viewer);
@@ -535,7 +557,7 @@ public class EditorScene extends Scene {
 			event.consume();
 		});
 		viewer.setOnMouseDragEntered(event -> {
-			if (event.getGestureSource() instanceof IntersectionViewer && event.getGestureSource() != viewer) {
+			if (event.getGestureSource() instanceof IntersectionViewerFlat && event.getGestureSource() != viewer) {
 				if (event.isControlDown()) {
 					viewer.selected.set(true);
 					
@@ -547,14 +569,14 @@ public class EditorScene extends Scene {
 			}
 		});
 		viewer.setOnMouseDragOver(event -> {
-			if (event.getGestureSource() instanceof IntersectionViewer && event.getGestureSource() != viewer) {
+			if (event.getGestureSource() instanceof IntersectionViewerFlat && event.getGestureSource() != viewer) {
 				if (event.isControlDown()) {
 					event.consume();
 				}
 			}
 		});
 		viewer.setOnMouseDragExited(event -> {
-			if (event.getGestureSource() instanceof IntersectionViewer && event.getGestureSource() != viewer) {
+			if (event.getGestureSource() instanceof IntersectionViewerFlat && event.getGestureSource() != viewer) {
 				if (event.isControlDown()) {
 					viewer.selected.set(false);
 					event.consume();
@@ -562,11 +584,11 @@ public class EditorScene extends Scene {
 			}
 		});
 		viewer.setOnMouseDragReleased(event -> {
-			if (event.getGestureSource() instanceof IntersectionViewer && event.getGestureSource() != viewer) {
+			if (event.getGestureSource() instanceof IntersectionViewerFlat && event.getGestureSource() != viewer) {
 				if (event.isControlDown()) {
 					segmentPreviewVisible.set(false);
 					
-					IntersectionViewer other = (IntersectionViewer) event.getGestureSource();
+					IntersectionViewerFlat other = (IntersectionViewerFlat) event.getGestureSource();
 					
 					Segment segment = new Segment(other.entity, viewer.entity);
 					
@@ -575,21 +597,21 @@ public class EditorScene extends Scene {
 					
 					model.segments.add(segment);
 					
-					select(modelViewer.segmentViewers.get(segment));
+					select(modelViewerFlat.segmentViewers.get(segment));
 					
 					event.consume();
 				}
 			}
 		});
 	}
-	private void attach(SegmentViewer viewer) {
+	private void attach(SegmentViewerFlat viewer) {
 		viewer.setOnMouseClicked(event -> {
 			try {
 				if (event.isStillSincePress()) {
 					double x = event.getSceneX();
 					double y = event.getSceneY();
 					
-					Point2D world = modelViewer.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
+					Point2D world = modelViewerFlat.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
 
 					double sx = viewer.entity.start.coordinate.x.get();
 					double sy = viewer.entity.start.coordinate.y.get();
@@ -611,7 +633,7 @@ public class EditorScene extends Scene {
 						
 						model.stations.add(station);
 						
-						select(modelViewer.stationViewers.get(station));
+						select(modelViewerFlat.stationViewers.get(station));
 					} else if (event.isShiftDown()) {
 						Vehicle vehicle = new Vehicle();
 						
@@ -626,7 +648,7 @@ public class EditorScene extends Scene {
 						
 						model.vehicles.add(vehicle);
 						
-						select(modelViewer.vehicleViewers.get(vehicle));
+						select(modelViewerFlat.vehicleViewers.get(vehicle));
 					} else {
 						select(viewer);
 					}
@@ -641,7 +663,7 @@ public class EditorScene extends Scene {
 				double x = event.getSceneX();
 				double y = event.getSceneY();
 				
-				Point2D world = modelViewer.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
+				Point2D world = modelViewerFlat.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
 	
 				double sx = viewer.entity.start.coordinate.x.get();
 				double sy = viewer.entity.start.coordinate.y.get();
@@ -662,11 +684,11 @@ public class EditorScene extends Scene {
 		});
 		viewer.setOnMouseDragReleased(event -> {
 			try {
-				if (event.getGestureSource() instanceof SegmentViewer) {
+				if (event.getGestureSource() instanceof SegmentViewerFlat) {
 					double x = event.getSceneX();
 					double y = event.getSceneY();
 					
-					Point2D world = modelViewer.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
+					Point2D world = modelViewerFlat.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
 	
 					double sx = viewer.entity.start.coordinate.x.get();
 					double sy = viewer.entity.start.coordinate.y.get();
@@ -679,7 +701,7 @@ public class EditorScene extends Scene {
 					
 					double dot = tx * dx + ty * dy;
 					
-					SegmentViewer other = (SegmentViewer) event.getGestureSource();
+					SegmentViewerFlat other = (SegmentViewerFlat) event.getGestureSource();
 					
 					Demand demand = new Demand();
 					
@@ -693,7 +715,7 @@ public class EditorScene extends Scene {
 					
 					model.demands.add(demand);
 					
-					select(modelViewer.demandViewers.get(demand));
+					select(modelViewerFlat.demandViewers.get(demand));
 					
 					event.consume();
 				}
@@ -702,7 +724,7 @@ public class EditorScene extends Scene {
 			}
 		});
 	}
-	private void attach(StationViewer viewer) {
+	private void attach(StationViewerFlat viewer) {
 		viewer.setOnMouseClicked(event -> {
 			if (event.isStillSincePress()) {
 				select(viewer);
@@ -714,7 +736,7 @@ public class EditorScene extends Scene {
 			event.consume();
 		});
 	}
-	private void attach(VehicleViewer viewer) {
+	private void attach(VehicleViewerFlat viewer) {
 		viewer.setOnMouseClicked(event -> {
 			if (event.isStillSincePress()) {
 				select(viewer);
@@ -726,7 +748,7 @@ public class EditorScene extends Scene {
 			event.consume();
 		});
 	}
-	private void attach(DemandViewer viewer) {
+	private void attach(DemandViewerFlat viewer) {
 		viewer.setOnMouseClicked(event -> {
 			if (event.isStillSincePress()) {
 				select(viewer);
@@ -742,26 +764,26 @@ public class EditorScene extends Scene {
 		});
 	}
 	
-	private void detach(IntersectionViewer viewer) {
+	private void detach(IntersectionViewerFlat viewer) {
 		viewer.setOnMouseClicked(null);
 		viewer.setOnDragDetected(null);
 		viewer.setOnMouseDragEntered(null);
 		viewer.setOnMouseDragExited(null);
 		viewer.setOnMouseDragReleased(null);
 	}
-	private void detach(SegmentViewer viewer) {
+	private void detach(SegmentViewerFlat viewer) {
 		viewer.setOnMouseClicked(null);
 		viewer.setOnDragDetected(null);
 	}
-	private void detach(StationViewer viewer) {
+	private void detach(StationViewerFlat viewer) {
 		viewer.setOnMouseClicked(null);
 		viewer.setOnDragDetected(null);
 	}
-	private void detach(VehicleViewer viewer) {
+	private void detach(VehicleViewerFlat viewer) {
 		viewer.setOnMouseClicked(null);
 		viewer.setOnDragDetected(null);
 	}
-	private void detach(DemandViewer viewer) {
+	private void detach(DemandViewerFlat viewer) {
 		viewer.setOnMouseClicked(null);
 		viewer.setOnDragDetected(null);
 	}
@@ -778,21 +800,21 @@ public class EditorScene extends Scene {
 			
 			selected = viewer;
 			
-			if (viewer instanceof IntersectionViewer) {
-				show((IntersectionViewer) viewer);
-			} else if (viewer instanceof SegmentViewer) {
-				show((SegmentViewer) viewer);
-			} else if (viewer instanceof StationViewer) {
-				show((StationViewer) viewer);
-			} else if (viewer instanceof VehicleViewer) {
-				show((VehicleViewer) viewer);
-			} else if (viewer instanceof DemandViewer) {
-				show((DemandViewer) viewer);
+			if (viewer instanceof IntersectionViewerFlat) {
+				show((IntersectionViewerFlat) viewer);
+			} else if (viewer instanceof SegmentViewerFlat) {
+				show((SegmentViewerFlat) viewer);
+			} else if (viewer instanceof StationViewerFlat) {
+				show((StationViewerFlat) viewer);
+			} else if (viewer instanceof VehicleViewerFlat) {
+				show((VehicleViewerFlat) viewer);
+			} else if (viewer instanceof DemandViewerFlat) {
+				show((DemandViewerFlat) viewer);
 			}
 		}
 	}
 	
-	private void show(IntersectionViewer viewer) {
+	private void show(IntersectionViewerFlat viewer) {
 		TextField type = new TextField("Intersection");
 		type.setDisable(true);
 		
@@ -847,7 +869,7 @@ public class EditorScene extends Scene {
 		grid.add(delete, 1, 5);
 	}
 	
-	private void show(SegmentViewer viewer) {
+	private void show(SegmentViewerFlat viewer) {
 		TextField type = new TextField("Segment");
 		type.setDisable(true);
 		
@@ -899,7 +921,7 @@ public class EditorScene extends Scene {
 		grid.add(delete, 1, 5);
 	}
 	
-	private void show(StationViewer viewer) {
+	private void show(StationViewerFlat viewer) {
 		TextField type = new TextField("Station");
 		type.setDisable(true);
 		
@@ -926,7 +948,7 @@ public class EditorScene extends Scene {
 		grid.add(delete, 1, 2);
 	}
 	
-	private void show(VehicleViewer viewer) {
+	private void show(VehicleViewerFlat viewer) {
 		TextField type = new TextField("Vehicle");
 		type.setDisable(true);
 		
@@ -1003,7 +1025,7 @@ public class EditorScene extends Scene {
 		grid.add(delete, 1, 7);
 	}
 	
-	private void show(DemandViewer viewer) {
+	private void show(DemandViewerFlat viewer) {
 		TextField type = new TextField("Demand");
 		type.setDisable(true);
 		

@@ -1,7 +1,8 @@
-package io.github.ghackenberg.mbse.transport.fx.viewers;
+package io.github.ghackenberg.mbse.transport.fx.viewers.flat;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
+import io.github.ghackenberg.mbse.transport.fx.viewers.EntityViewer;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.VPos;
 import javafx.scene.paint.Color;
@@ -10,13 +11,13 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
-public class IntersectionViewer extends EntityViewer<Intersection> {
+public class IntersectionViewerFlat extends EntityViewer<Intersection> {
 	
 	public final Circle circle;
 	
 	public final Text text;
 	
-	public IntersectionViewer(Model model, Intersection intersection) {
+	public IntersectionViewerFlat(Model model, Intersection intersection) {
 		super(model, intersection);
 		
 		// Circle

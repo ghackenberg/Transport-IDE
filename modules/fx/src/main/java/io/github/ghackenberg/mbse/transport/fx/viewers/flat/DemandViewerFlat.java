@@ -1,9 +1,10 @@
-package io.github.ghackenberg.mbse.transport.fx.viewers;
+package io.github.ghackenberg.mbse.transport.fx.viewers.flat;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Demand;
 import io.github.ghackenberg.mbse.transport.core.structures.Coordinate;
 import io.github.ghackenberg.mbse.transport.core.structures.Location;
+import io.github.ghackenberg.mbse.transport.fx.viewers.EntityViewer;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.VPos;
 import javafx.scene.paint.Color;
@@ -13,7 +14,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
-public class DemandViewer extends EntityViewer<Demand> {
+public class DemandViewerFlat extends EntityViewer<Demand> {
 	
 	public final Demand.State entityState;
 	
@@ -27,7 +28,7 @@ public class DemandViewer extends EntityViewer<Demand> {
 	public final Text sourceText;
 	public final Text targetText;
 	
-	public DemandViewer(Model model, Demand demand) {
+	public DemandViewerFlat(Model model, Demand demand) {
 		super(model, demand);
 		
 		entityState = demand.state.get();

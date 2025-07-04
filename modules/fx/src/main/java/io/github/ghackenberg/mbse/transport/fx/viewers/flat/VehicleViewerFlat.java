@@ -1,8 +1,9 @@
-package io.github.ghackenberg.mbse.transport.fx.viewers;
+package io.github.ghackenberg.mbse.transport.fx.viewers.flat;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
 import io.github.ghackenberg.mbse.transport.core.structures.Location;
+import io.github.ghackenberg.mbse.transport.fx.viewers.EntityViewer;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.VPos;
 import javafx.scene.paint.Color;
@@ -11,7 +12,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
-public class VehicleViewer extends EntityViewer<Vehicle> {
+public class VehicleViewerFlat extends EntityViewer<Vehicle> {
 	
 	public final Vehicle.State entityState;
 	
@@ -21,7 +22,7 @@ public class VehicleViewer extends EntityViewer<Vehicle> {
 	
 	public final Text text;
 	
-	public VehicleViewer(Model model, Vehicle vehicle) {
+	public VehicleViewerFlat(Model model, Vehicle vehicle) {
 		super(model, vehicle);
 		
 		entityState = vehicle.state.get();

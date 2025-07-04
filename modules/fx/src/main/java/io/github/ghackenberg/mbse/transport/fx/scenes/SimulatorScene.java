@@ -13,7 +13,7 @@ import io.github.ghackenberg.mbse.transport.fx.charts.StationChargeChart;
 import io.github.ghackenberg.mbse.transport.fx.charts.VehicleBatteryChart;
 import io.github.ghackenberg.mbse.transport.fx.helpers.GridHelper;
 import io.github.ghackenberg.mbse.transport.fx.helpers.ImageViewHelper;
-import io.github.ghackenberg.mbse.transport.fx.viewers.ModelViewer;
+import io.github.ghackenberg.mbse.transport.fx.viewers.flat.ModelViewerFlat;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -97,7 +97,7 @@ public class SimulatorScene extends Scene {
 			Simulator simulator = new Simulator("Run", model, new SmartController(model), 1, 1, folder);
 			Statistics statistics = simulator.getStatistics();
 			
-			ModelViewer viewer = new ModelViewer(model);
+			ModelViewerFlat viewer = new ModelViewerFlat(model);
 			IntersectionCrossingChart intersectionChart = new IntersectionCrossingChart(model, statistics);
 			SegmentTraversalChart segmentChart = new SegmentTraversalChart(model, statistics);
 			StationChargeChart stationChart = new StationChargeChart(model, statistics);
