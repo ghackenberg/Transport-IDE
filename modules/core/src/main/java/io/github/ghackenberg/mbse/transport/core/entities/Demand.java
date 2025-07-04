@@ -17,6 +17,8 @@ public class Demand {
 		
 		public double distance = pick.location.distance.get();
 		
+		public int lane = -1;
+		
 	}
 	
 	public final ThreadLocal<State> state = new ThreadLocal<>();

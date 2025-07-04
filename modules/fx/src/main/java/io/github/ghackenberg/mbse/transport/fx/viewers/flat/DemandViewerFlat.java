@@ -20,6 +20,8 @@ public class DemandViewerFlat extends EntityViewer<Demand> {
 	
 	public final Location location;
 	
+	// TODO (issue #17) add lane offset x,y properties
+	
 	public final Line line;
 	
 	public final Circle source;
@@ -49,6 +51,8 @@ public class DemandViewerFlat extends EntityViewer<Demand> {
 		// Line
 		
 		line = new Line();
+		
+		// TODO (issue #17) add lane offset here
 		
 		line.startXProperty().bind(start.x);
 		line.startYProperty().bind(start.y);
@@ -133,6 +137,8 @@ public class DemandViewerFlat extends EntityViewer<Demand> {
 	public void update() {
 		location.segment.set(entityState.segment);
 		location.distance.set(entityState.distance);
+		
+		// TODO (issue #17) recompute lane offset
 		
 		if (!entityState.done && modelState.time >= entity.pick.time.get()) {
 			setVisible(true);

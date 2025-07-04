@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import io.github.ghackenberg.mbse.transport.core.entities.Demand;
@@ -792,14 +793,15 @@ public class Simulator {
 	
 	private void updateCollisions() throws CollisionException {
 		Map<Segment, List<Vehicle>> map = new HashMap<>();
+		
 		// Initialize map
-		model.segments.forEach(segment -> {
+		for (Segment segment : model.segments) {
 			map.put(segment, new ArrayList<>());
-		});
-		model.vehicles.forEach(vehicle -> {
+		}
+		for (Vehicle vehicle : model.vehicles) {
 			map.get(vehicle.state.get().segment).add(vehicle);
-		});
-		model.segments.forEach(segment -> {
+		}
+		for (Segment segment : model.segments) {
 			map.get(segment).sort((first, second) -> {
 				if (!equalWithPrecision(first.state.get().speed, second.state.get().speed)) {
 					return (int) Math.signum(first.state.get().speed - second.state.get().speed);
@@ -811,22 +813,31 @@ public class Simulator {
 					}
 				}
 			});
-		});
+		}
+		
+		// Clear demands
+		for (Demand demand : model.demands) {
+			// Clear lane
+			demand.state.get().lane = -1;
+		}
+		
 		// Clear vehicles
-		model.vehicles.forEach(vehicle -> {
+		for (Vehicle vehicle : model.vehicles) {
 			// Clear collisions
 			vehicle.state.get().collisions.clear();
 			vehicle.state.get().collisions.add(vehicle);
 			// Clear lane
 			vehicle.state.get().lane = -1;
-		});
+		}
+		
 		// Clear segments
-		model.segments.forEach(segment -> {
+		for (Segment segment : model.segments) {
 			// Clear load
 			segment.state.get().load = 0;
 			// Clear collisions
 			segment.state.get().collisions = null;
-		});
+		}
+		
 		// Collect collisions
 		for (int i = 0; i < model.vehicles.size(); i++) {
 			Vehicle outer = model.vehicles.get(i);
@@ -869,9 +880,10 @@ public class Simulator {
 				}
 			}
 		}
+		
 		// Update vehicles
-		map.entrySet().forEach(entry -> {
-			entry.getValue().forEach(outer-> {
+		for (Entry<Segment, List<Vehicle>> entry : map.entrySet()) {
+			for (Vehicle outer : entry.getValue()) {
 				for (int lane = 0; lane < entry.getValue().size(); lane++) {
 					boolean free = true;
 					for (Vehicle inner : outer.state.get().collisions) {
@@ -882,18 +894,23 @@ public class Simulator {
 					}
 					if (free) {
 						outer.state.get().lane = lane;
+						for (Demand demand : outer.state.get().demands) {
+							demand.state.get().lane = lane;
+						}
 						break;
 					}
 				}
-			});
-		});
+			}
+		}
+		
 		// Update segments
-		model.vehicles.forEach(vehicle -> {
+		for (Vehicle vehicle : model.vehicles) {
 			if (vehicle.state.get().segment.state.get().load < vehicle.state.get().lane + 1) {
 				vehicle.state.get().segment.state.get().load = vehicle.state.get().lane + 1;
 				vehicle.state.get().segment.state.get().collisions = vehicle.state.get().collisions;
 			}
-		});
+		}
+		
 		// Throw exceptions
 		for (Segment segment : model.segments) {
 			if (segment.state.get().load > segment.lanes.get()) {

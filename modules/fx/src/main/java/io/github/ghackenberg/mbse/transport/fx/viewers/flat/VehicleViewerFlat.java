@@ -5,6 +5,8 @@ import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
 import io.github.ghackenberg.mbse.transport.core.structures.Location;
 import io.github.ghackenberg.mbse.transport.fx.viewers.EntityViewer;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.VPos;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -17,6 +19,9 @@ public class VehicleViewerFlat extends EntityViewer<Vehicle> {
 	public final Vehicle.State entityState;
 	
 	public final Location location;
+	
+	public final DoubleProperty laneOffsetX = new SimpleDoubleProperty(0);
+	public final DoubleProperty laneOffsetY = new SimpleDoubleProperty(0);
 	
 	public final Rectangle rectangle;
 	
@@ -41,11 +46,14 @@ public class VehicleViewerFlat extends EntityViewer<Vehicle> {
 		
 		rectangle = new Rectangle();
 		
+		// rectangle width = vehicle length !!
+		// rectangle height = vehicle width !!
+		
 		rectangle.widthProperty().bind(vehicle.length);
 		rectangle.setHeight(1);
 		
-		rectangle.xProperty().bind(location.coordinate.x.subtract(vehicle.length.divide(2)));
-		rectangle.yProperty().bind(location.coordinate.y.subtract(1 / 2.));
+		rectangle.xProperty().bind(location.coordinate.x.add(laneOffsetX).subtract(vehicle.length.divide(2)));
+		rectangle.yProperty().bind(location.coordinate.y.add(laneOffsetY).subtract(1 / 2.));
 		
 		rectangle.rotateProperty().bind(location.angle.divide(Math.PI).multiply(180));
 		
@@ -73,10 +81,13 @@ public class VehicleViewerFlat extends EntityViewer<Vehicle> {
 		// Listeners
 
 		vehicle.name.addListener(event -> {
-			text.setX(location.coordinate.x.get() - text.getBoundsInLocal().getWidth() / 2);
+			text.setX(location.coordinate.x.get() + laneOffsetX.get() - text.getBoundsInLocal().getWidth() / 2);
 		});
 		location.coordinate.x.addListener(event -> {
-			text.setX(location.coordinate.x.get() - text.getBoundsInLocal().getWidth() / 2);
+			text.setX(location.coordinate.x.get() + laneOffsetX.get() - text.getBoundsInLocal().getWidth() / 2);
+		});
+		laneOffsetX.addListener(event -> {
+			text.setX(location.coordinate.x.get() + laneOffsetX.get() - text.getBoundsInLocal().getWidth() / 2);
 		});
 	}
 
@@ -84,6 +95,8 @@ public class VehicleViewerFlat extends EntityViewer<Vehicle> {
 	public void update() {
 		location.segment.set(entityState.segment);
 		location.distance.set(entityState.distance);
+
+		// TODO (issue #15) compute lane offset from segment tanget normal multiplied by lane number
 	}
 	
 }

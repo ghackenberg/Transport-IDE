@@ -37,6 +37,7 @@ public class Segment {
 	
 	public final Coordinate center = new Coordinate();
 	public final Coordinate tangent = new Coordinate();
+	public final Coordinate tangentNormal = new Coordinate();
 	
 	// Constructors
 	
@@ -68,6 +69,7 @@ public class Segment {
 		recomputeCenter();
 		recomputeLength();
 		recomputeTangent();
+		recomputeTangentNormal();
 		recomputeAngle();
 	}
 	
@@ -99,6 +101,10 @@ public class Segment {
 		tangent.x.set(dx / len);
 		tangent.y.set(dy / len);
 		tangent.z.set(dz / len);
+	}
+	
+	private void recomputeTangentNormal() {
+		// TODO (issue #15, #16, #17) recompute normal of tangent! reduce to x/y-normal! do not consider z!
 	}
 	
 	private void recomputeAngle() {
