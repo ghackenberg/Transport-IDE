@@ -14,7 +14,10 @@ public class Location {
 	
 	public final ObjectProperty<Segment> segment = new SimpleObjectProperty<>();
 	public final DoubleProperty distance = new SimpleDoubleProperty();
-	public final DoubleProperty angle = new SimpleDoubleProperty();
+	
+	public final DoubleProperty angleX = new SimpleDoubleProperty();
+	public final DoubleProperty angleY = new SimpleDoubleProperty();
+	public final DoubleProperty angleZ = new SimpleDoubleProperty();
 	
 	// Structures
 	
@@ -85,14 +88,18 @@ public class Location {
 			coordinate.x.set(start.x.get() + tangent.x.get() * distance.get());
 			coordinate.y.set(start.y.get() + tangent.y.get() * distance.get());
 			coordinate.z.set(start.z.get() + tangent.z.get() * distance.get());
-			
-			angle.set(segment.get().angle.get());
+
+			angleX.set(segment.get().angleX.get());
+			angleY.set(segment.get().angleY.get());
+			angleZ.set(segment.get().angleZ.get());
 		} else {
 			coordinate.x.set(0);
 			coordinate.y.set(0);
 			coordinate.z.set(0);
-			
-			angle.set(0);
+
+			angleX.set(0);
+			angleY.set(0);
+			angleZ.set(0);
 		}
 	}
 	

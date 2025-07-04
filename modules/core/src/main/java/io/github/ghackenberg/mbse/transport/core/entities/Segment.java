@@ -31,7 +31,10 @@ public class Segment {
 	public final DoubleProperty speed = new SimpleDoubleProperty(50);
 
 	public final DoubleProperty length = new SimpleDoubleProperty();
-	public final DoubleProperty angle = new SimpleDoubleProperty();
+	
+	public final DoubleProperty angleX = new SimpleDoubleProperty();
+	public final DoubleProperty angleY = new SimpleDoubleProperty();
+	public final DoubleProperty angleZ = new SimpleDoubleProperty();
 	
 	// Structures
 	
@@ -70,7 +73,7 @@ public class Segment {
 		recomputeLength();
 		recomputeTangent();
 		recomputeTangentNormal();
-		recomputeAngle();
+		recomputeAngles();
 	}
 	
 	private void recomputeCenter() {
@@ -107,16 +110,23 @@ public class Segment {
 		// TODO (issue #15, #16, #17) recompute normal of tangent! reduce to x/y-normal! do not consider z!
 	}
 	
-	private void recomputeAngle() {
-		double len = length.get();
-		
+	private void recomputeAngles() {
 		double dx = end.coordinate.x.get() - start.coordinate.x.get();
 		double dy = end.coordinate.y.get() - start.coordinate.y.get();
+		double dz = end.coordinate.z.get() - start.coordinate.z.get();
+
+		angleX.set(recomputeAngle(dy, dz));
+		angleY.set(recomputeAngle(dx, dz));
+		angleZ.set(recomputeAngle(dx, dy));
+	}
+	
+	private double recomputeAngle(double dx, double dy) {
+		double len = Math.sqrt(dx * dx + dy * dy);
 		
 		dx /= len;
 		dy /= len;
 		
-		angle.set(Math.atan2(dy, dx));
+		return Math.atan2(dy, dx);
 	}
 	
 	@Override

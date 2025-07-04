@@ -55,7 +55,7 @@ public class VehicleViewerFlat extends EntityViewer<Vehicle> {
 		rectangle.xProperty().bind(location.coordinate.x.add(laneOffsetX).subtract(vehicle.length.divide(2)));
 		rectangle.yProperty().bind(location.coordinate.y.add(laneOffsetY).subtract(1 / 2.));
 		
-		rectangle.rotateProperty().bind(location.angle.divide(Math.PI).multiply(180));
+		rectangle.rotateProperty().bind(location.angleZ.divide(Math.PI).multiply(180));
 		
 		rectangle.fillProperty().bind(Bindings.when(selected).then(Color.DODGERBLUE).otherwise(Color.DEEPSKYBLUE));
 		
