@@ -13,6 +13,7 @@ import io.github.ghackenberg.mbse.transport.fx.charts.StationChargeChart;
 import io.github.ghackenberg.mbse.transport.fx.charts.VehicleBatteryChart;
 import io.github.ghackenberg.mbse.transport.fx.helpers.GridHelper;
 import io.github.ghackenberg.mbse.transport.fx.helpers.ImageViewHelper;
+import io.github.ghackenberg.mbse.transport.fx.viewers.deep.ModelViewerDeep;
 import io.github.ghackenberg.mbse.transport.fx.viewers.flat.ModelViewerFlat;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -36,15 +37,17 @@ public class SimulatorScene extends Scene {
 	private final Button pause = new Button("Pause", ImageViewHelper.load("pause.png", 16, 16));
 	private final Button resume = new Button("Resume", ImageViewHelper.load("resume.png", 16, 16));
 	
+	private final GridPane charts = new GridPane();
+	
+	private final GridPane center = new GridPane();
+	
 	private final ToolBar top = new ToolBar(start, stop, pause, resume);
 	
 	private final ToolBar bottom = new ToolBar(new Label("© 2025 Dr. Georg Hackenberg, Professor for Industrial Informatics, School of Engineering, FH Upper Austria"));
 	
-	private final GridPane grid = new GridPane();
+	private final ScrollPane right = new ScrollPane(charts);
 	
-	private final ScrollPane right = new ScrollPane(grid);
-	
-	private final BorderPane root = new BorderPane(null, top, right, bottom, null);
+	private final BorderPane root = new BorderPane(center, top, right, bottom, null);
 
 	public SimulatorScene(Model model, File folder, double width, double height) {
 		super(new Label("Loading ..."), width, height);
@@ -69,21 +72,33 @@ public class SimulatorScene extends Scene {
 		
 		// Right
 		
-		grid.setPrefWidth(300);
+		charts.setPrefWidth(300);
 		
-		grid.setPadding(new Insets(10));
+		charts.setPadding(new Insets(10));
 		
-		grid.setHgap(10);
-		grid.setVgap(10);
+		charts.setHgap(10);
+		charts.setVgap(10);
 		
-		grid.getColumnConstraints().add(GridHelper.createColumnConstraints(false, Priority.ALWAYS));
+		charts.getColumnConstraints().add(GridHelper.createColumnConstraints(false, Priority.ALWAYS));
 		
-		grid.getRowConstraints().add(GridHelper.createRowConstraints(true, Priority.ALWAYS));
-		grid.getRowConstraints().add(GridHelper.createRowConstraints(true, Priority.ALWAYS));
-		grid.getRowConstraints().add(GridHelper.createRowConstraints(true, Priority.ALWAYS));
+		charts.getRowConstraints().add(GridHelper.createRowConstraints(true, Priority.ALWAYS));
+		charts.getRowConstraints().add(GridHelper.createRowConstraints(true, Priority.ALWAYS));
+		charts.getRowConstraints().add(GridHelper.createRowConstraints(true, Priority.ALWAYS));
 		
 		right.setFitToWidth(true);
 		right.setFitToHeight(true);
+		
+		// Center
+		
+		center.setHgap(10);
+		center.setVgap(10);
+		
+		center.setPadding(new Insets(10));
+		
+		center.getColumnConstraints().add(GridHelper.createColumnConstraints(true, Priority.ALWAYS));
+		
+		center.getRowConstraints().add(GridHelper.createRowConstraints(50));
+		center.getRowConstraints().add(GridHelper.createRowConstraints(50));
 		
 		// Root
 		
@@ -97,7 +112,9 @@ public class SimulatorScene extends Scene {
 			Simulator simulator = new Simulator("Run", model, new SmartController(model), 1, 1, folder);
 			Statistics statistics = simulator.getStatistics();
 			
-			ModelViewerFlat viewer = new ModelViewerFlat(model);
+			ModelViewerFlat viewerFlat = new ModelViewerFlat(model);
+			ModelViewerDeep viewerDeep = new ModelViewerDeep(model);
+			
 			IntersectionCrossingChart intersectionChart = new IntersectionCrossingChart(model, statistics);
 			SegmentTraversalChart segmentChart = new SegmentTraversalChart(model, statistics);
 			StationChargeChart stationChart = new StationChargeChart(model, statistics);
@@ -105,18 +122,22 @@ public class SimulatorScene extends Scene {
 			DemandDistanceChart demandChart = new DemandDistanceChart(model, statistics);
 			
 			Platform.runLater(() -> {
-				root.setCenter(viewer);
+				center.getChildren().clear();
+				center.add(viewerFlat, 0, 0);
+				center.add(viewerDeep, 0, 1);
 				
-				grid.add(intersectionChart, 0, 0);
-				grid.add(segmentChart, 0, 1);
-				grid.add(stationChart, 0, 2);
-				grid.add(vehicleBatteryChart, 0, 3);
-				grid.add(demandChart, 0, 4);
+				charts.add(intersectionChart, 0, 0);
+				charts.add(segmentChart, 0, 1);
+				charts.add(stationChart, 0, 2);
+				charts.add(vehicleBatteryChart, 0, 3);
+				charts.add(demandChart, 0, 4);
 			});
 			
 			simulator.setHandleUpdated(() -> {
 				Platform.runLater(() -> {
-					viewer.update();
+					viewerFlat.update();
+					viewerDeep.update();
+					
 					intersectionChart.update();
 					segmentChart.update();
 					stationChart.update();

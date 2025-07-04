@@ -2,18 +2,19 @@ package io.github.ghackenberg.mbse.transport.fx.viewers.deep;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
-import io.github.ghackenberg.mbse.transport.fx.viewers.EntityViewer;
-import javafx.scene.DepthTest;
+import io.github.ghackenberg.mbse.transport.fx.viewers.SegmentViewer;
+import javafx.beans.binding.Bindings;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.CullFace;
-import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 
-public class SegmentViewerDeep extends EntityViewer<Segment> {
+public class SegmentViewerDeep extends SegmentViewer {
 	
-	public final TriangleMesh mesh = new TriangleMesh();
+	private final TriangleMesh mesh = new TriangleMesh();
+	
+	private final PhongMaterial material = new PhongMaterial();
 	
 	public final MeshView view = new MeshView(mesh);
 
@@ -24,7 +25,7 @@ public class SegmentViewerDeep extends EntityViewer<Segment> {
 		
 		mesh.getPoints().addAll(recomputePoints());
 		mesh.getTexCoords().addAll(0, 0, 0, 1, 1, 1, 1, 0);
-		mesh.getFaces().addAll(0, 1, 2, 2, 3, 0);
+		mesh.getFaces().addAll(0, 1, 2, 0, 1, 2, 0, 2, 3, 0, 2, 3);
 		
 		entity.start.coordinate.x.addListener(event -> recompute());
 		entity.start.coordinate.y.addListener(event -> recompute());
@@ -34,12 +35,14 @@ public class SegmentViewerDeep extends EntityViewer<Segment> {
 		entity.end.coordinate.y.addListener(event -> recompute());
 		entity.end.coordinate.z.addListener(event -> recompute());
 		
+		// Material
+		
+		material.diffuseColorProperty().bind(Bindings.when(selected).then(Color.GRAY).otherwise(Color.LIGHTGRAY));
+		
 		// View
 		
-		view.setDepthTest(DepthTest.ENABLE);
-		view.setMaterial(new PhongMaterial(Color.LIGHTGRAY));
 		view.setCullFace(CullFace.NONE);
-		view.setDrawMode(DrawMode.FILL);
+		view.setMaterial(material);
 		
 		// Self
 		
@@ -70,11 +73,6 @@ public class SegmentViewerDeep extends EntityViewer<Segment> {
 			ex + ty, ey - tx, ez,
 			ex - ty, ey + tx, ez
 		};
-	}
-
-	@Override
-	public void update() {
-		
 	}
 
 }

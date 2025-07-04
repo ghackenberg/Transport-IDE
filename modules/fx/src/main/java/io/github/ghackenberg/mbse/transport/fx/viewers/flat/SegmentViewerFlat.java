@@ -2,13 +2,12 @@ package io.github.ghackenberg.mbse.transport.fx.viewers.flat;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
-import io.github.ghackenberg.mbse.transport.fx.viewers.EntityViewer;
-import javafx.beans.binding.Bindings;
+import io.github.ghackenberg.mbse.transport.fx.viewers.SegmentViewer;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.StrokeLineCap;
 
-public class SegmentViewerFlat extends EntityViewer<Segment> {
+public class SegmentViewerFlat extends SegmentViewer {
 	
 	private static final double FACTOR = 3;
 	
@@ -30,11 +29,9 @@ public class SegmentViewerFlat extends EntityViewer<Segment> {
 		line.endYProperty().bind(segment.end.coordinate.y);
 		
 		line.strokeWidthProperty().bind(segment.lanes);
-		line.strokeProperty().bind(Bindings.when(selected).then(Color.GRAY).otherwise(Color.LIGHTGRAY));
+		line.strokeProperty().bind(color);
 		
 		line.setStrokeLineCap(StrokeLineCap.BUTT);
-		
-		getChildren().add(line);
 		
 		// Arrow tail
 		
@@ -48,8 +45,6 @@ public class SegmentViewerFlat extends EntityViewer<Segment> {
 		arrowTail.setStroke(Color.WHITE);
 		arrowTail.setStrokeLineCap(StrokeLineCap.ROUND);
 		
-		getChildren().add(arrowTail);
-		
 		// Arrow head left
 		
 		arrowHeadLeft.startXProperty().bind(segment.center.x.subtract(segment.tangent.y.multiply(segment.lanes).divide(FACTOR)));
@@ -61,8 +56,6 @@ public class SegmentViewerFlat extends EntityViewer<Segment> {
 		arrowHeadLeft.strokeWidthProperty().bind(segment.lanes.divide(FACTOR * 3));
 		arrowHeadLeft.setStroke(Color.WHITE);
 		arrowHeadLeft.setStrokeLineCap(StrokeLineCap.ROUND);
-		
-		getChildren().add(arrowHeadLeft);
 		
 		// Arrow head right
 		
@@ -76,12 +69,12 @@ public class SegmentViewerFlat extends EntityViewer<Segment> {
 		arrowHeadRight.setStroke(Color.WHITE);
 		arrowHeadRight.setStrokeLineCap(StrokeLineCap.ROUND);
 		
-		getChildren().add(arrowHeadRight);
-	}
-
-	@Override
-	public void update() {
+		// Self
 		
+		getChildren().add(line);
+		getChildren().add(arrowTail);
+		getChildren().add(arrowHeadLeft);
+		getChildren().add(arrowHeadRight);
 	}
 
 }

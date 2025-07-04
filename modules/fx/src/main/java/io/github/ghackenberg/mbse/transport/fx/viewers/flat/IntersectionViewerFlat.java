@@ -2,8 +2,7 @@ package io.github.ghackenberg.mbse.transport.fx.viewers.flat;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
-import io.github.ghackenberg.mbse.transport.fx.viewers.EntityViewer;
-import javafx.beans.binding.Bindings;
+import io.github.ghackenberg.mbse.transport.fx.viewers.IntersectionViewer;
 import javafx.geometry.VPos;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -11,7 +10,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
-public class IntersectionViewerFlat extends EntityViewer<Intersection> {
+public class IntersectionViewerFlat extends IntersectionViewer {
 	
 	public final Circle circle;
 	
@@ -29,9 +28,7 @@ public class IntersectionViewerFlat extends EntityViewer<Intersection> {
 		circle.centerXProperty().bind(intersection.coordinate.x);
 		circle.centerYProperty().bind(intersection.coordinate.y);
 		
-		circle.fillProperty().bind(Bindings.when(selected).then(Color.RED).otherwise(Color.ORANGE));
-		
-		getChildren().add(circle);
+		circle.fillProperty().bind(color);
 		
 		// Text
 		
@@ -49,6 +46,9 @@ public class IntersectionViewerFlat extends EntityViewer<Intersection> {
 		text.setFont(new Font(0.5));
 		text.setX(intersection.coordinate.x.get() - text.getBoundsInLocal().getWidth() / 2);
 		
+		// Self
+		
+		getChildren().add(circle);
 		getChildren().add(text);
 		
 		// Listeners
@@ -59,11 +59,6 @@ public class IntersectionViewerFlat extends EntityViewer<Intersection> {
 		intersection.coordinate.x.addListener(event -> {
 			text.setX(intersection.coordinate.x.get() - text.getBoundsInLocal().getWidth() / 2);
 		});
-	}
-
-	@Override
-	public void update() {
-		
 	}
 	
 }

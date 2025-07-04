@@ -19,13 +19,15 @@ import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 
-public abstract class ModelViewer<I extends EntityViewer<Intersection>, Se extends EntityViewer<Segment>, St extends EntityViewer<Station>, V extends EntityViewer<Vehicle>, D extends EntityViewer<Demand>, C extends Node> extends Pane {
+public abstract class ModelViewer<I extends IntersectionViewer, Se extends SegmentViewer, St extends StationViewer, V extends VehicleViewer, D extends DemandViewer, C extends Node> extends Pane {
 	
 	protected double minX;
 	protected double minY;
+	protected double minZ;
 	
 	protected double deltaX;
 	protected double deltaY;
+	protected double deltaZ;
 
 	public final Model model;
 	public final Model.State modelState;
@@ -62,9 +64,11 @@ public abstract class ModelViewer<I extends EntityViewer<Intersection>, Se exten
 		
 		minX = model.intersections.size() > 0 ? model.minX.get() - 3 : -10;
 		minY = model.intersections.size() > 0 ? model.minY.get() - 3 : -10;
+		minZ = model.intersections.size() > 0 ? model.minZ.get() - 3 : -10;
 		
 		deltaX = model.intersections.size() > 0 ? model.deltaX.get() + 6 : 20;
 		deltaY = model.intersections.size() > 0 ? model.deltaY.get() + 6 : 20;
+		deltaZ = model.intersections.size() > 0 ? model.deltaZ.get() + 6 : 20;
 		
 		intersectionLayer.setDepthTest(DepthTest.ENABLE);
 		segmentLayer.setDepthTest(DepthTest.ENABLE);
@@ -79,6 +83,8 @@ public abstract class ModelViewer<I extends EntityViewer<Intersection>, Se exten
 		
 		getChildren().add(canvas);
 		getChildren().add(time);
+		
+		setDepthTest(DepthTest.ENABLE);
 		
 		setClip(clip);
 		

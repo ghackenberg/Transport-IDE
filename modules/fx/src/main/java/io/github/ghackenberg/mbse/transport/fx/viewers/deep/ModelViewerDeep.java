@@ -12,39 +12,51 @@ import javafx.scene.DepthTest;
 import javafx.scene.Group;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.PointLight;
+import javafx.scene.SceneAntialiasing;
 import javafx.scene.SubScene;
 import javafx.scene.paint.Color;
+import javafx.scene.transform.Rotate;
 
 public class ModelViewerDeep extends ModelViewer<IntersectionViewerDeep, SegmentViewerDeep, StationViewerDeep, VehicleViewerDeep, DemandViewerDeep, SubScene> {
 	
 	public final PerspectiveCamera camera = new PerspectiveCamera(true);
 	
-	public final AmbientLight ambient = new AmbientLight(new Color(0.2, 0.2, 0.2, 1));
+	public final AmbientLight ambient = new AmbientLight(new Color(0.5, 0.5, 0.5, 1));
 	
-	public final PointLight point = new PointLight(new Color(0.8, 0.8, 0.8, 1));
+	public final PointLight point = new PointLight(new Color(0.5, 0.5, 0.5, 1));
 	
 	public final Group main = new Group();
 	
 	public final Group root = new Group(camera, ambient, point, main);
 	
 	public ModelViewerDeep(Model model) {
-		super(model, new SubScene(new Group(), 300, 300), true);
+		super(model, new SubScene(new Group(), 300, 300, true, SceneAntialiasing.BALANCED), true);
 		
 		// Camera
 		
-		camera.setTranslateZ(-30);
+		camera.translateZProperty().bind(model.deltaY.multiply(-3));
 		
 		// Point
 		
-		point.setTranslateY(10);
+		point.translateXProperty().bind(camera.translateXProperty().add(10));
+		point.translateYProperty().bind(camera.translateYProperty().add(-10));
+		point.translateZProperty().bind(camera.translateZProperty());
 		
 		// Main
+		
+		main.setDepthTest(DepthTest.ENABLE);
 		
 		main.getChildren().add(segmentLayer);
 		main.getChildren().add(intersectionLayer);
 		main.getChildren().add(stationLayer);
 		main.getChildren().add(vehicleLayer);
 		main.getChildren().add(demandLayer);
+		
+		main.getTransforms().add(new Rotate(-70, Rotate.X_AXIS));
+		
+		main.translateXProperty().bind(model.minX.multiply(-1).subtract(model.deltaX.divide(2)));
+		main.translateYProperty().bind(model.minY.multiply(-1).subtract(model.deltaY.divide(2)));
+		main.translateZProperty().bind(model.minZ.multiply(-1).subtract(model.deltaZ.divide(2)));
 		
 		// Canvas
 		

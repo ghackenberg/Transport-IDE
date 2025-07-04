@@ -23,5 +23,15 @@ public class GridHelper {
 		
 		return result;
 	}
+
+	public static RowConstraints createRowConstraints(double height) {
+		RowConstraints result = new RowConstraints();
+		
+		result.setPercentHeight(height);
+		result.setFillHeight(true);
+		result.setVgrow(Priority.ALWAYS);
+		
+		return result;
+	}
 	
 }

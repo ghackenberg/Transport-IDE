@@ -2,11 +2,7 @@ package io.github.ghackenberg.mbse.transport.fx.viewers.flat;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
-import io.github.ghackenberg.mbse.transport.core.structures.Location;
-import io.github.ghackenberg.mbse.transport.fx.viewers.EntityViewer;
-import javafx.beans.binding.Bindings;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
+import io.github.ghackenberg.mbse.transport.fx.viewers.VehicleViewer;
 import javafx.geometry.VPos;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -14,14 +10,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
-public class VehicleViewerFlat extends EntityViewer<Vehicle> {
-	
-	public final Vehicle.State entityState;
-	
-	public final Location location;
-	
-	public final DoubleProperty laneOffsetX = new SimpleDoubleProperty(0);
-	public final DoubleProperty laneOffsetY = new SimpleDoubleProperty(0);
+public class VehicleViewerFlat extends VehicleViewer {
 	
 	public final Rectangle rectangle;
 	
@@ -29,18 +18,6 @@ public class VehicleViewerFlat extends EntityViewer<Vehicle> {
 	
 	public VehicleViewerFlat(Model model, Vehicle vehicle) {
 		super(model, vehicle);
-		
-		entityState = vehicle.state.get();
-		
-		// Location
-		
-		if (entityState == null) {
-			location = vehicle.initialLocation;
-		} else {
-			location = new Location();
-			location.segment.set(entityState.segment);
-			location.distance.set(entityState.distance);
-		}
 		
 		// Rectangle
 		
@@ -57,9 +34,7 @@ public class VehicleViewerFlat extends EntityViewer<Vehicle> {
 		
 		rectangle.rotateProperty().bind(location.angleZ.divide(Math.PI).multiply(180));
 		
-		rectangle.fillProperty().bind(Bindings.when(selected).then(Color.DODGERBLUE).otherwise(Color.DEEPSKYBLUE));
-		
-		getChildren().add(rectangle);
+		rectangle.fillProperty().bind(color);
 		
 		// Text
 		
@@ -76,6 +51,9 @@ public class VehicleViewerFlat extends EntityViewer<Vehicle> {
 		text.setFont(new Font(0.5));
 		text.setX(location.coordinate.x.get() - text.getBoundsInLocal().getWidth() / 2);
 		
+		// Self
+		
+		getChildren().add(rectangle);
 		getChildren().add(text);
 		
 		// Listeners
@@ -89,14 +67,6 @@ public class VehicleViewerFlat extends EntityViewer<Vehicle> {
 		laneOffsetX.addListener(event -> {
 			text.setX(location.coordinate.x.get() + laneOffsetX.get() - text.getBoundsInLocal().getWidth() / 2);
 		});
-	}
-
-	@Override
-	public void update() {
-		location.segment.set(entityState.segment);
-		location.distance.set(entityState.distance);
-
-		// TODO (issue #15) compute lane offset from segment tanget normal multiplied by lane number
 	}
 	
 }

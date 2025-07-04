@@ -1,10 +1,13 @@
 package io.github.ghackenberg.mbse.transport.fx.viewers;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.ObjectBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.DepthTest;
 import javafx.scene.Group;
+import javafx.scene.paint.Color;
 
 public abstract class EntityViewer<T> extends Group {
 
@@ -15,7 +18,9 @@ public abstract class EntityViewer<T> extends Group {
 	
 	public final BooleanProperty selected = new SimpleBooleanProperty(false);
 	
-	public EntityViewer(Model model, T entity) {
+	public final ObjectBinding<Color> color;
+	
+	public EntityViewer(Model model, T entity, Color colorDefault, Color colorSelected) {
 		this.model = model;
 		this.modelState = model.state.get();
 		
@@ -23,6 +28,10 @@ public abstract class EntityViewer<T> extends Group {
 		
 		setManaged(false);
 		setDepthTest(DepthTest.ENABLE);
+		
+		// Color
+		
+		color = Bindings.when(selected).then(colorSelected).otherwise(colorDefault);
 	}
 	
 	public abstract void update();

@@ -3,17 +3,10 @@ package io.github.ghackenberg.mbse.transport.fx.viewers.flat;
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Station;
 import io.github.ghackenberg.mbse.transport.core.structures.Coordinate;
-import io.github.ghackenberg.mbse.transport.fx.viewers.EntityViewer;
-import javafx.beans.binding.Bindings;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.scene.paint.Color;
+import io.github.ghackenberg.mbse.transport.fx.viewers.StationViewer;
 import javafx.scene.shape.Circle;
 
-public class StationViewerFlat extends EntityViewer<Station> {
-
-	private final DoubleProperty laneOffsetX = new SimpleDoubleProperty(0);
-	private final DoubleProperty laneOffsetY = new SimpleDoubleProperty(0);
+public class StationViewerFlat extends StationViewer {
 	
 	public final Circle circle;
 
@@ -33,14 +26,11 @@ public class StationViewerFlat extends EntityViewer<Station> {
 		circle.centerXProperty().bind(location.x.add(laneOffsetX));
 		circle.centerYProperty().bind(location.y.add(laneOffsetY));
 		
-		circle.fillProperty().bind(Bindings.when(selected).then(Color.DARKVIOLET).otherwise(Color.VIOLET));
+		circle.fillProperty().bind(color);
+		
+		// Self
 		
 		getChildren().add(circle);
-	}
-
-	@Override
-	public void update() {
-		
 	}
 	
 }

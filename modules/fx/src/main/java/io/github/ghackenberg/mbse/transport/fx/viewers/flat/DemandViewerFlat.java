@@ -2,10 +2,7 @@ package io.github.ghackenberg.mbse.transport.fx.viewers.flat;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Demand;
-import io.github.ghackenberg.mbse.transport.core.structures.Coordinate;
-import io.github.ghackenberg.mbse.transport.core.structures.Location;
-import io.github.ghackenberg.mbse.transport.fx.viewers.EntityViewer;
-import javafx.beans.binding.Bindings;
+import io.github.ghackenberg.mbse.transport.fx.viewers.DemandViewer;
 import javafx.geometry.VPos;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -14,13 +11,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
-public class DemandViewerFlat extends EntityViewer<Demand> {
-	
-	public final Demand.State entityState;
-	
-	public final Location location;
-	
-	// TODO (issue #17) add lane offset x,y properties
+public class DemandViewerFlat extends DemandViewer {
 	
 	public final Line line;
 	
@@ -32,21 +23,6 @@ public class DemandViewerFlat extends EntityViewer<Demand> {
 	
 	public DemandViewerFlat(Model model, Demand demand) {
 		super(model, demand);
-		
-		entityState = demand.state.get();
-		
-		// Location
-		
-		if (entityState == null) {
-			location = demand.pick.location;
-		} else {
-			location = new Location();
-			location.segment.set(entityState.segment);
-			location.distance.set(entityState.distance);
-		}
-		
-		final Coordinate start = location.coordinate;
-		final Coordinate end = demand.drop.location.coordinate;
 		
 		// Line
 		
@@ -60,10 +36,8 @@ public class DemandViewerFlat extends EntityViewer<Demand> {
 		line.endXProperty().bind(end.x);
 		line.endYProperty().bind(end.y);
 		
-		line.strokeProperty().bind(Bindings.when(selected).then(Color.GREEN).otherwise(Color.LIMEGREEN));
-		line.strokeWidthProperty().bind(demand.size.divide(2));
-		
-		getChildren().add(line);
+		line.strokeProperty().bind(color);
+		line.strokeWidthProperty().bind(demand.size.divide(10));
 		
 		// Source
 		
@@ -74,9 +48,7 @@ public class DemandViewerFlat extends EntityViewer<Demand> {
 		source.centerXProperty().bind(start.x);
 		source.centerYProperty().bind(start.y);
 		
-		source.fillProperty().bind(Bindings.when(selected).then(Color.GREEN).otherwise(Color.LIMEGREEN));
-		
-		getChildren().add(source);
+		source.fillProperty().bind(color);
 		
 		// Target
 		
@@ -87,9 +59,7 @@ public class DemandViewerFlat extends EntityViewer<Demand> {
 		target.centerXProperty().bind(end.x);
 		target.centerYProperty().bind(end.y);
 		
-		target.fillProperty().bind(Bindings.when(selected).then(Color.GREEN).otherwise(Color.LIMEGREEN));
-		
-		getChildren().add(target);
+		target.fillProperty().bind(color);
 		
 		// Source text
 		
@@ -105,8 +75,6 @@ public class DemandViewerFlat extends EntityViewer<Demand> {
 		sourceText.setFont(new Font(0.5));
 		sourceText.setX(location.coordinate.x.get() - sourceText.getBoundsInLocal().getWidth() / 2);
 		
-		getChildren().add(sourceText);
-		
 		// Target text
 		
 		targetText = new Text("T");
@@ -121,6 +89,14 @@ public class DemandViewerFlat extends EntityViewer<Demand> {
 		targetText.setFont(new Font(0.5));
 		targetText.setX(demand.drop.location.coordinate.x.get() - targetText.getBoundsInLocal().getWidth() / 2);
 		
+		// Self
+		
+		getChildren().add(line);
+		
+		getChildren().add(source);
+		getChildren().add(target);
+		
+		getChildren().add(sourceText);
 		getChildren().add(targetText);
 		
 		// Listeners
@@ -131,20 +107,6 @@ public class DemandViewerFlat extends EntityViewer<Demand> {
 		demand.drop.location.coordinate.x.addListener(event -> {
 			targetText.setX(demand.drop.location.coordinate.x.get() - targetText.getBoundsInLocal().getWidth() / 2);
 		});
-	}
-	
-	@Override
-	public void update() {
-		location.segment.set(entityState.segment);
-		location.distance.set(entityState.distance);
-		
-		// TODO (issue #17) recompute lane offset
-		
-		if (!entityState.done && modelState.time >= entity.pick.time.get()) {
-			setVisible(true);
-		} else {
-			setVisible(false);
-		}
 	}
 	
 }

@@ -2,40 +2,42 @@ package io.github.ghackenberg.mbse.transport.fx.viewers.deep;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
-import io.github.ghackenberg.mbse.transport.fx.viewers.EntityViewer;
-import javafx.scene.DepthTest;
+import io.github.ghackenberg.mbse.transport.fx.viewers.IntersectionViewer;
+import javafx.beans.binding.Bindings;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
-import javafx.scene.shape.DrawMode;
-import javafx.scene.shape.Sphere;
+import javafx.scene.shape.Cylinder;
+import javafx.scene.transform.Rotate;
 
-public class IntersectionViewerDeep extends EntityViewer<Intersection> {
+public class IntersectionViewerDeep extends IntersectionViewer {
 	
-	public final Sphere sphere = new Sphere();
+	public final PhongMaterial material = new PhongMaterial();
+	
+	public final Cylinder cylinder = new Cylinder();
 
 	public IntersectionViewerDeep(Model model, Intersection entity) {
 		super(model, entity);
 		
+		// Material
+		
+		material.diffuseColorProperty().bind(Bindings.when(selected).then(Color.RED).otherwise(Color.ORANGE));
+		
 		// Sphere
 		
-		sphere.radiusProperty().bind(entity.lanes.divide(2));
+		cylinder.radiusProperty().bind(entity.lanes.divide(2));
 		
-		sphere.setDepthTest(DepthTest.ENABLE);
-		sphere.setMaterial(new PhongMaterial(Color.RED));
-		sphere.setDrawMode(DrawMode.FILL);
+		cylinder.setHeight(0.1);
+		cylinder.setMaterial(material);
 		
-		getChildren().add(sphere);
+		cylinder.getTransforms().add(new Rotate(90, Rotate.X_AXIS));
+		
+		getChildren().add(cylinder);
 		
 		// Self
 		
 		translateXProperty().bind(entity.coordinate.x);
 		translateYProperty().bind(entity.coordinate.y);
 		translateZProperty().bind(entity.coordinate.z);
-	}
-
-	@Override
-	public void update() {
-		
 	}
 
 }
