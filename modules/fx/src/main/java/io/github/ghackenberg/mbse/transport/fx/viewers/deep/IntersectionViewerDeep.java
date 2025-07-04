@@ -3,6 +3,7 @@ package io.github.ghackenberg.mbse.transport.fx.viewers.deep;
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
 import io.github.ghackenberg.mbse.transport.fx.viewers.EntityViewer;
+import javafx.scene.DepthTest;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.DrawMode;
@@ -19,6 +20,7 @@ public class IntersectionViewerDeep extends EntityViewer<Intersection> {
 		
 		sphere.radiusProperty().bind(entity.lanes.divide(2));
 		
+		sphere.setDepthTest(DepthTest.ENABLE);
 		sphere.setMaterial(new PhongMaterial(Color.RED));
 		sphere.setDrawMode(DrawMode.FILL);
 		

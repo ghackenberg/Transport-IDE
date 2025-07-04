@@ -3,6 +3,7 @@ package io.github.ghackenberg.mbse.transport.fx.viewers;
 import io.github.ghackenberg.mbse.transport.core.Model;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.scene.DepthTest;
 import javafx.scene.Group;
 
 public abstract class EntityViewer<T> extends Group {
@@ -21,6 +22,7 @@ public abstract class EntityViewer<T> extends Group {
 		this.entity = entity;
 		
 		setManaged(false);
+		setDepthTest(DepthTest.ENABLE);
 	}
 	
 	public abstract void update();

@@ -12,6 +12,7 @@ import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
 import io.github.ghackenberg.mbse.transport.fx.helpers.GenericListChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.DepthTest;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
@@ -64,6 +65,12 @@ public abstract class ModelViewer<I extends EntityViewer<Intersection>, Se exten
 		
 		deltaX = model.intersections.size() > 0 ? model.deltaX.get() + 6 : 20;
 		deltaY = model.intersections.size() > 0 ? model.deltaY.get() + 6 : 20;
+		
+		intersectionLayer.setDepthTest(DepthTest.ENABLE);
+		segmentLayer.setDepthTest(DepthTest.ENABLE);
+		stationLayer.setDepthTest(DepthTest.ENABLE);
+		vehicleLayer.setDepthTest(DepthTest.ENABLE);
+		demandLayer.setDepthTest(DepthTest.ENABLE);
 		
 		setStyle("-fx-background-color: white;");
 

@@ -7,39 +7,44 @@ import io.github.ghackenberg.mbse.transport.core.entities.Segment;
 import io.github.ghackenberg.mbse.transport.core.entities.Station;
 import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
 import io.github.ghackenberg.mbse.transport.fx.viewers.ModelViewer;
-import javafx.animation.AnimationTimer;
+import javafx.scene.AmbientLight;
 import javafx.scene.DepthTest;
 import javafx.scene.Group;
 import javafx.scene.PerspectiveCamera;
+import javafx.scene.PointLight;
 import javafx.scene.SubScene;
-import javafx.scene.transform.Rotate;
-import javafx.scene.transform.Translate;
+import javafx.scene.paint.Color;
 
 public class ModelViewerDeep extends ModelViewer<IntersectionViewerDeep, SegmentViewerDeep, StationViewerDeep, VehicleViewerDeep, DemandViewerDeep, SubScene> {
 	
 	public final PerspectiveCamera camera = new PerspectiveCamera(true);
 	
-	public final Group root = new Group(camera);
+	public final AmbientLight ambient = new AmbientLight(new Color(0.2, 0.2, 0.2, 1));
+	
+	public final PointLight point = new PointLight(new Color(0.8, 0.8, 0.8, 1));
+	
+	public final Group main = new Group();
+	
+	public final Group root = new Group(camera, ambient, point, main);
 	
 	public ModelViewerDeep(Model model) {
 		super(model, new SubScene(new Group(), 300, 300), true);
 		
 		// Camera
 		
-		Rotate rotateX = new Rotate(-45, Rotate.X_AXIS);
-		Rotate rotateZ = new Rotate(45, Rotate.Y_AXIS);
+		camera.setTranslateZ(-30);
 		
-		Translate translate = new Translate(0, 0, -30);
-        
-		camera.getTransforms().addAll(rotateX, rotateZ, translate);
+		// Point
 		
-		// Root
+		point.setTranslateY(10);
 		
-		root.getChildren().add(segmentLayer);
-		root.getChildren().add(intersectionLayer);
-		root.getChildren().add(stationLayer);
-		root.getChildren().add(vehicleLayer);
-		root.getChildren().add(demandLayer);
+		// Main
+		
+		main.getChildren().add(segmentLayer);
+		main.getChildren().add(intersectionLayer);
+		main.getChildren().add(stationLayer);
+		main.getChildren().add(vehicleLayer);
+		main.getChildren().add(demandLayer);
 		
 		// Canvas
 		
@@ -49,15 +54,6 @@ public class ModelViewerDeep extends ModelViewer<IntersectionViewerDeep, Segment
 		
 		canvas.widthProperty().bind(widthProperty());
 		canvas.heightProperty().bind(heightProperty());
-		
-		// Animation
-		
-		new AnimationTimer() {
-			@Override
-			public void handle(long now) {
-				rotateZ.setAngle(rotateZ.getAngle() + 0.1);
-			}
-		}.start();
 	}
 	
 	// Create
