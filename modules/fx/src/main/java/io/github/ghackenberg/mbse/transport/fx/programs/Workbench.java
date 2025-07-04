@@ -14,7 +14,7 @@ public class Workbench extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		primaryStage.getIcons().add(new Image("app.png"));
-		primaryStage.setScene(new EditorScene(getHostServices()));
+		primaryStage.setScene(new EditorScene());
 		primaryStage.setTitle("ITS-MSE Editor");
 		primaryStage.show();
 	}

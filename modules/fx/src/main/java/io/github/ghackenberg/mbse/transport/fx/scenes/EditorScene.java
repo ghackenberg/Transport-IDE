@@ -6,6 +6,7 @@ import java.util.Map;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.Parser;
+import io.github.ghackenberg.mbse.transport.core.Serializer;
 import io.github.ghackenberg.mbse.transport.core.entities.Demand;
 import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
@@ -16,6 +17,7 @@ import io.github.ghackenberg.mbse.transport.core.exceptions.MissingException;
 import io.github.ghackenberg.mbse.transport.fx.helpers.GenericListChangeListener;
 import io.github.ghackenberg.mbse.transport.fx.helpers.GridHelper;
 import io.github.ghackenberg.mbse.transport.fx.helpers.ImageViewHelper;
+import io.github.ghackenberg.mbse.transport.fx.helpers.PersistentMemoryHelper;
 import io.github.ghackenberg.mbse.transport.fx.viewers.DemandViewer;
 import io.github.ghackenberg.mbse.transport.fx.viewers.EntityViewer;
 import io.github.ghackenberg.mbse.transport.fx.viewers.IntersectionViewer;
@@ -23,7 +25,6 @@ import io.github.ghackenberg.mbse.transport.fx.viewers.ModelViewer;
 import io.github.ghackenberg.mbse.transport.fx.viewers.SegmentViewer;
 import io.github.ghackenberg.mbse.transport.fx.viewers.StationViewer;
 import io.github.ghackenberg.mbse.transport.fx.viewers.VehicleViewer;
-import javafx.application.HostServices;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -54,11 +55,11 @@ import javafx.stage.Stage;
 
 public class EditorScene extends Scene {
 
-	private File folder = new File("runs");
+	private File modelRunsFolder;
 	
 	private Model model = new Model();
 	
-	private ModelViewer modelViewer = null;
+	private ModelViewer modelViewer;
 	
 	private final BooleanProperty segmentPreviewVisible = new SimpleBooleanProperty(false);
 	private final DoubleProperty segmentPreviewEndX = new SimpleDoubleProperty();
@@ -89,17 +90,13 @@ public class EditorScene extends Scene {
 	
 	private final BorderPane root = new BorderPane(modelViewer, top, right, bottom, null);
 	
-	public EditorScene(HostServices hostServices) {
+	public EditorScene() {
 		super(new Label("Loading ..."), 800, 600);
-		
-		if (!folder.exists()) {
-			folder.mkdir();
-		}
 		
 		// Top
 		
 		clear.setOnAction(event -> {
-			folder = new File("runs");
+			modelRunsFolder = null;
 			
 			model = new Model();
 			
@@ -108,24 +105,26 @@ public class EditorScene extends Scene {
 		
 		open.setOnAction(event -> {			
 			DirectoryChooser chooser = new DirectoryChooser();
-			chooser.setInitialDirectory(new File("."));
+			chooser.setInitialDirectory(PersistentMemoryHelper.getContextFolder());
 			
 			File directory = chooser.showDialog(getWindow());
 			
 			if (directory != null) {
-				File demands = new File(directory, "demands.txt");
-				File intersections = new File(directory, "intersections.txt");
-				File segments = new File(directory, "segments.txt");
-				File stations = new File(directory, "stations.txt");
-				File vehicles = new File(directory, "vehicles.txt");
-				
 				try {
+					PersistentMemoryHelper.setContextFolder(directory.getParentFile());
+					
+					File demands = new File(directory, "demands.txt");
+					File intersections = new File(directory, "intersections.txt");
+					File segments = new File(directory, "segments.txt");
+					File stations = new File(directory, "stations.txt");
+					File vehicles = new File(directory, "vehicles.txt");
+					
 					model = new Parser().parse(intersections, segments, stations, vehicles, demands);
 					
-					folder = new File(directory, "runs");
+					modelRunsFolder = new File(directory, "runs");
 					
-					if (!folder.exists()) {
-						folder.mkdir();
+					if (!modelRunsFolder.exists()) {
+						modelRunsFolder.mkdir();
 					}
 					
 					reload();
@@ -138,28 +137,47 @@ public class EditorScene extends Scene {
 		});
 		
 		save.setOnAction(event -> {
-			new Alert(AlertType.ERROR, "Not implemented yet!").showAndWait();
+			DirectoryChooser chooser = new DirectoryChooser();
+			chooser.setInitialDirectory(PersistentMemoryHelper.getContextFolder());
+			
+			File directory = chooser.showDialog(getWindow());
+			
+			if (directory != null) {
+				PersistentMemoryHelper.setContextFolder(directory.getParentFile());
+				
+				new Serializer().serialize(model, directory);
+				
+				modelRunsFolder = new File(directory, "runs");
+				
+				if (!modelRunsFolder.exists()) {
+					modelRunsFolder.mkdir();
+				}
+			}
 		});
 		
 		run.setOnAction(event -> {
-			Stage parentStage = (Stage) getWindow();
-			
-			SimulatorScene scene = new SimulatorScene(model, folder, 800, 600);
-			
-			Stage stage = new Stage();
-
-			stage.initModality(Modality.APPLICATION_MODAL);
-			stage.initOwner(parentStage);
-			
-			stage.getIcons().addAll(parentStage.getIcons());
-			
-			stage.setTitle("ITS-MSE Simulator");
-			stage.setMaximized(parentStage.isMaximized());
-			stage.setX(getWindow().getX() + 20);
-			stage.setY(getWindow().getY() + 20);
-			stage.setScene(scene);
-			
-			stage.show();
+			if (modelRunsFolder != null) {
+				Stage parentStage = (Stage) getWindow();
+				
+				SimulatorScene scene = new SimulatorScene(model, modelRunsFolder, 800, 600);
+				
+				Stage stage = new Stage();
+	
+				stage.initModality(Modality.APPLICATION_MODAL);
+				stage.initOwner(parentStage);
+				
+				stage.getIcons().addAll(parentStage.getIcons());
+				
+				stage.setTitle("ITS-MSE Simulator");
+				stage.setMaximized(parentStage.isMaximized());
+				stage.setX(getWindow().getX() + 20);
+				stage.setY(getWindow().getY() + 20);
+				stage.setScene(scene);
+				
+				stage.show();
+			} else {
+				new Alert(AlertType.ERROR, "Please save model first!").showAndWait();
+			}
 		});
 		
 		help.setOnAction(event -> {
