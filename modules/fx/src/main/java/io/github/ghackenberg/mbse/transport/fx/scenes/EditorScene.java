@@ -122,13 +122,7 @@ public class EditorScene extends Scene {
 				try {
 					PersistentMemoryHelper.setContextFolder(directory.getParentFile());
 					
-					File demands = new File(directory, "demands.txt");
-					File intersections = new File(directory, "intersections.txt");
-					File segments = new File(directory, "segments.txt");
-					File stations = new File(directory, "stations.txt");
-					File vehicles = new File(directory, "vehicles.txt");
-					
-					model = new Parser().parse(intersections, segments, stations, vehicles, demands);
+					model = new Parser().parse(directory);
 					
 					modelRunsFolder = new File(directory, "runs");
 					

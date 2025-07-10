@@ -97,8 +97,6 @@ public class Serializer {
 		
 		try (FileWriter out = new FileWriter(vehicleFile)) {
 			for (Vehicle vehicle : model.vehicles) {
-				String name = vehicle.name.get();
-				
 				double length = vehicle.length.get();
 				double loadCapacity = vehicle.loadCapacity.get();
 				double batteryCapacity = vehicle.batteryCapacity.get();
@@ -106,7 +104,7 @@ public class Serializer {
 				double initialBatteryLevel = vehicle.initialBatteryLevel.get();
 				double initialSpeed = vehicle.initialSpeed.get();
 				
-				out.write(name + " " + length + " " + loadCapacity + " " + batteryCapacity + " " + initialBatteryLevel + " " + initialSpeed + " " + serialize(vehicle.initialLocation) + "\n");
+				out.write(serialize(vehicle) + " " + length + " " + loadCapacity + " " + batteryCapacity + " " + initialBatteryLevel + " " + initialSpeed + " " + serialize(vehicle.initialLocation) + "\n");
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -141,8 +139,14 @@ public class Serializer {
 	}
 	
 	private String serialize(Intersection intersection) {
-		String name = intersection.name.get();
-		
+		return serialize(intersection.name.get());
+	}
+	
+	private String serialize(Vehicle vehicle) {
+		return serialize(vehicle.name.get());
+	}
+	
+	private String serialize(String name) {
 		return name.replaceAll(" ", "_");
 	}
 	

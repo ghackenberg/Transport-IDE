@@ -75,9 +75,9 @@ public class ControllerComparison {
 			
 			// Parse models
 			
-			Model model1 = parser.parse(new File(modelFolder, "intersections.txt"), new File(modelFolder, "segments.txt"), new File(modelFolder, "stations.txt"), new File(modelFolder, "vehicles.txt"), new File(modelFolder, "demands.txt"));
-			Model model2 = parser.parse(new File(modelFolder, "intersections.txt"), new File(modelFolder, "segments.txt"), new File(modelFolder, "stations.txt"), new File(modelFolder, "vehicles.txt"), new File(modelFolder, "demands.txt"));
-			Model model3 = parser.parse(new File(modelFolder, "intersections.txt"), new File(modelFolder, "segments.txt"), new File(modelFolder, "stations.txt"), new File(modelFolder, "vehicles.txt"), new File(modelFolder, "demands.txt"));
+			Model model1 = parser.parse(modelFolder);
+			Model model2 = parser.parse(modelFolder);
+			Model model3 = parser.parse(modelFolder);
 			
 			// Clear demands
 			

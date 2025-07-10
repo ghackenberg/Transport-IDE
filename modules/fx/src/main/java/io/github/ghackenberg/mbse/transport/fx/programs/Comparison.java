@@ -144,18 +144,9 @@ public class Comparison extends Application {
 			
 			folders.add(indexRunsFolder);
 			
-			// Files
-			
-			File intersections = new File(modelFolder, "intersections.txt");
-			File segments = new File(modelFolder, "segments.txt");
-			File stations = new File(modelFolder, "stations.txt");
-			File vehicles = new File(modelFolder, "vehicles.txt");
-			File demands = new File(modelFolder, "demands.txt");
-			
 			// Parse
 			
-			Model model = parser.parse(intersections, segments, stations, vehicles, demands);
-			model.name.set(modelFolder.getName());
+			Model model = parser.parse(modelFolder);
 			model.demands.clear();
 			
 			models.add(model);

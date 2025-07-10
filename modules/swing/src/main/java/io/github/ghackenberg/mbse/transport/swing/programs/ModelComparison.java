@@ -60,10 +60,7 @@ public class ModelComparison {
 				
 				// Parse
 				
-				Model model = parser.parse(new File(modelFolder, "intersections.txt"), new File(modelFolder, "segments.txt"), new File(modelFolder, "stations.txt"), new File(modelFolder, "vehicles.txt"), new File(modelFolder, "demands.txt"));
-				
-				model.name.set(modelFolder.getName());
-				
+				Model model = parser.parse(modelFolder);
 				model.demands.clear();
 				
 				folders.add(indexRunsFolder);

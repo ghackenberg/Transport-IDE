@@ -18,7 +18,25 @@ import io.github.ghackenberg.mbse.transport.core.structures.LocationTime;
 
 public class Parser {
 	
-	public Model parse(File intersections, File segments, File stations, File vehicles, File demands) throws MissingException, DirectoryException {
+	public Model parse(File folder) throws MissingException, DirectoryException {
+		
+		System.out.println("Parser.parse");
+		
+		File intersections = new File(folder, "intersections.txt");
+		File segments = new File(folder, "segments.txt");
+		File stations = new File(folder, "stations.txt");
+		File vehicles = new File(folder, "vehicles.txt");
+		File demands = new File(folder, "demands.txt");
+		
+		Model model = parse(intersections, segments, stations, vehicles, demands);
+		
+		model.name.set(folder.getName());
+		
+		return model;
+		
+	}
+	
+	private Model parse(File intersections, File segments, File stations, File vehicles, File demands) throws MissingException, DirectoryException {
 		
 		System.out.println("Parser.parse");
 		
