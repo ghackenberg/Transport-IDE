@@ -11,22 +11,12 @@ In particular, we think that transportation system engineers must be supported b
 
 **TransportIDE** is an *open source software project* initiated by Dr. Georg Hackenberg, Professor for Industrial Informatics, School of Engineering, [University of Applied Sciences Upper Austria](https://fh-ooe.at/) and Dominik Ascher, Research Associate, Distributed Artificial Intelligence Laboratory, [Technical University of Berlin](https://www.tu.berlin/).
 
-## Repository structure
-
-This is how we structured the Transport-IDE repository:
-
-* 📁 [**Documents**](./documents/)<br/>Contains the user and developer docs.
-* 📁 [**Images**](./images/)<br/>Contains image materal used, e.g., in the docs.
-* 📁 [**Manuscripts**](./manuscripts/)<br/>Contains articles written in Latex.
-* 📁 [**Models**](./models/)<br/>Contains sample system models.
-* 📁 [**Modules**](./modules/)<br/>Contains the actual source code.
-* 📁 [**Prototypes**](./prototypes/)<br/>Contains random prototypes.
-
 ## Further readings
 
 Here is where you can continue your Transport-IDE journey:
 
 * 📄 [**Screenshots**](./documents/Screenshots.md)<br/>See our modeling, simulation, and optimization workbench in action.
 * 📄 [**Requirements**](./documents/Requirements.md)<br/>Learn how to build and run the software or how to work on the code.
+* 📄 [**Folders**](./documents/Folders.md)<br/>Unterstand the high-level folder structure of this repository.
 * 📄 [**Modules**](./documents/Modules.md)<br/>Unterstand the software architecture of our workbench application.
 * 📄 [**Publications**](./documents/Publications.md)<br/>Read our publications on workshops, conferences, and journals.
