@@ -1,4 +1,4 @@
-package io.github.ghackenberg.mbse.transport.swings.viewers.charts.multiple;
+package io.github.ghackenberg.mbse.transport.swing.viewers.charts.multiple;
 
 import java.awt.Color;
 import java.util.List;
@@ -7,7 +7,7 @@ import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.Simulator;
 import io.github.ghackenberg.mbse.transport.core.Statistics;
 import io.github.ghackenberg.mbse.transport.core.entities.Demand;
-import io.github.ghackenberg.mbse.transport.swings.viewers.charts.MultipleChartViewer;
+import io.github.ghackenberg.mbse.transport.swing.viewers.charts.MultipleChartViewer;
 
 public class DemandTimesChartViewer extends MultipleChartViewer {
 

@@ -19,7 +19,7 @@ import io.github.ghackenberg.mbse.transport.core.exceptions.ArgumentsException;
 import io.github.ghackenberg.mbse.transport.core.exceptions.DirectoryException;
 import io.github.ghackenberg.mbse.transport.core.exceptions.MissingException;
 import io.github.ghackenberg.mbse.transport.swing.dialogs.ModelOpenDialog;
-import io.github.ghackenberg.mbse.transport.swings.viewers.MultipleViewer;
+import io.github.ghackenberg.mbse.transport.swing.viewers.MultipleViewer;
 
 public class ControllerComparison {
 

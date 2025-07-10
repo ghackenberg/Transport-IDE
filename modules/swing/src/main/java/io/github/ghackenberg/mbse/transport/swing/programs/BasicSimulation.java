@@ -18,14 +18,14 @@ import io.github.ghackenberg.mbse.transport.core.exceptions.DirectoryException;
 import io.github.ghackenberg.mbse.transport.core.exceptions.MissingException;
 import io.github.ghackenberg.mbse.transport.core.exporters.CSVExporter;
 import io.github.ghackenberg.mbse.transport.swing.dialogs.ModelOpenDialog;
-import io.github.ghackenberg.mbse.transport.swings.viewers.ModelViewer;
-import io.github.ghackenberg.mbse.transport.swings.viewers.SingleViewer;
-import io.github.ghackenberg.mbse.transport.swings.viewers.charts.single.DemandDistancesChartViewer;
-import io.github.ghackenberg.mbse.transport.swings.viewers.charts.single.DemandTimesChartViewer;
-import io.github.ghackenberg.mbse.transport.swings.viewers.charts.single.IntersectionCrossingsChartViewer;
-import io.github.ghackenberg.mbse.transport.swings.viewers.charts.single.SegmentTraversalsChartViewer;
-import io.github.ghackenberg.mbse.transport.swings.viewers.charts.single.VehicleBatteriesChartViewer;
-import io.github.ghackenberg.mbse.transport.swings.viewers.charts.single.VehicleDistancesChartViewer;
+import io.github.ghackenberg.mbse.transport.swing.viewers.ModelViewer;
+import io.github.ghackenberg.mbse.transport.swing.viewers.SingleViewer;
+import io.github.ghackenberg.mbse.transport.swing.viewers.charts.single.DemandDistancesChartViewer;
+import io.github.ghackenberg.mbse.transport.swing.viewers.charts.single.DemandTimesChartViewer;
+import io.github.ghackenberg.mbse.transport.swing.viewers.charts.single.IntersectionCrossingsChartViewer;
+import io.github.ghackenberg.mbse.transport.swing.viewers.charts.single.SegmentTraversalsChartViewer;
+import io.github.ghackenberg.mbse.transport.swing.viewers.charts.single.VehicleBatteriesChartViewer;
+import io.github.ghackenberg.mbse.transport.swing.viewers.charts.single.VehicleDistancesChartViewer;
 
 public class BasicSimulation {
 

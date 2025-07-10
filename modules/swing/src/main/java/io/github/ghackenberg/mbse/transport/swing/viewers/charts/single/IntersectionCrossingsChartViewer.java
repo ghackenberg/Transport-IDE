@@ -1,11 +1,11 @@
-package io.github.ghackenberg.mbse.transport.swings.viewers.charts.single;
+package io.github.ghackenberg.mbse.transport.swing.viewers.charts.single;
 
 import java.awt.Color;
 import java.util.List;
 
 import io.github.ghackenberg.mbse.transport.core.Simulator;
 import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
-import io.github.ghackenberg.mbse.transport.swings.viewers.charts.SingleChartViewer;
+import io.github.ghackenberg.mbse.transport.swing.viewers.charts.SingleChartViewer;
 
 public class IntersectionCrossingsChartViewer extends SingleChartViewer {
 

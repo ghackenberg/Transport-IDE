@@ -1,3 +1,8 @@
+/**
+ * Contains the new JavaFX-based graphical user interface of Transport-IDE.
+ * 
+ * @author Georg Hackenberg
+ */
 module mbse.transport.fx {
 	
 	requires mbse.transport.core;

@@ -1,4 +1,4 @@
-package io.github.ghackenberg.mbse.transport.swings.viewers;
+package io.github.ghackenberg.mbse.transport.swing.viewers;
 
 import java.awt.Image;
 import java.io.IOException;

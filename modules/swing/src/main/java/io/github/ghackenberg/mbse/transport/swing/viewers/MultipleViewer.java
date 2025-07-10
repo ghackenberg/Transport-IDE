@@ -1,4 +1,4 @@
-package io.github.ghackenberg.mbse.transport.swings.viewers;
+package io.github.ghackenberg.mbse.transport.swing.viewers;
 
 import java.awt.BorderLayout;
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import bibliothek.gui.dock.DefaultDockable;
 import bibliothek.gui.dock.SplitDockStation;
 import bibliothek.gui.dock.station.split.SplitDockGrid;
 import io.github.ghackenberg.mbse.transport.core.Simulator;
-import io.github.ghackenberg.mbse.transport.swings.viewers.charts.multiple.DemandTimesChartViewer;
+import io.github.ghackenberg.mbse.transport.swing.viewers.charts.multiple.DemandTimesChartViewer;
 
 public class MultipleViewer {
 	

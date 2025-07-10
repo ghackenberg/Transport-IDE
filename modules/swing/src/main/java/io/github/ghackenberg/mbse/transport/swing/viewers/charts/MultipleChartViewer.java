@@ -1,9 +1,9 @@
-package io.github.ghackenberg.mbse.transport.swings.viewers.charts;
+package io.github.ghackenberg.mbse.transport.swing.viewers.charts;
 
 import java.util.List;
 
 import io.github.ghackenberg.mbse.transport.core.Simulator;
-import io.github.ghackenberg.mbse.transport.swings.viewers.ChartViewer;
+import io.github.ghackenberg.mbse.transport.swing.viewers.ChartViewer;
 
 public abstract class MultipleChartViewer extends ChartViewer {
 	

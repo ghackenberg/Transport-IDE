@@ -1,3 +1,8 @@
+/**
+ * Contains the old Swing-based graphical user interface of Transport-IDE.
+ * 
+ * @author Georg Hackenberg
+ */
 module mbse.transport.swing {
 	
 	requires mbse.transport.core;

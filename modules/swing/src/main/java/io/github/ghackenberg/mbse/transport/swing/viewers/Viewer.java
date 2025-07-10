@@ -1,4 +1,4 @@
-package io.github.ghackenberg.mbse.transport.swings.viewers;
+package io.github.ghackenberg.mbse.transport.swing.viewers;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
