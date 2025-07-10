@@ -9,5 +9,6 @@
                 "cmd": "mmdc -i \"${file}\" -o \"${fileDirname}/${fileBasenameNoExt}.svg\""
             }
         ]
-    }
+    },
+    "java.configuration.updateBuildConfiguration": "interactive"
 }
