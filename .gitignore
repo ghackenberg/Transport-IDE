@@ -3,17 +3,14 @@
 .classpath
 .settings
 
+# LibreOffice temp
+.~lock.*
+
 # Maven/Eclipse output
 target
 
 # Program output
 models/*/runs
-
-modules/program/.transport-ide
-modules/program/demands.csv
-modules/program/intersections.csv
-modules/program/segments.csv
-modules/program/vehicles.csv
 
 # Latex output
 manuscripts/*/*.aux
