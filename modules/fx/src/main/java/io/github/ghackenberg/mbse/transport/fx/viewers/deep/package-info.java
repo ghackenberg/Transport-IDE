@@ -1,5 +1,5 @@
 /**
- * Concrete viewer implemenation in 3D.
+ * 3D viewer implemenation.
  * 
  * @author Georg Hackenberg
  */

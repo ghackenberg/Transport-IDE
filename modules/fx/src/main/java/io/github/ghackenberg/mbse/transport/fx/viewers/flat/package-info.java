@@ -1,5 +1,5 @@
 /**
- * Concrete viewer implementation in 2D.
+ * 2D viewer implementation.
  * 
  * @author Georg Hackenberg
  */
