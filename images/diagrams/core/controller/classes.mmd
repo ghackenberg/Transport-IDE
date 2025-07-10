@@ -2,6 +2,7 @@ classDiagram
     direction LR
 
     class Controller {
+        <<Interface>>
         SelectDemand(Vehicle v, Demand d) Boolean
         SelectStation(Vehicle v, Station s) Boolean
         UnselectStation(Vehicle v) Boolean
@@ -44,3 +45,8 @@ classDiagram
 
     JGraphT <-- SmartController
     Swing <-- ManualController
+
+    style JGraphT fill:white,stroke:gray
+    style Swing fill:white,stroke:gray
+
+    style Controller fill:yellow,stroke:orange

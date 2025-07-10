@@ -21,28 +21,7 @@
 
 \title*{A discrete event formalism for fast simulation of on-demand transportation systems}
 
-%\author{Anonymous Author and Anonymous Author}
 \author{Dominik Ascher and Georg Hackenberg}
-
-%\institute{
-%	Anonymous Author
-%	\at
-%	Reserved for author affiliation
-%	\and
-%	Anonymous Author
-%	\at
-%	Reserved for author affiliation
-%}
-
-%\institute{
-%    Dominik Ascher
-%    \at
-%    Distributed Artificial Intelligence Laboratory, Faculty of Electrical Engineering and Computer Science, Technical University of Berlin, 10587 Berlin, Germany, \email{ascher@tu-berlin.de}
-%    \and
-%    Georg Hackenberg
-%    \at
-%    School of Engineering, University of Applied Sciences Upper Austria, 4600 Wels, Austria, \email{georg.hackenberg@fh-wels.at}
-%}
 
 \maketitle
 
@@ -93,7 +72,7 @@ These static properties, static calculations, and dynamic states serve as a foun
 
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[width=\textwidth]{../../diagrams/model/classes-v0.1.png}
+	\includegraphics[width=\textwidth]{./graphics/data-model.png}
 	\caption{Concepts in the class diagram notation of the Unified Modeling Language (UML), where \textit{public} UML attributes and relations represent \textit{static properties}, \textit{public} UML methods represents \textit{static calculations}, and \textit{private} UML attributes and relations represent \textit{dynamic states}.}
 	\label{fig:concepts}
 \end{figure}
@@ -115,19 +94,19 @@ In this Section, we describe intersections and segments of the transportation in
 	\centering
 	\begin{subfigure}{.2\textwidth}
 		\centering
-		\includegraphics[scale=0.4]{../../concepts/intersection.png}
+		\includegraphics[scale=0.4]{./graphics/concepts/intersection.png}
 		\caption{Intersection}
 		\label{fig:intersection}
 	\end{subfigure}
 	\begin{subfigure}{.35\textwidth}
 		\centering
-		\includegraphics[scale=0.4]{../../concepts/segment.png}
+		\includegraphics[scale=0.4]{./graphics/concepts/segment.png}
 		\caption{Segment}
 		\label{fig:segment}
 	\end{subfigure}
 	\begin{subfigure}{.35\textwidth}
 		\centering
-		\includegraphics[scale=0.4]{../../concepts/location.png}
+		\includegraphics[scale=0.4]{./graphics/concepts/location.png}
 		\caption{Location}
 		\label{fig:location}
 	\end{subfigure}
@@ -167,19 +146,19 @@ In this Section, we describe charging stations, demands as well as vehicles. The
 	\centering
 	\begin{subfigure}{.35\textwidth}
 		\centering
-		\includegraphics[scale=0.3]{../../concepts/charge-station.png}
+		\includegraphics[scale=0.3]{./graphics/concepts/charge-station.png}
 		\caption{Charging station}
 		\label{fig:charging-station}	
 	\end{subfigure}
 	\begin{subfigure}{.35\textwidth}
 		\centering
-		\includegraphics[scale=0.5]{../../concepts/demand.png}
+		\includegraphics[scale=0.5]{./graphics/concepts/demand.png}
 		\caption{Demand}
 		\label{fig:demand}
 	\end{subfigure}
 	\begin{subfigure}{.2\textwidth}
 		\centering
-		\includegraphics[scale=0.5]{../../concepts/vehicle.png}
+		\includegraphics[scale=0.5]{./graphics/concepts/vehicle.png}
 		\caption{Vehicle}
 		\label{fig:vehicle}	
 	\end{subfigure}
@@ -250,13 +229,13 @@ These events have been included in the formalism, because vehicles need to make 
 	\centering
 	\begin{subfigure}{.45\textwidth}
 		\centering
-		\includegraphics[scale=0.30]{../../events/vehicle-at-intersection-before.png}
+		\includegraphics[scale=0.30]{./graphics/events/vehicle-at-intersection-before.png}
 		\caption{Vehicle arrives at intersection.}
 		\label{fig:vehicle-at-intersection-before}
 	\end{subfigure}
 	\begin{subfigure}{.45\textwidth}
 		\centering
-		\includegraphics[scale=0.30]{../../events/vehicle-at-intersection-after.png}
+		\includegraphics[scale=0.30]{./graphics/events/vehicle-at-intersection-after.png}
 		\caption{Vehicle departs at intersection.}
 		\label{fig:vehicle-at-intersection-after}
 	\end{subfigure}
@@ -292,13 +271,13 @@ These events have been included in the formalism, because vehicles need to make 
     \centering
 	\begin{subfigure}{.45\textwidth}
 		\centering
-		\includegraphics[scale=0.30]{../../events/vehicle-at-demand-pick-up.png}
+		\includegraphics[scale=0.30]{./graphics/events/vehicle-at-demand-pick-up.png}
 		\caption{Vehicle at demand pick-up.}
 		\label{fig:vehicle-at-demand-pick-up}
 	\end{subfigure}
 	\begin{subfigure}{.45\textwidth}
 		\centering
-		\includegraphics[scale=0.30]{../../events/vehicle-at-demand-drop-off.png}
+		\includegraphics[scale=0.30]{./graphics/events/vehicle-at-demand-drop-off.png}
 		\caption{Vehicle at demand drop-off.}
 		\label{fig:vehicle-at-demand-drop-off}
 	\end{subfigure}
@@ -322,13 +301,13 @@ These events have been included in the formalism, because there needs to be enou
 	\centering
 	\begin{subfigure}{.45\textwidth}
         \centering
-        \includegraphics[scale=0.30]{../../events/faster-vehicle-front-at-slower-vehicle-back.png}
+        \includegraphics[scale=0.30]{./graphics/events/faster-vehicle-front-at-slower-vehicle-back.png}
         \caption{Faster vehicle arrives at slower vehicle}
         \label{fig:faster-vehicle-front-at-slower-vehicle-back}
 	\end{subfigure}
 	\begin{subfigure}{.45\textwidth}
         \centering
-        \includegraphics[scale=0.30]{../../events/slower-vehicle-front-at-faster-vehicle-back.png}
+        \includegraphics[scale=0.30]{./graphics/events/slower-vehicle-front-at-faster-vehicle-back.png}
         \caption{Faster vehicle departs at slower vehicle}
         \label{fig:slower-vehicle-front-at-faster-vehicle-back}
 	\end{subfigure}

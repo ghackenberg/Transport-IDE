@@ -1,0 +1,10 @@
+flowchart RL
+    
+    core["<code>mbse.transport.core</code><br/>Core functionality"]
+    cli["<code>mbse.transport.cli</code><br/>Command line interface"]
+    fx["<code>mbse.transport.fx</code><br/>New JavaFX-based GUI"]
+    swing["<code>mbse.transport.swing</code><br/>Old Swing-based GUI"]
+
+    cli --> core
+    fx --> core
+    swing --> core
