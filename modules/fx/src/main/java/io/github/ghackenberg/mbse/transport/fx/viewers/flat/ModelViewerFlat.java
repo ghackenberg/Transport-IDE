@@ -12,6 +12,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.transform.NonInvertibleTransformException;
 
 public class ModelViewerFlat extends ModelViewer<IntersectionViewerFlat, SegmentViewerFlat, StationViewerFlat, VehicleViewerFlat, DemandViewerFlat, Pane> {
+
+	private final GridViewerFlat grid = new GridViewerFlat();
 	
 	public ModelViewerFlat(Model model) {
 		this(model, true);
@@ -19,6 +21,17 @@ public class ModelViewerFlat extends ModelViewer<IntersectionViewerFlat, Segment
 	
 	public ModelViewerFlat(Model model, boolean showDemands) {
 		super(model, new Pane(), showDemands);
+
+		// Grid
+
+		grid.prefWidthProperty().bind(widthProperty());
+		grid.prefHeightProperty().bind(heightProperty());
+
+		grid.x.bind(canvas.translateXProperty());
+		grid.y.bind(canvas.translateYProperty());
+		grid.s.bind(canvas.scaleXProperty());
+
+		// Canvas
 		
 		canvas.setPrefWidth(0);
 		canvas.setPrefHeight(0);
@@ -28,6 +41,10 @@ public class ModelViewerFlat extends ModelViewer<IntersectionViewerFlat, Segment
 		canvas.getChildren().add(stationLayer);
 		canvas.getChildren().add(vehicleLayer);
 		canvas.getChildren().add(demandLayer);
+
+		// Self
+
+		getChildren().add(0, grid);
 		
 		widthProperty().addListener(event -> updateTransform());
 		heightProperty().addListener(event -> updateTransform());
