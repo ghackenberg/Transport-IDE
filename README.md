@@ -87,7 +87,6 @@ And here are some top-level documents to check out before getting started:
 * 📄 [**LICENSE.md**](./LICENSE.md)<br/>Contains information about the license, under which this software is shipped.
 * 📄 [**CANGELOG.md**](./CHANGELOG.md)<br/>Contains information about software versions and changes included.
 * 📄 [**CONTRIBUTING.md**](./CONTRIBUTING.md)<br/>Contains information for contributors to this software project.
-* 📄 [**GEMINI.md**](./GEMINI.md)<br/>Contains top-level instructions for the Gemini CLI.
 
 ## Publications
 
