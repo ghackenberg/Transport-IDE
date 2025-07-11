@@ -11,6 +11,27 @@ In particular, we think that transportation system engineers must be supported b
 
 **Transport-IDE** is an *open source software project* initiated by Dr. Georg Hackenberg, Professor for Industrial Informatics, School of Engineering, [University of Applied Sciences Upper Austria](https://fh-ooe.at/) and Dominik Ascher, Research Associate, Distributed Artificial Intelligence Laboratory, [Technical University of Berlin](https://www.tu.berlin/).
 
+## Features
+
+Here is a list of currently supported features of Transport-IDE:
+
+- ⭐ *System modeling*
+  - **Driving infrastructure** through *intersections* and *segments*
+  - **Charging infrastructure** through *stations*
+  - **Fleet configurations** through *vehicles*
+  - **Load scenarios** through *demands*
+- ⭐ *Control strategies*
+  - **Random strategy** throwing the dice for every decision
+  - **Manual strategy** asking the user for every choice to be made
+  - **Greedy strategy** behaving randomly unless demand can be dropped
+  - **Smart strategy** based on shortest path algorithm
+- ⭐ *Scenario simulations*
+  - **Discrete-event semantics** for minimal computational effort
+  - **Monte-Carlo experiments** for statistical behavior analysis
+  - **Multi-threaded executions** for maximum computation speeds
+
+Feel free to request new features via GitHub issues!
+
 ## Requirements
 
 To build and run the project you need to following software packages:
