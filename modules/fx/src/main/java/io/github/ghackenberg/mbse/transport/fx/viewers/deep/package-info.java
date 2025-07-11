@@ -1,5 +1,5 @@
 /**
- * 3D viewer implemenation.
+ * 3D viewer implementation.
  * 
  * @author Georg Hackenberg
  */

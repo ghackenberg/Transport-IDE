@@ -1,22 +1,18 @@
-# Project `mbse.transport` (aka **Transport-IDE**)
+# Project: Transport IDE
 
-The project `mbse.transport` develops a software-based toolkit for modeling, simulating, and optimizing intelligent transportation systems.
+## Introduction
 
-## Architecture Principles
+This project, 'Transport IDE', is a comprehensive Integrated Development Environment (IDE) designed for simulating and analyzing transportation systems. It provides tools for defining transportation networks, simulating vehicle movements, and analyzing various performance metrics.
 
-* Apache Maven is used as the dependency management and build configuration system.
-* The project uses a multi-module structure with one core and several application modules.
-* The core module contains common functionalities required by all the application modules.
-* The application modules contain the CLI and GUI application-specific functionalities instead.
+## Key Modules
 
-## Coding Guidelines
+The project is structured into several key modules:
 
-* Each **Java module** must provide a `module-info.java` file with a module-level Javadoc comment briefly explaining the purpose, features, and structure of the module.
-* Each **Java package** must provide a `package-info.java` file with a package-level Javadoc comment briefly explaining the purpose, features, and structure of the package.
-* Each **Java class** must provide a class-level Javadoc comment briefly explaining the purpose of the class and providing basic usage examples.
-* Each **Java interface** must provide a interface-level Javadoc comment briefly explaining the purpose of the interface.
+- **core**: Contains the fundamental logic and data structures for transportation simulation.
+- **cli**: Provides a command-line interface for interacting with the simulation engine.
+- **fx**: Implements a graphical user interface (GUI) using JavaFX for visualizing simulations and managing models.
+- **swing**: Implements a graphical user interface (GUI) using Swing for visualizing simulations and managing models.
 
-## Assistant Instructions
+## Getting Started
 
-* Always derive a detailed task specification before suggesting changes.
-* Always adhere to the architecture principles and the coding guidelines.
+To get started with the Transport IDE, please refer to the `README.md` file in the project root directory for build instructions and initial setup. Detailed documentation for each module can be found in their respective `src/main` directories.

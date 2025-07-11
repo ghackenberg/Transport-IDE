@@ -11,12 +11,62 @@ In particular, we think that transportation system engineers must be supported b
 
 **Transport-IDE** is an *open source software project* initiated by Dr. Georg Hackenberg, Professor for Industrial Informatics, School of Engineering, [University of Applied Sciences Upper Austria](https://fh-ooe.at/) and Dominik Ascher, Research Associate, Distributed Artificial Intelligence Laboratory, [Technical University of Berlin](https://www.tu.berlin/).
 
-## Further readings
+## Requirements
 
-Here is where you can continue your Transport-IDE journey:
+To build and run the project you need to following software packages:
 
-* 📄 [**Screenshots**](./documents/Screenshots.md)<br/>See our modeling, simulation, and optimization workbench in action.
-* 📄 [**Requirements**](./documents/Requirements.md)<br/>Learn how to build and run the software or how to work on the code.
-* 📄 [**Folders**](./documents/Folders.md)<br/>Unterstand the high-level folder structure of this repository.
-* 📄 [**Modules**](./documents/Modules.md)<br/>Unterstand the software architecture of our workbench application.
-* 📄 [**Publications**](./documents/Publications.md)<br/>Read our publications on workshops, conferences, and journals.
+- [OpenJDK](https://openjdk.org/)<br/>provides a **Java compiler and runtime environment**
+- [Apache Maven](https://maven.apache.org/)<br/>provides a **dependency management and build configuration tool**
+
+To work on the code you can use the following software package:
+
+- [Eclipse IDE for Java Developers](https://www.eclipse.org/)<br/>provides an **integrated development environment**
+
+## Modules
+
+This software packages comprises three modules and their dependencies.
+The following diagram provides an overview of the software modules included.
+Technically, the software modules are implemented as Java Jigsaw and Apache Maven modules.
+
+```mermaid
+flowchart RL
+    
+    core["<code>mbse.transport.core</code><br/>Core functionality"]
+    cli["<code>mbse.transport.cli</code><br/>Command line interface"]
+    fx["<code>mbse.transport.fx</code><br/>New JavaFX-based GUI"]
+    swing["<code>mbse.transport.swing</code><br/>Old Swing-based GUI"]
+
+    cli --> core
+    fx --> core
+    swing --> core
+
+    click core "./modules/core/" "Enter core module"
+    click cli "./modules/cli/" "Enter CLI module"
+    click fx "./modules/fx/" "Enter FX module"
+    click swing "./modules/swing/" "Enter Swing module"
+```
+
+## Folders
+
+Here is a brief description of the top-level folder structure of this repository:
+
+* 📁 [**Templates**](../templates/)<br/>Contains templates for different kinds of documents.
+* 📁 [**Tasks**](../tasks/)<br/>Contains the specifications of past and current coding tasks.
+* 📁 [**Modules**](../modules/)<br/>Contains the source code of the various software modules.
+* 📁 [**Models**](../models/)<br/>Contains sample system models used for testing and demonstration.
+* 📁 [**Prototypes**](../prototypes/)<br/>Contains prototypes of new functionalities to be added later.
+* 📁 [**Manuscripts**](../manuscripts/)<br/>Contains source code of publications written in Latex.
+
+## Publications
+
+And here is a list of publications related to this software project:
+
+1. [**Next-Generation Design Tools for Intelligent Transportation Systems**<br/>`MODELSWARD 2025`](https://www.scitepress.org/PublishedPapers/2025/131832/)
+1. [**A Discrete Event Formalism for Fast Simulation of On-Demand Transportation Systems**<br/>`ISDA 2024`](https://link.springer.com/chapter/10.1007/978-3-031-64850-2_17)
+1. [**Model-Based Design of Integrated Transportation Systems Using Approximate Dynamic Programming**<br/>`ITSC 2023`](https://ieeexplore.ieee.org/abstract/document/10422359)
+1. [**The passenger extension of the TRANSP-0 system design framework**<br/>`MT-ITS 2017`](https://ieeexplore.ieee.org/abstract/document/8005676)
+1. [**The TRANSP-0 framework for integrated transportation and power system design**<br/>`ITSC 2016`](https://ieeexplore.ieee.org/abstract/document/7795669)
+1. [**Integrated transportation and power system modeling**<br/>`ICCVE 2015`](https://ieeexplore.ieee.org/abstract/document/7447633)
+1. [**Early estimation of multi-objective traffic flow**<br/>`ICCVE 2014`](https://ieeexplore.ieee.org/abstract/document/7297511)
+
+See [PUBLICATIONS.md](./PUBLICATIONS.md) for information about the workshops, conferences, and journals as well as article abstracts and Bibtex entries.
