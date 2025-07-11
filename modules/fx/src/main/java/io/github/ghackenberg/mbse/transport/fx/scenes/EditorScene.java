@@ -108,7 +108,7 @@ public class EditorScene extends Scene {
 		// Top
 		
 		clear.setOnAction(event -> {
-			modelRunsFolder = null;
+			modelRunsFolder = new File("runs");
 			
 			model = new Model();
 			
