@@ -47,7 +47,9 @@ To build and run the project you need to following software packages:
 
 To work on the code you can use the following software package:
 
-- [Eclipse IDE for Java Developers](https://www.eclipse.org/)<br/>provides an **integrated development environment**
+- [Eclipse IDE for Java Developers](https://www.eclipse.org/)<br/>the traditional way of Java coding
+- [IntelliJ IDEA](https://www.jetbrains.com/idea/)<br/>the professional way of Java coding
+- [Visual Studio Code](https://code.visualstudio.com/) + [Extension Pack for Java](https://github.com/Microsoft/vscode-java-pack)<br/>a nice, modern, and lightweight alternative (our preferred solution!)
 
 ## Modules
 
@@ -76,15 +78,15 @@ Here is a brief description of the top-level folder structure of this repository
 
 * 📁 [**Modules**](../modules/)<br/>Contains the source code of the various software modules.
 * 📁 [**Models**](../models/)<br/>Contains sample system models used for testing and demonstration.
+* 📁 [**Images**](../images/)<br/>Contains image material used in the documentation.
 * 📁 [**Prototypes**](../prototypes/)<br/>Contains prototypes of new functionalities to be added later.
 * 📁 [**Manuscripts**](../manuscripts/)<br/>Contains source code of publications written in Latex.
-* 📁 [**Images**](../images/)<br/>Contains image material used in the documentation.
 
 ## Documents
 
 And here are some top-level documents to check out before getting started:
 
-* 📄 [**LICENSE.md**](./LICENSE.md)<br/>Contains information about the license, under which this software is shipped.
+* 📄 [**LICENSE.md**](./LICENSE.md)<br/>Contains information about the license for this source code.
 * 📄 [**CANGELOG.md**](./CHANGELOG.md)<br/>Contains information about software versions and changes included.
 * 📄 [**CONTRIBUTING.md**](./CONTRIBUTING.md)<br/>Contains information for contributors to this software project.
 
