@@ -7,6 +7,9 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.web.WebView;
 
+/**
+ * Help scene providing access to the Transport-IDE online documentation via an integrated Web view.
+ */
 public class HelpScene extends Scene {
 	
 	private final ToolBar bottom = new ToolBar(new Label("© 2025 Dr. Georg Hackenberg, Professor for Industrial Informatics, School of Engineering, FH Upper Austria"));

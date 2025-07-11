@@ -2,8 +2,6 @@
  * Contains the core classes and functionalities of Transport-IDE.
  * 
  * The core classes and functionalities are used by the command line interface (CLI) and the graphical user interfaces (GUIs).
- * 
- * @author Georg Hackenberg
  */
 module mbse.transport.core {
 	

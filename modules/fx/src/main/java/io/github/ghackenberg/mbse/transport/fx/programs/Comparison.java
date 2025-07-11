@@ -40,6 +40,9 @@ import javafx.scene.layout.RowConstraints;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
+/**
+ * Entry point of the comparison application performing a Monte-Carlo experiment for selected models and controllers.
+ */
 public class Comparison extends Application {
 
 	public static void main(String[] args) {

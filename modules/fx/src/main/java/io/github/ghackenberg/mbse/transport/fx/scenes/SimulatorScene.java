@@ -28,6 +28,9 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 
+/**
+ * Simulator scene providing a toolbar on top, chart visualization to the right, and the 2D and 3D viewers in the center.
+ */
 public class SimulatorScene extends Scene {
 	
 	private final Thread thread;

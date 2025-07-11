@@ -2,8 +2,6 @@ package io.github.ghackenberg.mbse.transport.cli;
 
 /**
  * Entry point of the command line interface.
- * 
- * @author Georg Hackenberg
  */
 public class Main {
 	

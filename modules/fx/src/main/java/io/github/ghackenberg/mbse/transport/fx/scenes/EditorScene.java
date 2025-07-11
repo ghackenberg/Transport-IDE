@@ -55,6 +55,9 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+/**
+ * Editor scene providing a toolbar on top, a property grid on the right, and the 2D and 3D viewers in the center.
+ */
 public class EditorScene extends Scene {
 
 	private File modelRunsFolder = new File("runs");
