@@ -7,16 +7,16 @@ In the following, we provide brief descriptions and screenshots of the individua
 
 Basic simulation allows one to evaluate system performance for a given controller algorithm and transportation infrastructure.
 
-![Basic](../../images/screenshots/swing/basic-simulation.png)
+![Basic](./doc/basic-simulation.png)
 
 ## `ControllerComparison` program
 
 Controller comparison allows one to evaluate system performance for a set of controller algorithms and a given transportation infrastructure.
 
-![Controller comparison](../../images/screenshots/swing/controller-comparison.png)
+![Controller comparison](./doc/controller-comparison.png)
 
 ## `ModelComparison` program
 
 Model comparison allows one to evaluate system performance for a given controller algorithmn and a set of transportation infrastructures.
 
-![Model comparison](../../images/screenshots/swing/model-comparison.png)
+![Model comparison](./doc/model-comparison.png)

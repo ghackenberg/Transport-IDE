@@ -39,12 +39,9 @@ flowchart RL
     cli --> core
     fx --> core
     swing --> core
-
-    click core "./modules/core/" "Enter core module"
-    click cli "./modules/cli/" "Enter CLI module"
-    click fx "./modules/fx/" "Enter FX module"
-    click swing "./modules/swing/" "Enter Swing module"
 ```
+
+Learn more about the modules here: [`Core`](./modules/core/), [`CLI`](./modules/cli/), [`FX`](./modules/fx/), and [`Swing`](./modules/swing/).
 
 ## Folders
 
@@ -57,9 +54,18 @@ Here is a brief description of the top-level folder structure of this repository
 * 📁 [**Prototypes**](../prototypes/)<br/>Contains prototypes of new functionalities to be added later.
 * 📁 [**Manuscripts**](../manuscripts/)<br/>Contains source code of publications written in Latex.
 
+## Documents
+
+And here are some top-level documents to check out before getting started:
+
+* 📄 [**LICENSE.md**](./LICENSE.md)<br/>Contains information about the license, under which this software is shipped.
+* 📄 [**CANGELOG.md**](./CHANGELOG.md)<br/>Contains information about software versions and changes included.
+* 📄 [**CONTRIBUTING.md**](./CONTRIBUTING.md)<br/>Contains information for contributors to this software project.
+* 📄 [**GEMINI.md**](./GEMINI.md)<br/>Contains top-level instructions for the Gemini CLI.
+
 ## Publications
 
-And here is a list of publications related to this software project:
+And, finally, here is a list of publications related to this software project:
 
 1. [**Next-Generation Design Tools for Intelligent Transportation Systems**<br/>`MODELSWARD 2025`](https://www.scitepress.org/PublishedPapers/2025/131832/)
 1. [**A Discrete Event Formalism for Fast Simulation of On-Demand Transportation Systems**<br/>`ISDA 2024`](https://link.springer.com/chapter/10.1007/978-3-031-64850-2_17)
