@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
-import io.github.ghackenberg.mbse.transport.core.structures.Coordinate;
+import io.github.ghackenberg.mbse.transport.core.structures.Vector;
 
 public class ParserTest {
 
@@ -38,7 +38,7 @@ public class ParserTest {
 		assertNotNull(intersection);
 		assertEquals(intersection.name.get(), "A");
 		
-		Coordinate coordinate = intersection.coordinate; 
+		Vector coordinate = intersection.coordinate; 
 		
 		assertNotNull(coordinate);
 		assertEquals(coordinate.x.get(), 200, 0);

@@ -18,15 +18,19 @@ public class LocationTime {
 	
 	public LocationTime() {
 		location = new Location();
+		location.lane.set(-1);
 	}
 	
 	public LocationTime(Location location, double time) {
 		this.location = location;
+		this.location.lane.set(-1);
+		
 		this.time.set(time);
 	}
 	
 	public LocationTime(Segment segment, double distance, double time) {
-		this.location = new Location(segment, distance);
+		this.location = new Location(segment, distance, -1);
+		
 		this.time.set(time);
 	}
 	

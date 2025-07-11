@@ -3,7 +3,7 @@ package io.github.ghackenberg.mbse.transport.core.structures;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 
-public class Coordinate {
+public class Vector {
 	
 	// Properties
 	
@@ -13,11 +13,11 @@ public class Coordinate {
 	
 	// Constructors
 	
-	public Coordinate() {
+	public Vector() {
 		this(0, 0, 0);
 	}
 	
-	public Coordinate(double x, double y, double z) {
+	public Vector(double x, double y, double z) {
 		this.x.set(x);
 		this.y.set(y);
 		this.z.set(z);

@@ -14,6 +14,7 @@ public class Location {
 	
 	public final ObjectProperty<Segment> segment = new SimpleObjectProperty<>();
 	public final DoubleProperty distance = new SimpleDoubleProperty();
+	public final DoubleProperty lane = new SimpleDoubleProperty();
 	
 	public final DoubleProperty angleX = new SimpleDoubleProperty();
 	public final DoubleProperty angleY = new SimpleDoubleProperty();
@@ -21,7 +22,7 @@ public class Location {
 	
 	// Structures
 	
-	public final Coordinate coordinate = new Coordinate();
+	public final Vector coordinate = new Vector();
 	
 	// Constructors
 	
@@ -39,59 +40,106 @@ public class Location {
 			// Old value
 			
 			if (oldValue != null) {
-				// Change of start intersection
+				// Change of start coordinate
 				oldValue.start.coordinate.x.removeListener(listener);
 				oldValue.start.coordinate.y.removeListener(listener);
 				oldValue.start.coordinate.z.removeListener(listener);
 				
-				// Change of end intersection
+				// Change of tangent
 				oldValue.tangent.x.removeListener(listener);
 				oldValue.tangent.y.removeListener(listener);
 				oldValue.tangent.z.removeListener(listener);
+				
+				// Change of tangent normal
+				oldValue.tangentNormal.x.removeListener(listener);
+				oldValue.tangentNormal.y.removeListener(listener);
+				oldValue.tangentNormal.z.removeListener(listener);
+				
+				// Change of lanes
+				oldValue.lanes.removeListener(listener);
 			}
 			
 			// New value
 			
 			if (newValue != null) {
-				// Change coordinate of start intersection
+				// Change of start coordinate
 				newValue.start.coordinate.x.addListener(listener);
 				newValue.start.coordinate.y.addListener(listener);
 				newValue.start.coordinate.z.addListener(listener);
 				
-				// Change coordinate of end intersection
+				// Change of tangent
 				newValue.tangent.x.addListener(listener);
 				newValue.tangent.y.addListener(listener);
 				newValue.tangent.z.addListener(listener);
+				
+				// Change of tangentNormal
+				newValue.tangentNormal.x.addListener(listener);
+				newValue.tangentNormal.y.addListener(listener);
+				newValue.tangentNormal.z.addListener(listener);
+				
+				// Change of lanes
+				newValue.lanes.addListener(listener);
 			}
 			
 			recompute();
 		});
+		
 		// Change distance
 		distance.addListener(listener);
+		
+		// Change lane
+		lane.addListener(listener);
 	}
 	
-	public Location(Segment segment, double distance) {
+	public Location(Segment segment, double distance, double lane) {
 		this();
 		
 		this.segment.set(segment);
 		this.distance.set(distance);
+		this.lane.set(lane);
 	}
 	
 	// Methods
 	
 	private void recompute() {
 		if (segment.get() != null) {
-			Coordinate start = segment.get().start.coordinate;
+			Segment segment = this.segment.get();
 			
-			Coordinate tangent = segment.get().tangent;
+			Vector start = segment.start.coordinate;
+			Vector tangent = segment.tangent;
+			Vector tangentNormal = segment.tangentNormal;
+			double lanes = segment.lanes.get();
 			
-			coordinate.x.set(start.x.get() + tangent.x.get() * distance.get());
-			coordinate.y.set(start.y.get() + tangent.y.get() * distance.get());
-			coordinate.z.set(start.z.get() + tangent.z.get() * distance.get());
+			double distance = this.distance.get();
+			double lane = this.lane.get();
+			
+			double sX = start.x.get();
+			double sY = start.y.get();
+			double sZ = start.z.get();
+			
+			double tX = tangent.x.get();
+			double tY = tangent.y.get();
+			double tZ = tangent.z.get();
+			
+			double tNX = tangentNormal.x.get();
+			double tNY = tangentNormal.y.get();
+			double tNZ = tangentNormal.z.get();
+			
+			double cx = sX + tX * distance;
+			double cy = sY + tY * distance;
+			double cz = sZ + tZ * distance;
+			
+			double x = cx + tNX * (lanes - 1) / 2 - lane * tNX;
+			double y = cy + tNY * (lanes - 1) / 2 - lane * tNY;
+			double z = cz + tNZ * (lanes - 1) / 2 - lane * tNZ;
+			
+			coordinate.x.set(x);
+			coordinate.y.set(y);
+			coordinate.z.set(z);
 
-			angleX.set(segment.get().angleX.get());
-			angleY.set(segment.get().angleY.get());
-			angleZ.set(segment.get().angleZ.get());
+			angleX.set(segment.angleX.get());
+			angleY.set(segment.angleY.get());
+			angleZ.set(segment.angleZ.get());
 		} else {
 			coordinate.x.set(0);
 			coordinate.y.set(0);

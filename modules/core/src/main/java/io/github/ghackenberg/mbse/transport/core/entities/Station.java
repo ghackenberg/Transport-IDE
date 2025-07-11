@@ -22,6 +22,12 @@ public class Station {
 	
 	public final Location location = new Location();
 	
+	// Constructors
+	
+	public Station() {
+		location.lane.set(-1);
+	}
+	
 	// Methods
 	
 	@Override

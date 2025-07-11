@@ -2,7 +2,7 @@ package io.github.ghackenberg.mbse.transport.core.entities;
 
 import java.util.List;
 
-import io.github.ghackenberg.mbse.transport.core.structures.Coordinate;
+import io.github.ghackenberg.mbse.transport.core.structures.Vector;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.DoubleProperty;
@@ -38,9 +38,9 @@ public class Segment {
 	
 	// Structures
 	
-	public final Coordinate center = new Coordinate();
-	public final Coordinate tangent = new Coordinate();
-	public final Coordinate tangentNormal = new Coordinate();
+	public final Vector center = new Vector();
+	public final Vector tangent = new Vector();
+	public final Vector tangentNormal = new Vector();
 	
 	// Constructors
 	
@@ -95,11 +95,11 @@ public class Segment {
 	}
 	
 	private void recomputeTangent() {
-		double len = length.get();
-		
 		double dx = end.coordinate.x.get() - start.coordinate.x.get();
 		double dy = end.coordinate.y.get() - start.coordinate.y.get();
 		double dz = end.coordinate.z.get() - start.coordinate.z.get();
+		
+		double len = length.get();
 		
 		tangent.x.set(dx / len);
 		tangent.y.set(dy / len);
@@ -107,7 +107,14 @@ public class Segment {
 	}
 	
 	private void recomputeTangentNormal() {
-		// TODO (issue #15, #16, #17) recompute normal of tangent! reduce to x/y-normal! do not consider z!
+		double dx = end.coordinate.x.get() - start.coordinate.x.get();
+		double dy = end.coordinate.y.get() - start.coordinate.y.get();
+		
+		double len = Math.sqrt(dx * dx + dy * dy);
+		
+		tangentNormal.x.set(-dy / len);
+		tangentNormal.y.set(dx / len);
+		tangentNormal.z.set(0);
 	}
 	
 	private void recomputeAngles() {

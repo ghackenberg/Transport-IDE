@@ -1,6 +1,6 @@
 package io.github.ghackenberg.mbse.transport.core.entities;
 
-import io.github.ghackenberg.mbse.transport.core.structures.Coordinate;
+import io.github.ghackenberg.mbse.transport.core.structures.Vector;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.DoubleProperty;
@@ -20,7 +20,7 @@ public class Intersection {
 	
 	// Structures
 	
-	public final Coordinate coordinate = new Coordinate();
+	public final Vector coordinate = new Vector();
 	
 	public final ObservableList<Segment> incoming = FXCollections.observableArrayList();
 	public final ObservableList<Segment> outgoing = FXCollections.observableArrayList();

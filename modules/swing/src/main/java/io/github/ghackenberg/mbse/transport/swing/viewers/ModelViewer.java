@@ -26,7 +26,7 @@ import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
 import io.github.ghackenberg.mbse.transport.core.entities.Station;
 import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
-import io.github.ghackenberg.mbse.transport.core.structures.Coordinate;
+import io.github.ghackenberg.mbse.transport.core.structures.Vector;
 import io.github.ghackenberg.mbse.transport.core.structures.Location;
 
 public class ModelViewer implements Viewer {
@@ -310,7 +310,7 @@ public class ModelViewer implements Viewer {
 	
 	private void drawSpeed(Graphics2D graphics, Vehicle vehicle) {
 		
-		final Location location = new Location(vehicle.state.get().segment, vehicle.state.get().distance); 
+		final Location location = new Location(vehicle.state.get().segment, vehicle.state.get().distance, vehicle.state.get().lane); 
 		
 		double centerX = calculateCenterX(vehicle, location);
 		double centerY = calculateCenterY(vehicle, location);
@@ -352,7 +352,7 @@ public class ModelViewer implements Viewer {
 	
 	private void drawBatteryLevel(Graphics2D graphics, Vehicle vehicle) {
 		
-		final Location location = new Location(vehicle.state.get().segment, vehicle.state.get().distance); 
+		final Location location = new Location(vehicle.state.get().segment, vehicle.state.get().distance, vehicle.state.get().lane); 
 		
 		double deltaX = calculateDeltaX(vehicle.state.get().segment);
 		double deltaY = calculateDeltaY(vehicle.state.get().segment);
@@ -395,7 +395,7 @@ public class ModelViewer implements Viewer {
 	
 	private void drawDemandLevel(Graphics2D graphics, Vehicle vehicle) {
 		
-		final Location location = new Location(vehicle.state.get().segment, vehicle.state.get().distance); 
+		final Location location = new Location(vehicle.state.get().segment, vehicle.state.get().distance, vehicle.state.get().lane); 
 		
 		double deltaX = calculateDeltaX(vehicle.state.get().segment);
 		double deltaY = calculateDeltaY(vehicle.state.get().segment);
@@ -438,7 +438,7 @@ public class ModelViewer implements Viewer {
 	
 	private void drawVehicle(Graphics2D graphics, Vehicle vehicle) {
 		
-		final Location location = new Location(vehicle.state.get().segment, vehicle.state.get().distance); 
+		final Location location = new Location(vehicle.state.get().segment, vehicle.state.get().distance, vehicle.state.get().lane); 
 
 		double vehicleFront = vehicle.state.get().distance + vehicle.length.get() / 2;
 		double vehicleBack = vehicle.state.get().distance - vehicle.length.get() / 2;
@@ -555,10 +555,10 @@ public class ModelViewer implements Viewer {
 	
 	private void drawDemand(Graphics2D graphics, Demand demand) {
 		
-		final Location location = new Location(demand.state.get().segment, demand.state.get().distance); 
+		final Location location = new Location(demand.state.get().segment, demand.state.get().distance, demand.state.get().lane); 
 		
-		Coordinate pickup = location.coordinate;
-		Coordinate dropoff = demand.drop.location.coordinate;
+		Vector pickup = location.coordinate;
+		Vector dropoff = demand.drop.location.coordinate;
 		
 		double pickupCenterX = demand.state.get().vehicle == null ? calculateX(pickup) : calculateCenterX(demand.state.get().vehicle, location);
 		double pickupCenterY = demand.state.get().vehicle == null ? calculateY(pickup) : calculateCenterY(demand.state.get().vehicle, location);
@@ -654,7 +654,7 @@ public class ModelViewer implements Viewer {
 		double step = (Math.cos(Math.PI / 2) * deltaX - Math.sin(Math.PI / 2) * deltaY);
 		double left = step * vehicle.state.get().segment.lanes.get() * LANE_WIDTH * ratioScreenModel / 2;
 		
-		Coordinate coordinate = location.coordinate;
+		Vector coordinate = location.coordinate;
 		
 		return (int) (calculateX(coordinate) - left + step * (vehicle.state.get().lane + 0.5) * LANE_WIDTH * ratioScreenModel);
 	}
@@ -666,16 +666,16 @@ public class ModelViewer implements Viewer {
 		double step = (Math.sin(Math.PI / 2) * deltaX + Math.cos(Math.PI / 2) * deltaY);
 		double left = step * location.segment.get().lanes.get() * LANE_WIDTH * ratioScreenModel / 2;
 		
-		Coordinate coordinate = location.coordinate;
+		Vector coordinate = location.coordinate;
 		
 		return (int) (calculateY(coordinate) - left + step * (vehicle.state.get().lane + 0.5) * LANE_WIDTH * ratioScreenModel);
 	}
 	
-	private double calculateX(Coordinate coordinate) {
+	private double calculateX(Vector coordinate) {
 		return (coordinate.x.get() - minLatitude) / rangeLatitude * calculateWidth() + paddingLeft + MARGIN;
 	}
 	
-	private double calculateY(Coordinate coordinate) {
+	private double calculateY(Vector coordinate) {
 		return (coordinate.y.get() - minLongitude) / rangeLongitude * calculateHeight() + paddingTop + MARGIN;
 	}
 	

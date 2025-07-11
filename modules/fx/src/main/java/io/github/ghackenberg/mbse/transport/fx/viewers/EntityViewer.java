@@ -18,9 +18,9 @@ public abstract class EntityViewer<T> extends Group {
 	
 	public final BooleanProperty selected = new SimpleBooleanProperty(false);
 	
-	public final ObjectBinding<Color> color;
+	public ObjectBinding<Color> color;
 	
-	public EntityViewer(Model model, T entity, Color colorDefault, Color colorSelected) {
+	public EntityViewer(Model model, T entity) {
 		this.model = model;
 		this.modelState = model.state.get();
 		
@@ -28,8 +28,10 @@ public abstract class EntityViewer<T> extends Group {
 		
 		setManaged(false);
 		setDepthTest(DepthTest.ENABLE);
-		
-		// Color
+	}
+	
+	public EntityViewer(Model model, T entity, Color colorDefault, Color colorSelected) {
+		this(model, entity);
 		
 		color = Bindings.when(selected).then(colorSelected).otherwise(colorDefault);
 	}

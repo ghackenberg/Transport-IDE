@@ -17,11 +17,11 @@ public class Vehicle {
 		
 		public double distance = initialLocation.distance.get();
 		
+		public int lane = -1;
+		
 		public double speed = initialSpeed.get();
 		
 		public double batteryLevel = initialBatteryLevel.get();
-		
-		public int lane = -1;
 		
 		public double loadLevel = 0;
 		

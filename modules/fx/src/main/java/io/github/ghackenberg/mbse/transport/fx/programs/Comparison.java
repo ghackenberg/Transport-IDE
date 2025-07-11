@@ -206,8 +206,8 @@ public class Comparison extends Application {
 				Segment pickupSegment = model.segments.get(pickupSegmentNumber);
 				Segment dropoffSegment = model.segments.get(dropoffSegmentNumber);
 				
-				Location pickLoc = new Location(pickupSegment, pickupDistance * pickupSegment.length.get());
-				Location dropLoc = new Location(dropoffSegment, dropoffDistance * dropoffSegment.length.get());
+				Location pickLoc = new Location(pickupSegment, pickupDistance * pickupSegment.length.get(), -1);
+				Location dropLoc = new Location(dropoffSegment, dropoffDistance * dropoffSegment.length.get(), -1);
 				
 				LocationTime pick = new LocationTime(pickLoc, pickupTime);
 				LocationTime drop = new LocationTime(dropLoc, dropoffTime);

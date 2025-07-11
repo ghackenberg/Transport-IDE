@@ -29,8 +29,8 @@ public class VehicleViewerFlat extends VehicleViewer {
 		rectangle.widthProperty().bind(vehicle.length);
 		rectangle.setHeight(1);
 		
-		rectangle.xProperty().bind(location.coordinate.x.add(laneOffsetX).subtract(vehicle.length.divide(2)));
-		rectangle.yProperty().bind(location.coordinate.y.add(laneOffsetY).subtract(1 / 2.));
+		rectangle.xProperty().bind(location.coordinate.x.subtract(vehicle.length.divide(2)));
+		rectangle.yProperty().bind(location.coordinate.y.subtract(1 / 2.));
 		
 		rectangle.rotateProperty().bind(location.angleZ.divide(Math.PI).multiply(180));
 		
@@ -39,17 +39,18 @@ public class VehicleViewerFlat extends VehicleViewer {
 		// Text
 		
 		text = new Text();
+
+		text.setFont(new Font(0.5));
 		
 		text.textProperty().bind(vehicle.name);
-		text.yProperty().bind(location.coordinate.y);
 		
 		text.setTextAlignment(TextAlignment.CENTER);
 		text.setTextOrigin(VPos.CENTER);
 		
-		text.setFill(Color.BLACK);
-
-		text.setFont(new Font(0.5));
 		text.setX(location.coordinate.x.get() - text.getBoundsInLocal().getWidth() / 2);
+		text.yProperty().bind(location.coordinate.y);
+		
+		text.setFill(Color.BLACK);
 		
 		// Self
 		
@@ -59,13 +60,10 @@ public class VehicleViewerFlat extends VehicleViewer {
 		// Listeners
 
 		vehicle.name.addListener(event -> {
-			text.setX(location.coordinate.x.get() + laneOffsetX.get() - text.getBoundsInLocal().getWidth() / 2);
+			text.setX(location.coordinate.x.get() - text.getBoundsInLocal().getWidth() / 2);
 		});
 		location.coordinate.x.addListener(event -> {
-			text.setX(location.coordinate.x.get() + laneOffsetX.get() - text.getBoundsInLocal().getWidth() / 2);
-		});
-		laneOffsetX.addListener(event -> {
-			text.setX(location.coordinate.x.get() + laneOffsetX.get() - text.getBoundsInLocal().getWidth() / 2);
+			text.setX(location.coordinate.x.get() - text.getBoundsInLocal().getWidth() / 2);
 		});
 	}
 	
