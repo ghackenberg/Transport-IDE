@@ -74,12 +74,11 @@ Learn more about the modules here: [`Core`](./modules/core/), [`CLI`](./modules/
 
 Here is a brief description of the top-level folder structure of this repository:
 
-* 📁 [**Templates**](../templates/)<br/>Contains templates for different kinds of documents.
-* 📁 [**Tasks**](../tasks/)<br/>Contains the specifications of past and current coding tasks.
 * 📁 [**Modules**](../modules/)<br/>Contains the source code of the various software modules.
 * 📁 [**Models**](../models/)<br/>Contains sample system models used for testing and demonstration.
 * 📁 [**Prototypes**](../prototypes/)<br/>Contains prototypes of new functionalities to be added later.
 * 📁 [**Manuscripts**](../manuscripts/)<br/>Contains source code of publications written in Latex.
+* 📁 [**Images**](../images/)<br/>Contains image material used in the documentation.
 
 ## Documents
 
