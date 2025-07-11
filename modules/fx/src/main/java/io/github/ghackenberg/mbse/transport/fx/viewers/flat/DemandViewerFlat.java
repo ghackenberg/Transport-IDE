@@ -28,8 +28,6 @@ public class DemandViewerFlat extends DemandViewer {
 		
 		line = new Line();
 		
-		// TODO (issue #17) add lane offset here
-		
 		line.startXProperty().bind(start.x);
 		line.startYProperty().bind(start.y);
 		
