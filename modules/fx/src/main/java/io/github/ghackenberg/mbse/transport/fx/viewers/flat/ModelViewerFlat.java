@@ -13,7 +13,7 @@ import javafx.scene.transform.NonInvertibleTransformException;
 
 public class ModelViewerFlat extends ModelViewer<IntersectionViewerFlat, SegmentViewerFlat, StationViewerFlat, VehicleViewerFlat, DemandViewerFlat, Pane> {
 
-	private final GridViewerFlat grid = new GridViewerFlat();
+	public final GridViewerFlat grid = new GridViewerFlat();
 	
 	public ModelViewerFlat(Model model) {
 		this(model, true);

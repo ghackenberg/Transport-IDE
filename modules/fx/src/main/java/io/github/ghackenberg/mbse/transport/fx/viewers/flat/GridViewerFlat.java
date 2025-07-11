@@ -13,6 +13,8 @@ public class GridViewerFlat extends Pane {
     public final DoubleProperty y = new SimpleDoubleProperty();
     public final DoubleProperty s = new SimpleDoubleProperty();
 
+    public final DoubleProperty step = new SimpleDoubleProperty();
+
     public final Group layer1 = new Group();
     public final Group layer2 = new Group();
     public final Group layer3 = new Group();
@@ -101,6 +103,10 @@ public class GridViewerFlat extends Pane {
                 layer1.getChildren().add(line);
             }
         }
+
+        // Propagate step
+
+        this.step.set(step);
     }
 
 }

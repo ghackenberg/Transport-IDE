@@ -277,11 +277,13 @@ public class EditorScene extends Scene {
 					double y = event.getSceneY();
 					
 					Point2D world = modelViewerFlat.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
+
+					double step = modelViewerFlat.grid.step.get();
 					
 					Intersection intersection = new Intersection();
 					intersection.name.set("Intersection " + (model.intersections.size() + 1));
-					intersection.coordinate.x.set(world.getX());
-					intersection.coordinate.y.set(world.getY());
+					intersection.coordinate.x.set(Math.round(world.getX() / step) * step);
+					intersection.coordinate.y.set(Math.round(world.getY() / step) * step);
 					intersection.coordinate.z.set(0);
 					
 					model.intersections.add(intersection);
@@ -312,8 +314,10 @@ public class EditorScene extends Scene {
 				if (event.getGestureSource() instanceof IntersectionViewerFlat) {
 					IntersectionViewerFlat viewer = (IntersectionViewerFlat) event.getGestureSource();
 					if (event.isControlDown()) {
-						segmentPreviewEndX.set(world.getX());
-						segmentPreviewEndY.set(world.getY());
+						double step = modelViewerFlat.grid.step.get();
+
+						segmentPreviewEndX.set(Math.round(world.getX() / step) * step);
+						segmentPreviewEndY.set(Math.round(world.getY() / step) * step);
 					} else {
 						Map<Station, Double> stationDist = new HashMap<>();
 						Map<Vehicle, Double> vehicleDist = new HashMap<>();
@@ -330,9 +334,11 @@ public class EditorScene extends Scene {
 							demandPickDist.put(demand, demand.pick.location.distance.get() / demand.pick.location.segment.get().length.get());
 							demandDropDist.put(demand, demand.drop.location.distance.get() / demand.drop.location.segment.get().length.get());
 						}
+
+						double step = modelViewerFlat.grid.step.get();
 							
-						viewer.entity.coordinate.x.set(world.getX());
-						viewer.entity.coordinate.y.set(world.getY());
+						viewer.entity.coordinate.x.set(Math.round(world.getX() / step) * step);
+						viewer.entity.coordinate.y.set(Math.round(world.getY() / step) * step);
 						
 						for (Station station : model.stations) {
 							station.location.distance.set(stationDist.get(station) * station.location.segment.get().length.get());
@@ -491,12 +497,14 @@ public class EditorScene extends Scene {
 						double y = event.getSceneY();
 						
 						Point2D world = modelViewerFlat.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
+
+						double step = modelViewerFlat.grid.step.get();
 		
 						Intersection other = new Intersection();
 						
 						other.name.set("Intersection " + (model.intersections.size() + 1));
-						other.coordinate.x.set(world.getX());
-						other.coordinate.y.set(world.getY());
+						other.coordinate.x.set(Math.round(world.getX() / step) * step);
+						other.coordinate.y.set(Math.round(world.getY() / step) * step);
 						other.coordinate.z.set(0);
 						
 						model.intersections.add(other);
