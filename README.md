@@ -32,6 +32,12 @@ Here is a list of currently supported features of Transport-IDE:
 
 Feel free to request new features via GitHub issues!
 
+## Screenshots
+
+Here are some screenshots of Transport-IDE in action:
+
+<img src="./modules/fx/doc/editor-flat.png" width="33.33%"/><img src="./modules/fx/doc/editor-deep.png" width="33.33%"/><img src="./modules/fx/doc/simulator.png" width="33.33%"/>
+
 ## Requirements
 
 To build and run the project you need to following software packages:
