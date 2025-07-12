@@ -38,6 +38,24 @@ Here is a list of currently supported features of Transport-IDE:
 
 Feel free to request new features via GitHub issues!
 
+## Concepts
+
+The following diagram provides an overview of the modeling concepts:
+
+```mermaid
+flowchart LR
+  Station --> Location
+  Vehicle --initial--> Location
+  Vehicle --current--> Location
+  Demand --pick--> LocationTime
+  Demand --drop--> LocationTime
+  Demand --current--> Location
+  LocationTime --> Location
+  Location --> Segment
+  Segment --start--> Intersection
+  Segment --end--> Intersection
+```
+
 ## Requirements
 
 To build and run the project you need to following software packages:
