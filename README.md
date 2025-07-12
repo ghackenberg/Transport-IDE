@@ -11,6 +11,12 @@ In particular, we think that transportation system engineers must be supported b
 
 **Transport-IDE** is an *open source software project* initiated by Dr. Georg Hackenberg, Professor for Industrial Informatics, School of Engineering, [University of Applied Sciences Upper Austria](https://fh-ooe.at/) and Dominik Ascher, Research Associate, Distributed Artificial Intelligence Laboratory, [Technical University of Berlin](https://www.tu.berlin/).
 
+## Screenshots
+
+Here are some screenshots of Transport-IDE in action:
+
+<img src="./modules/fx/doc/editor-flat.png" width="33.33%"/><img src="./modules/fx/doc/editor-deep.png" width="33.33%"/><img src="./modules/fx/doc/simulator.png" width="33.33%"/>
+
 ## Features
 
 Here is a list of currently supported features of Transport-IDE:
@@ -31,12 +37,6 @@ Here is a list of currently supported features of Transport-IDE:
   - **Multi-threaded executions** for maximum computation speeds
 
 Feel free to request new features via GitHub issues!
-
-## Screenshots
-
-Here are some screenshots of Transport-IDE in action:
-
-<img src="./modules/fx/doc/editor-flat.png" width="33.33%"/><img src="./modules/fx/doc/editor-deep.png" width="33.33%"/><img src="./modules/fx/doc/simulator.png" width="33.33%"/>
 
 ## Requirements
 
