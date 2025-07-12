@@ -62,13 +62,13 @@ public abstract class ModelViewer<I extends IntersectionViewer, Se extends Segme
 		
 		this.canvas = canvas;
 		
-		minX = model.intersections.size() > 0 ? model.minX.get() - 3 : -10;
-		minY = model.intersections.size() > 0 ? model.minY.get() - 3 : -10;
-		minZ = model.intersections.size() > 0 ? model.minZ.get() - 3 : -10;
+		minX = model.intersections.size() > 0 ? model.minX.get() - 3 : -15;
+		minY = model.intersections.size() > 0 ? model.minY.get() - 3 : -15;
+		minZ = model.intersections.size() > 0 ? model.minZ.get() - 3 : -15;
 		
-		deltaX = model.intersections.size() > 0 ? model.deltaX.get() + 6 : 20;
-		deltaY = model.intersections.size() > 0 ? model.deltaY.get() + 6 : 20;
-		deltaZ = model.intersections.size() > 0 ? model.deltaZ.get() + 6 : 20;
+		deltaX = model.intersections.size() > 0 ? model.deltaX.get() + 6 : 30;
+		deltaY = model.intersections.size() > 0 ? model.deltaY.get() + 6 : 30;
+		deltaZ = model.intersections.size() > 0 ? model.deltaZ.get() + 6 : 30;
 		
 		intersectionLayer.setDepthTest(DepthTest.ENABLE);
 		segmentLayer.setDepthTest(DepthTest.ENABLE);
