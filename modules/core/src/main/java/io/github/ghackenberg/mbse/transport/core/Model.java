@@ -15,8 +15,14 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
+/**
+ * A container for all the model elements.
+ */
 public class Model {
 
+	/**
+	 * Dynamic state properties of a model.
+	 */
 	public class State {
 		
 		public double time = 0;

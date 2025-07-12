@@ -72,6 +72,10 @@ To work on the code you can use the following software package:
 - [IntelliJ IDEA](https://www.jetbrains.com/idea/)<br/>the professional way of Java coding
 - [Visual Studio Code](https://code.visualstudio.com/) + [Extension Pack for Java](https://github.com/Microsoft/vscode-java-pack)<br/>a nice, modern, and lightweight alternative (our preferred solution!)
 
+Here is a screenshot of our Visual Studio Code setup in action:
+
+![](./images/visual_studio_code.png)
+
 ## Modules
 
 This software packages comprises three modules and their dependencies.
