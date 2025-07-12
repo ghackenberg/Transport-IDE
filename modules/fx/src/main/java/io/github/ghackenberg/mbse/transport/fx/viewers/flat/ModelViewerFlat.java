@@ -8,6 +8,7 @@ import io.github.ghackenberg.mbse.transport.core.entities.Station;
 import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
 import io.github.ghackenberg.mbse.transport.fx.viewers.ModelViewer;
 import javafx.geometry.Point2D;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.transform.NonInvertibleTransformException;
 
@@ -81,6 +82,23 @@ public class ModelViewerFlat extends ModelViewer<IntersectionViewerFlat, Segment
 				e.printStackTrace();
 			}
 		});
+	}
+
+	// Unproject
+
+	public Point2D unproject(MouseEvent event) {
+		double x = event.getSceneX();
+		double y = event.getSceneY();
+
+		return unproject(x, y);
+	}
+
+	public Point2D unproject(double x, double y) {
+		try {
+			return canvas.getLocalToSceneTransform().createInverse().transform(x, y);
+		} catch (NonInvertibleTransformException e) {
+			return new Point2D(0, 0);
+		}
 	}
 
 	// Create

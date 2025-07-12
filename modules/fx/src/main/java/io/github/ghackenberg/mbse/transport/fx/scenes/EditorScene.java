@@ -14,6 +14,7 @@ import io.github.ghackenberg.mbse.transport.core.entities.Station;
 import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
 import io.github.ghackenberg.mbse.transport.core.exceptions.DirectoryException;
 import io.github.ghackenberg.mbse.transport.core.exceptions.MissingException;
+import io.github.ghackenberg.mbse.transport.core.structures.Location;
 import io.github.ghackenberg.mbse.transport.fx.helpers.GenericListChangeListener;
 import io.github.ghackenberg.mbse.transport.fx.helpers.GridHelper;
 import io.github.ghackenberg.mbse.transport.fx.helpers.ImageViewHelper;
@@ -50,7 +51,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.StrokeLineCap;
-import javafx.scene.transform.NonInvertibleTransformException;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -60,12 +60,19 @@ import javafx.stage.Stage;
  */
 public class EditorScene extends Scene {
 
+	// Fields
+
 	private File modelRunsFolder = new File("runs");
 	
 	private Model model = new Model();
 	
-	private ModelViewerFlat modelViewerFlat;
-	private ModelViewerDeep modelViewerDeep;
+	private double dragDemandDot;
+	
+	private Node dragDemandNode;
+
+	// - Previews
+
+	// --- Segment preview
 	
 	private final BooleanProperty segmentPreviewVisible = new SimpleBooleanProperty(false);
 	private final DoubleProperty segmentPreviewEndX = new SimpleDoubleProperty();
@@ -73,10 +80,18 @@ public class EditorScene extends Scene {
 	
 	private final Line segmentPreviewLine = new Line();
 	private final Circle segmentPreviewHead = new Circle();
-	
-	private double dragDemandDot;
-	
-	private Node dragDemandNode;
+
+	// --- Demand preview
+
+	private final BooleanProperty demandPreviewVisible = new SimpleBooleanProperty(false);
+	private final Location demandPreviewPickLoc = new Location();
+	private final Location demandPreviewDropLoc = new Location();
+
+	private final Circle demandPreviewPick = new Circle();
+	private final Line demandPreviewLine = new Line();
+	private final Circle demandPreviewDrop = new Circle();
+
+	// - Buttons
 
 	private final Button clear = new Button("Clear", ImageViewHelper.load("clear.png", 16, 16));
 	private final Button open = new Button("Open", ImageViewHelper.load("open.png", 16, 16));
@@ -85,18 +100,26 @@ public class EditorScene extends Scene {
 	private final Button help = new Button("Help", ImageViewHelper.load("help.png", 16, 16));
 	
 	private final ToggleButton deep = new ToggleButton("3D", ImageViewHelper.load("deep.png", 16, 16));
+
+	// - Toolbars
 	
 	private final ToolBar top = new ToolBar(clear, open, save, run, help, deep);
-	
 	private final ToolBar bottom = new ToolBar(new Label("© 2025 Dr. Georg Hackenberg, Professor for Industrial Informatics, School of Engineering, FH Upper Austria"));
+
+	// - Viewers
+	
+	private ModelViewerFlat modelViewerFlat;
+	private ModelViewerDeep modelViewerDeep;
 	
 	private EntityViewer<?> selected;
+
+	// - Panes
 	
 	private final GridPane grid = new GridPane();
-	
 	private final ScrollPane right = new ScrollPane(grid);
-	
 	private final BorderPane root = new BorderPane(null, top, right, bottom, null);
+
+	// Constructors
 	
 	public EditorScene() {
 		super(new Label("Loading ..."), 800, 600);
@@ -220,7 +243,7 @@ public class EditorScene extends Scene {
 		grid.setPrefWidth(300);
 		
 		grid.setPadding(new Insets(10));
-		
+
 		grid.setHgap(10);
 		grid.setVgap(10);
 		
@@ -231,11 +254,13 @@ public class EditorScene extends Scene {
 		right.setFitToHeight(true);
 		
 		// Center
+
+		// - Segment preview
 		
 		segmentPreviewLine.visibleProperty().bind(segmentPreviewVisible);
 		segmentPreviewLine.endXProperty().bind(segmentPreviewEndX);
 		segmentPreviewLine.endYProperty().bind(segmentPreviewEndY);
-	
+
 		segmentPreviewLine.setStroke(Color.LIGHTGRAY);
 		segmentPreviewLine.setStrokeWidth(1);
 		segmentPreviewLine.setStrokeDashOffset(1);
@@ -244,9 +269,39 @@ public class EditorScene extends Scene {
 		segmentPreviewHead.visibleProperty().bind(segmentPreviewVisible);
 		segmentPreviewHead.centerXProperty().bind(segmentPreviewEndX);
 		segmentPreviewHead.centerYProperty().bind(segmentPreviewEndY);
-		
+
 		segmentPreviewHead.setRadius(0.5);
 		segmentPreviewHead.setFill(Color.GRAY);
+
+		// - Demand preview
+
+		demandPreviewPickLoc.lane.set(-1);
+		demandPreviewDropLoc.lane.set(-1);
+
+		demandPreviewPick.visibleProperty().bind(demandPreviewVisible);
+		demandPreviewPick.centerXProperty().bind(demandPreviewPickLoc.coordinate.x);
+		demandPreviewPick.centerYProperty().bind(demandPreviewPickLoc.coordinate.y);
+
+		demandPreviewPick.setRadius(0.5);
+		demandPreviewPick.setFill(Color.GRAY);
+
+		demandPreviewLine.visibleProperty().bind(demandPreviewVisible);
+		demandPreviewLine.startXProperty().bind(demandPreviewPickLoc.coordinate.x);
+		demandPreviewLine.startYProperty().bind(demandPreviewPickLoc.coordinate.y);
+		demandPreviewLine.endXProperty().bind(demandPreviewDropLoc.coordinate.x);
+		demandPreviewLine.endYProperty().bind(demandPreviewDropLoc.coordinate.y);
+
+		demandPreviewLine.setStroke(Color.GRAY);
+		demandPreviewLine.setStrokeWidth(0.5 / 5);
+
+		demandPreviewDrop.visibleProperty().bind(demandPreviewVisible);
+		demandPreviewDrop.centerXProperty().bind(demandPreviewDropLoc.coordinate.x);
+		demandPreviewDrop.centerYProperty().bind(demandPreviewDropLoc.coordinate.y);
+
+		demandPreviewDrop.setRadius(0.5);
+		demandPreviewDrop.setFill(Color.GRAY);
+
+		// - Reload
 		
 		reload();
 		
@@ -254,6 +309,10 @@ public class EditorScene extends Scene {
 		
 		setRoot(root);
 	}
+
+	// Methods
+
+	// - Reload
 	
 	private void reload() {
 		select(null);
@@ -263,6 +322,10 @@ public class EditorScene extends Scene {
 		
 		modelViewerFlat.segmentLayer.getChildren().add(segmentPreviewLine);
 		modelViewerFlat.segmentLayer.getChildren().add(segmentPreviewHead);
+
+		modelViewerFlat.demandLayer.getChildren().add(demandPreviewLine);
+		modelViewerFlat.demandLayer.getChildren().add(demandPreviewPick);
+		modelViewerFlat.demandLayer.getChildren().add(demandPreviewDrop);
 		
 		setup(modelViewerFlat.intersections, this::detach, this::attach);
 		setup(modelViewerFlat.segments, this::detach, this::attach);
@@ -272,257 +335,155 @@ public class EditorScene extends Scene {
 		
 		modelViewerFlat.setOnMouseClicked(event -> {
 			if (event.isStillSincePress()) {
-				try {
-					double x = event.getSceneX();
-					double y = event.getSceneY();
-					
-					Point2D world = modelViewerFlat.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
+				Point2D world = modelViewerFlat.unproject(event);
 
-					double step = modelViewerFlat.grid.step.get();
-					
-					Intersection intersection = new Intersection();
-					intersection.name.set("Intersection " + (model.intersections.size() + 1));
-					intersection.coordinate.x.set(Math.round(world.getX() / step) * step);
-					intersection.coordinate.y.set(Math.round(world.getY() / step) * step);
-					intersection.coordinate.z.set(0);
-					
-					model.intersections.add(intersection);
-					
-					select(modelViewerFlat.intersectionViewers.get(intersection));
-					
-					event.consume();
-				} catch (NonInvertibleTransformException e) {
-					e.printStackTrace();
-				}
+				// TODO snap toggle!
+				world = modelViewerFlat.grid.snap(world);
+				
+				Intersection intersection = new Intersection();
+				intersection.name.set("Intersection " + (model.intersections.size() + 1));
+				intersection.coordinate.x.set(world.getX());
+				intersection.coordinate.y.set(world.getY());
+				intersection.coordinate.z.set(0);
+				
+				model.intersections.add(intersection);
+				
+				select(modelViewerFlat.intersectionViewers.get(intersection));
+				
+				event.consume();
 			}
 		});
 		modelViewerFlat.setOnMouseDragEntered(event -> {
 			if (event.getGestureSource() instanceof IntersectionViewerFlat) {
 				if (event.isControlDown()) {
 					segmentPreviewVisible.set(true);
+					
 					event.consume();
 				}
 			}
 		});
 		modelViewerFlat.setOnMouseDragOver(event -> {
-			try {
-				double x = event.getSceneX();
-				double y = event.getSceneY();
-				
-				Point2D world = modelViewerFlat.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
-				
-				if (event.getGestureSource() instanceof IntersectionViewerFlat) {
-					IntersectionViewerFlat viewer = (IntersectionViewerFlat) event.getGestureSource();
-					if (event.isControlDown()) {
-						double step = modelViewerFlat.grid.step.get();
+			Point2D world = modelViewerFlat.unproject(event);
+			
+			if (event.getGestureSource() instanceof IntersectionViewerFlat) {
+				IntersectionViewerFlat viewer = (IntersectionViewerFlat) event.getGestureSource();
 
-						segmentPreviewEndX.set(Math.round(world.getX() / step) * step);
-						segmentPreviewEndY.set(Math.round(world.getY() / step) * step);
-					} else {
-						Map<Station, Double> stationDist = new HashMap<>();
-						Map<Vehicle, Double> vehicleDist = new HashMap<>();
-						Map<Demand, Double> demandPickDist = new HashMap<>();
-						Map<Demand, Double> demandDropDist = new HashMap<>();
-						
-						for (Station station : model.stations) {
-							stationDist.put(station, station.location.distance.get() / station.location.segment.get().length.get());
-						}
-						for (Vehicle vehicle : model.vehicles) {
-							vehicleDist.put(vehicle, vehicle.initialLocation.distance.get() / vehicle.initialLocation.segment.get().length.get());
-						}
-						for (Demand demand : model.demands) {
-							demandPickDist.put(demand, demand.pick.location.distance.get() / demand.pick.location.segment.get().length.get());
-							demandDropDist.put(demand, demand.drop.location.distance.get() / demand.drop.location.segment.get().length.get());
-						}
+				// TODO snap toggle!
+				world = modelViewerFlat.grid.snap(world);
 
-						double step = modelViewerFlat.grid.step.get();
-							
-						viewer.entity.coordinate.x.set(Math.round(world.getX() / step) * step);
-						viewer.entity.coordinate.y.set(Math.round(world.getY() / step) * step);
-						
-						for (Station station : model.stations) {
-							station.location.distance.set(stationDist.get(station) * station.location.segment.get().length.get());
-						}
-						for (Vehicle vehicle : model.vehicles) {
-							vehicle.initialLocation.distance.set(vehicleDist.get(vehicle) * vehicle.initialLocation.segment.get().length.get());
-						}
-						for (Demand demand : model.demands) {
-							demand.pick.location.distance.set(demandPickDist.get(demand) * demand.pick.location.segment.get().length.get());
-							demand.drop.location.distance.set(demandDropDist.get(demand) * demand.drop.location.segment.get().length.get());
-						}
+				if (event.isControlDown()) {
+					segmentPreviewEndX.set(world.getX());
+					segmentPreviewEndY.set(world.getY());
+				} else {
+					Map<Station, Double> stationDist = new HashMap<>();
+					Map<Vehicle, Double> vehicleDist = new HashMap<>();
+					
+					for (Station station : model.stations) {
+						stationDist.put(station, station.location.distance.get() / station.location.segment.get().length.get());
 					}
+					for (Vehicle vehicle : model.vehicles) {
+						vehicleDist.put(vehicle, vehicle.initialLocation.distance.get() / vehicle.initialLocation.segment.get().length.get());
+					}
+					
+					Map<Demand, Double> demandPickDist = new HashMap<>();
+					Map<Demand, Double> demandDropDist = new HashMap<>();
 
-					event.consume();
-				} else if (event.getGestureSource() instanceof StationViewerFlat) {
-					StationViewerFlat viewer = (StationViewerFlat) event.getGestureSource();
-					
-					double minLen = Double.MAX_VALUE;
-					double minDot = 0;
-					Segment minSeg = null;
-					
-					for (Segment segment : model.segments) {
-						double sx = segment.start.coordinate.x.get();
-						double sy = segment.start.coordinate.y.get();
-						
-						double tx = segment.tangent.x.get();
-						double ty = segment.tangent.y.get();
-						
-						double dx = world.getX() - sx;
-						double dy = world.getY() - sy;
-						
-						double dot = Math.min(segment.length.get(), Math.max(0, tx * dx + ty * dy));
-						
-						double lx = sx + dot * tx;
-						double ly = sy + dot * ty;
-						
-						double nx = world.getX() - lx;
-						double ny = world.getY() - ly;
-						
-						double len = Math.sqrt(nx * nx + ny * ny);
-						
-						if (len < minLen) {
-							minLen = len;
-							minSeg = segment;
-							minDot = dot;
-						}
+					for (Demand demand : model.demands) {
+						demandPickDist.put(demand, demand.pick.location.distance.get() / demand.pick.location.segment.get().length.get());
+						demandDropDist.put(demand, demand.drop.location.distance.get() / demand.drop.location.segment.get().length.get());
 					}
+						
+					viewer.entity.coordinate.x.set(world.getX());
+					viewer.entity.coordinate.y.set(world.getY());
 					
-					if (minSeg != null) {
-						viewer.entity.location.segment.set(minSeg);
-						viewer.entity.location.distance.set(minDot);
+					for (Station station : model.stations) {
+						station.location.distance.set(stationDist.get(station) * station.location.segment.get().length.get());
 					}
-					
-					event.consume();
-				} else if (event.getGestureSource() instanceof VehicleViewerFlat) {
-					VehicleViewerFlat viewer = (VehicleViewerFlat) event.getGestureSource();
-					
-					double minLen = Double.MAX_VALUE;
-					double minDot = 0;
-					Segment minSeg = null;
-					
-					for (Segment segment : model.segments) {
-						double sx = segment.start.coordinate.x.get();
-						double sy = segment.start.coordinate.y.get();
-						
-						double tx = segment.tangent.x.get();
-						double ty = segment.tangent.y.get();
-						
-						double dx = world.getX() - sx;
-						double dy = world.getY() - sy;
-						
-						double dot = Math.min(segment.length.get(), Math.max(0, tx * dx + ty * dy));
-						
-						double lx = sx + dot * tx;
-						double ly = sy + dot * ty;
-						
-						double nx = world.getX() - lx;
-						double ny = world.getY() - ly;
-						
-						double len = Math.sqrt(nx * nx + ny * ny);
-						
-						if (len < minLen) {
-							minLen = len;
-							minSeg = segment;
-							minDot = dot;
-						}
+					for (Vehicle vehicle : model.vehicles) {
+						vehicle.initialLocation.distance.set(vehicleDist.get(vehicle) * vehicle.initialLocation.segment.get().length.get());
 					}
-					
-					if (minSeg != null) {
-						viewer.entity.initialLocation.segment.set(minSeg);
-						viewer.entity.initialLocation.distance.set(minDot);
+					for (Demand demand : model.demands) {
+						demand.pick.location.distance.set(demandPickDist.get(demand) * demand.pick.location.segment.get().length.get());
+						demand.drop.location.distance.set(demandDropDist.get(demand) * demand.drop.location.segment.get().length.get());
 					}
-					
-					event.consume();
-				} else if (event.getGestureSource() instanceof DemandViewerFlat) {
-					DemandViewerFlat viewer = (DemandViewerFlat) event.getGestureSource();
-					
-					double minLen = Double.MAX_VALUE;
-					double minDot = 0;
-					Segment minSeg = null;
-					
-					for (Segment segment : model.segments) {
-						double sx = segment.start.coordinate.x.get();
-						double sy = segment.start.coordinate.y.get();
-						
-						double tx = segment.tangent.x.get();
-						double ty = segment.tangent.y.get();
-						
-						double dx = world.getX() - sx;
-						double dy = world.getY() - sy;
-						
-						double dot = Math.min(segment.length.get(), Math.max(0, tx * dx + ty * dy));
-						
-						double lx = sx + dot * tx;
-						double ly = sy + dot * ty;
-						
-						double nx = world.getX() - lx;
-						double ny = world.getY() - ly;
-						
-						double len = Math.sqrt(nx * nx + ny * ny);
-						
-						if (len < minLen) {
-							minLen = len;
-							minSeg = segment;
-							minDot = dot;
-						}
-					}
-					
-					if (minSeg != null) {
-						if (dragDemandNode == viewer.source || dragDemandNode == viewer.sourceText) {
-							viewer.entity.pick.location.segment.set(minSeg);
-							viewer.entity.pick.location.distance.set(minDot);
-						} else {
-							viewer.entity.drop.location.segment.set(minSeg);
-							viewer.entity.drop.location.distance.set(minDot);
-						}
-					}
-					
-					event.consume();
 				}
-			} catch (NonInvertibleTransformException e) {
-				e.printStackTrace();
+
+				event.consume();
+			} else if (event.getGestureSource() instanceof StationViewerFlat) {
+				StationViewerFlat viewer = (StationViewerFlat) event.getGestureSource();
+				
+				Model.Projection projection = model.project(world.getX(), world.getY());
+				
+				if (projection.seg != null) {
+					viewer.entity.location.segment.set(projection.seg);
+					viewer.entity.location.distance.set(projection.dot);
+				}
+				
+				event.consume();
+			} else if (event.getGestureSource() instanceof VehicleViewerFlat) {
+				VehicleViewerFlat viewer = (VehicleViewerFlat) event.getGestureSource();
+				
+				Model.Projection projection = model.project(world.getX(), world.getY());
+				
+				if (projection.seg != null) {
+					viewer.entity.initialLocation.segment.set(projection.seg);
+					viewer.entity.initialLocation.distance.set(projection.dot);
+				}
+				
+				event.consume();
+			} else if (event.getGestureSource() instanceof DemandViewerFlat) {
+				DemandViewerFlat viewer = (DemandViewerFlat) event.getGestureSource();
+				
+				Model.Projection projection = model.project(world.getX(), world.getY());
+				
+				if (projection.seg != null) {
+					if (dragDemandNode == viewer.source || dragDemandNode == viewer.sourceText) {
+						viewer.entity.pick.location.segment.set(projection.seg);
+						viewer.entity.pick.location.distance.set(projection.dot);
+					} else {
+						viewer.entity.drop.location.segment.set(projection.seg);
+						viewer.entity.drop.location.distance.set(projection.dot);
+					}
+				}
+				
+				event.consume();
 			}
 		});
 		modelViewerFlat.setOnMouseDragExited(event -> {
 			segmentPreviewVisible.set(false);
+
 			event.consume();
 		});
 		modelViewerFlat.setOnMouseDragReleased(event -> {
-			try {
-				if (event.getGestureSource() instanceof IntersectionViewerFlat) {
-					if (event.isControlDown()) {
-						IntersectionViewerFlat viewer = (IntersectionViewerFlat) event.getGestureSource();
-						
-						double x = event.getSceneX();
-						double y = event.getSceneY();
-						
-						Point2D world = modelViewerFlat.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
+			if (event.getGestureSource() instanceof IntersectionViewerFlat) {
+				if (event.isControlDown()) {
+					IntersectionViewerFlat viewer = (IntersectionViewerFlat) event.getGestureSource();
+					
+					Point2D world = modelViewerFlat.unproject(event);
 
-						double step = modelViewerFlat.grid.step.get();
-		
-						Intersection other = new Intersection();
-						
-						other.name.set("Intersection " + (model.intersections.size() + 1));
-						other.coordinate.x.set(Math.round(world.getX() / step) * step);
-						other.coordinate.y.set(Math.round(world.getY() / step) * step);
-						other.coordinate.z.set(0);
-						
-						model.intersections.add(other);
-						
-						Segment segment = new Segment(viewer.entity, other);
-						
-						viewer.entity.outgoing.add(segment);
-						other.incoming.add(segment);
-						
-						model.segments.add(segment);
-						
-						select(modelViewerFlat.segmentViewers.get(segment));
-		
-						event.consume();
-					}
+					// TODO snap toggle!
+					world = modelViewerFlat.grid.snap(world);
+	
+					Intersection other = new Intersection();
+					
+					other.name.set("Intersection " + (model.intersections.size() + 1));
+					other.coordinate.x.set(world.getX());
+					other.coordinate.y.set(world.getY());
+					other.coordinate.z.set(0);
+					
+					model.intersections.add(other);
+					
+					Segment segment = new Segment(viewer.entity, other);
+					
+					viewer.entity.outgoing.add(segment);
+					other.incoming.add(segment);
+					
+					model.segments.add(segment);
+					
+					select(modelViewerFlat.segmentViewers.get(segment));
+	
+					event.consume();
 				}
-			} catch (NonInvertibleTransformException e) {
-				e.printStackTrace();
 			}
 		});
 		
@@ -532,6 +493,8 @@ public class EditorScene extends Scene {
 			root.setCenter(modelViewerFlat);
 		}
 	}
+
+	// - Setup
 	
 	private <T> void setup(ObservableList<T> list, GenericListChangeListener.Handler<T> remove, GenericListChangeListener.Handler<T> add) {
 		list.addListener(new GenericListChangeListener<T>(remove, add));
@@ -539,17 +502,22 @@ public class EditorScene extends Scene {
 			add.handle(item);
 		}
 	}
+
+	// - Attach
 	
 	private void attach(IntersectionViewerFlat viewer) {
 		viewer.setOnMouseClicked(event -> {
 			if (event.isStillSincePress()) {
 				select(viewer);
+
 				event.consume();
 			}
 		});
 		viewer.setOnDragDetected(event -> {
 			select(viewer);
+
 			viewer.startFullDrag();
+
 			if (event.isControlDown()) {
 				segmentPreviewVisible.set(true);
 				
@@ -559,6 +527,7 @@ public class EditorScene extends Scene {
 				segmentPreviewEndX.set(viewer.entity.coordinate.x.get());
 				segmentPreviewEndY.set(viewer.entity.coordinate.y.get());
 			}
+
 			event.consume();
 		});
 		viewer.setOnMouseDragEntered(event -> {
@@ -584,17 +553,18 @@ public class EditorScene extends Scene {
 			if (event.getGestureSource() instanceof IntersectionViewerFlat && event.getGestureSource() != viewer) {
 				if (event.isControlDown()) {
 					viewer.selected.set(false);
+
 					event.consume();
 				}
 			}
 		});
 		viewer.setOnMouseDragReleased(event -> {
 			if (event.getGestureSource() instanceof IntersectionViewerFlat && event.getGestureSource() != viewer) {
+				IntersectionViewerFlat other = (IntersectionViewerFlat) event.getGestureSource();
+
 				if (event.isControlDown()) {
 					segmentPreviewVisible.set(false);
-					
-					IntersectionViewerFlat other = (IntersectionViewerFlat) event.getGestureSource();
-					
+
 					Segment segment = new Segment(other.entity, viewer.entity);
 					
 					other.entity.outgoing.add(segment);
@@ -609,126 +579,83 @@ public class EditorScene extends Scene {
 			}
 		});
 	}
+
 	private void attach(SegmentViewerFlat viewer) {
 		viewer.setOnMouseClicked(event -> {
-			try {
-				if (event.isStillSincePress()) {
-					double x = event.getSceneX();
-					double y = event.getSceneY();
-					
-					Point2D world = modelViewerFlat.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
+			if (event.isStillSincePress()) {
+				Point2D world = modelViewerFlat.unproject(event);
 
-					double sx = viewer.entity.start.coordinate.x.get();
-					double sy = viewer.entity.start.coordinate.y.get();
+				Segment.Projection projection = viewer.entity.project(world.getX(), world.getY());
+				
+				if (event.isControlDown()) {
+					Station station = new Station();
 					
-					double tx = viewer.entity.tangent.x.get();
-					double ty = viewer.entity.tangent.y.get();
+					station.speed.set(1);
+					station.location.segment.set(viewer.entity);
+					station.location.distance.set(projection.dot);
 					
-					double dx = world.getX() - sx;
-					double dy = world.getY() - sy;
+					model.stations.add(station);
 					
-					double dot = tx * dx + ty * dy;
+					select(modelViewerFlat.stationViewers.get(station));
+				} else if (event.isShiftDown()) {
+					Vehicle vehicle = new Vehicle();
 					
-					if (event.isControlDown()) {
-						Station station = new Station();
-						
-						station.speed.set(1);
-						station.location.segment.set(viewer.entity);
-						station.location.distance.set(dot);
-						
-						model.stations.add(station);
-						
-						select(modelViewerFlat.stationViewers.get(station));
-					} else if (event.isShiftDown()) {
-						Vehicle vehicle = new Vehicle();
-						
-						vehicle.name.set("Vehicle " + (model.vehicles.size() + 1));
-						vehicle.length.set(1);
-						vehicle.loadCapacity.set(1);
-						vehicle.batteryCapacity.set(1000);
-						vehicle.initialBatteryLevel.set(1000);
-						vehicle.initialSpeed.set(1);
-						vehicle.initialLocation.segment.set(viewer.entity);
-						vehicle.initialLocation.distance.set(dot);
-						
-						model.vehicles.add(vehicle);
-						
-						select(modelViewerFlat.vehicleViewers.get(vehicle));
-					} else {
-						select(viewer);
-					}
-					event.consume();
+					vehicle.name.set("Vehicle " + (model.vehicles.size() + 1));
+					vehicle.length.set(1);
+					vehicle.loadCapacity.set(1);
+					vehicle.batteryCapacity.set(1000);
+					vehicle.initialBatteryLevel.set(1000);
+					vehicle.initialSpeed.set(1);
+					vehicle.initialLocation.segment.set(viewer.entity);
+					vehicle.initialLocation.distance.set(projection.dot);
+					
+					model.vehicles.add(vehicle);
+					
+					select(modelViewerFlat.vehicleViewers.get(vehicle));
+				} else {
+					select(viewer);
 				}
-			} catch (NonInvertibleTransformException e) {
-				e.printStackTrace();
+				event.consume();
 			}
 		});
 		viewer.setOnDragDetected(event -> {
-			try {
-				double x = event.getSceneX();
-				double y = event.getSceneY();
-				
-				Point2D world = modelViewerFlat.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
-	
-				double sx = viewer.entity.start.coordinate.x.get();
-				double sy = viewer.entity.start.coordinate.y.get();
-				
-				double tx = viewer.entity.tangent.x.get();
-				double ty = viewer.entity.tangent.y.get();
-				
-				double dx = world.getX() - sx;
-				double dy = world.getY() - sy;
-				
-				dragDemandDot = tx * dx + ty * dy;
-				
-				viewer.startFullDrag();
-				event.consume();
-			} catch (NonInvertibleTransformException e) {
-				e.printStackTrace();
-			}
+			Point2D world = modelViewerFlat.unproject(event);
+
+			Segment.Projection projection = viewer.entity.project(world.getX(), world.getY());
+
+			dragDemandDot = projection.dot;
+			
+			viewer.startFullDrag();
+
+			event.consume();
 		});
 		viewer.setOnMouseDragReleased(event -> {
-			try {
-				if (event.getGestureSource() instanceof SegmentViewerFlat) {
-					double x = event.getSceneX();
-					double y = event.getSceneY();
-					
-					Point2D world = modelViewerFlat.canvas.getLocalToSceneTransform().createInverse().transform(x, y);
-	
-					double sx = viewer.entity.start.coordinate.x.get();
-					double sy = viewer.entity.start.coordinate.y.get();
-					
-					double tx = viewer.entity.tangent.x.get();
-					double ty = viewer.entity.tangent.y.get();
-					
-					double dx = world.getX() - sx;
-					double dy = world.getY() - sy;
-					
-					double dot = tx * dx + ty * dy;
-					
-					SegmentViewerFlat other = (SegmentViewerFlat) event.getGestureSource();
-					
-					Demand demand = new Demand();
-					
-					demand.size.set(1);
-					
-					demand.pick.location.segment.set(other.entity);
-					demand.pick.location.distance.set(dragDemandDot);
-					
-					demand.drop.location.segment.set(viewer.entity);
-					demand.drop.location.distance.set(dot);
-					
-					model.demands.add(demand);
-					
-					select(modelViewerFlat.demandViewers.get(demand));
-					
-					event.consume();
-				}
-			} catch (NonInvertibleTransformException e) {
-				e.printStackTrace();
+			if (event.getGestureSource() instanceof SegmentViewerFlat) {
+				SegmentViewerFlat other = (SegmentViewerFlat) event.getGestureSource();
+
+				Point2D world = modelViewerFlat.unproject(event);
+
+				Segment.Projection projection = viewer.entity.project(world.getX(), world.getY());
+				
+				Demand demand = new Demand();
+				
+				demand.size.set(1);
+				
+				demand.pick.location.segment.set(other.entity);
+				demand.pick.location.distance.set(dragDemandDot);
+				
+				demand.drop.location.segment.set(viewer.entity);
+				demand.drop.location.distance.set(projection.dot);
+				
+				model.demands.add(demand);
+				
+				select(modelViewerFlat.demandViewers.get(demand));
+				
+				event.consume();
 			}
 		});
 	}
+
 	private void attach(StationViewerFlat viewer) {
 		viewer.setOnMouseClicked(event -> {
 			if (event.isStillSincePress()) {
@@ -741,6 +668,7 @@ public class EditorScene extends Scene {
 			event.consume();
 		});
 	}
+
 	private void attach(VehicleViewerFlat viewer) {
 		viewer.setOnMouseClicked(event -> {
 			if (event.isStillSincePress()) {
@@ -753,6 +681,7 @@ public class EditorScene extends Scene {
 			event.consume();
 		});
 	}
+
 	private void attach(DemandViewerFlat viewer) {
 		viewer.setOnMouseClicked(event -> {
 			if (event.isStillSincePress()) {
@@ -768,6 +697,8 @@ public class EditorScene extends Scene {
 			}
 		});
 	}
+
+	// - Detach
 	
 	private void detach(IntersectionViewerFlat viewer) {
 		viewer.setOnMouseClicked(null);
@@ -776,22 +707,28 @@ public class EditorScene extends Scene {
 		viewer.setOnMouseDragExited(null);
 		viewer.setOnMouseDragReleased(null);
 	}
+
 	private void detach(SegmentViewerFlat viewer) {
 		viewer.setOnMouseClicked(null);
 		viewer.setOnDragDetected(null);
 	}
+
 	private void detach(StationViewerFlat viewer) {
 		viewer.setOnMouseClicked(null);
 		viewer.setOnDragDetected(null);
 	}
+
 	private void detach(VehicleViewerFlat viewer) {
 		viewer.setOnMouseClicked(null);
 		viewer.setOnDragDetected(null);
 	}
+	
 	private void detach(DemandViewerFlat viewer) {
 		viewer.setOnMouseClicked(null);
 		viewer.setOnDragDetected(null);
 	}
+
+	// - Select
 	
 	private void select(EntityViewer<?> viewer) {
 		if (selected != null) {
@@ -818,6 +755,8 @@ public class EditorScene extends Scene {
 			}
 		}
 	}
+
+	// - Show
 	
 	private void show(IntersectionViewerFlat viewer) {
 		TextField type = new TextField("Intersection");

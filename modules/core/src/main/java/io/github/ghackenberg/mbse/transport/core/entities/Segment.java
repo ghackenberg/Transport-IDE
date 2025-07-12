@@ -67,6 +67,39 @@ public class Segment {
 	}
 	
 	// Methods
+
+	public class Projection {
+		public final double dot;
+		public final double len;
+
+		public Projection(double dot, double len) {
+			this.dot = dot;
+			this.len = len;
+		}
+	}
+
+	public Projection project(double x, double y) {
+		double sx = start.coordinate.x.get();
+		double sy = start.coordinate.y.get();
+		
+		double tx = tangent.x.get();
+		double ty = tangent.y.get();
+		
+		double dx = x - sx;
+		double dy = y - sy;
+		
+		double dot = Math.min(length.get(), Math.max(0, tx * dx + ty * dy));
+					
+		double lx = sx + dot * tx;
+		double ly = sy + dot * ty;
+		
+		double nx = x - lx;
+		double ny = y - ly;
+
+		double len = Math.sqrt(nx * nx + ny * ny);
+
+		return new Projection(dot, len);
+	}
 	
 	private void recompute() {
 		recomputeCenter();

@@ -84,6 +84,37 @@ public class Model {
 	}
 	
 	// Methods
+
+	public class Projection {
+		public final Segment seg;
+		public final double dot;
+		public final double len;
+
+		public Projection(Segment seg, double dot, double len) {
+			this.seg = seg;
+			this.dot = dot;
+			this.len = len;
+		}
+	}
+
+	public Projection project(double x, double y) {
+		Segment minSeg = null;
+		double minDot = 0;
+		double minLen = Double.MAX_VALUE;
+		
+		for (Segment segment : segments) {
+
+			Segment.Projection tuple = segment.project(x, y);
+			
+			if (tuple.len < minLen) {
+				minSeg = segment;
+				minDot = tuple.dot;
+				minLen = tuple.len;
+			}
+		}
+
+		return new Projection(minSeg, minDot, minLen);
+	}
 	
 	private void recompute() {
 		// X

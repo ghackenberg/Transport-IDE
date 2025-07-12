@@ -2,12 +2,15 @@ package io.github.ghackenberg.mbse.transport.fx.viewers.flat;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 
 public class GridViewerFlat extends Pane {
+
+    // Fields
 
     public final DoubleProperty x = new SimpleDoubleProperty();
     public final DoubleProperty y = new SimpleDoubleProperty();
@@ -18,6 +21,8 @@ public class GridViewerFlat extends Pane {
     public final Group layer1 = new Group();
     public final Group layer2 = new Group();
     public final Group layer3 = new Group();
+
+    // Constructors
 
     public GridViewerFlat() {
         widthProperty().addListener(event -> updateGrid());
@@ -30,6 +35,19 @@ public class GridViewerFlat extends Pane {
         getChildren().add(layer1);
         getChildren().add(layer2);
         getChildren().add(layer3);
+    }
+
+    // Methods
+
+    public Point2D snap(Point2D point) {
+        return snap(point.getX(), point.getY());
+    }
+
+    public Point2D snap(double x, double y) {
+        double sx = Math.round(x / step.get()) * step.get();
+        double sy = Math.round(y / step.get()) * step.get();
+
+        return new Point2D(sx, sy);
     }
 
     private void updateGrid() {
