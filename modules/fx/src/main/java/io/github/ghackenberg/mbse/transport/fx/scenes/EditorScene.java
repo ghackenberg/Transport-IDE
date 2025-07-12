@@ -66,8 +66,6 @@ public class EditorScene extends Scene {
 	
 	private Model model = new Model();
 	
-	private double dragDemandDot;
-	
 	private Node dragDemandNode;
 
 	// - Previews
@@ -283,7 +281,7 @@ public class EditorScene extends Scene {
 		demandPreviewPick.centerYProperty().bind(demandPreviewPickLoc.coordinate.y);
 
 		demandPreviewPick.setRadius(0.5);
-		demandPreviewPick.setFill(Color.GRAY);
+		demandPreviewPick.setFill(Color.GREEN);
 
 		demandPreviewLine.visibleProperty().bind(demandPreviewVisible);
 		demandPreviewLine.startXProperty().bind(demandPreviewPickLoc.coordinate.x);
@@ -291,7 +289,7 @@ public class EditorScene extends Scene {
 		demandPreviewLine.endXProperty().bind(demandPreviewDropLoc.coordinate.x);
 		demandPreviewLine.endYProperty().bind(demandPreviewDropLoc.coordinate.y);
 
-		demandPreviewLine.setStroke(Color.GRAY);
+		demandPreviewLine.setStroke(Color.GREEN);
 		demandPreviewLine.setStrokeWidth(0.5 / 5);
 
 		demandPreviewDrop.visibleProperty().bind(demandPreviewVisible);
@@ -299,7 +297,7 @@ public class EditorScene extends Scene {
 		demandPreviewDrop.centerYProperty().bind(demandPreviewDropLoc.coordinate.y);
 
 		demandPreviewDrop.setRadius(0.5);
-		demandPreviewDrop.setFill(Color.GRAY);
+		demandPreviewDrop.setFill(Color.GREEN);
 
 		// - Reload
 		
@@ -357,9 +355,11 @@ public class EditorScene extends Scene {
 			if (event.getGestureSource() instanceof IntersectionViewerFlat) {
 				if (event.isControlDown()) {
 					segmentPreviewVisible.set(true);
-					
 					event.consume();
 				}
+			} else if (event.getGestureSource() instanceof SegmentViewerFlat) {
+				demandPreviewVisible.set(true);
+				event.consume();
 			}
 		});
 		modelViewerFlat.setOnMouseDragOver(event -> {
@@ -409,6 +409,15 @@ public class EditorScene extends Scene {
 				}
 
 				event.consume();
+			} else if (event.getGestureSource() instanceof SegmentViewerFlat) {
+				Model.Projection projection = model.project(world.getX(), world.getY());
+
+				if (projection.seg != null) {
+					demandPreviewDropLoc.segment.set(projection.seg);
+					demandPreviewDropLoc.distance.set(projection.dot);
+				}
+
+				event.consume();
 			} else if (event.getGestureSource() instanceof StationViewerFlat) {
 				StationViewerFlat viewer = (StationViewerFlat) event.getGestureSource();
 				
@@ -451,15 +460,16 @@ public class EditorScene extends Scene {
 		});
 		modelViewerFlat.setOnMouseDragExited(event -> {
 			segmentPreviewVisible.set(false);
+			demandPreviewVisible.set(false);
 
 			event.consume();
 		});
 		modelViewerFlat.setOnMouseDragReleased(event -> {
+			Point2D world = modelViewerFlat.unproject(event);
+
 			if (event.getGestureSource() instanceof IntersectionViewerFlat) {
 				if (event.isControlDown()) {
 					IntersectionViewerFlat viewer = (IntersectionViewerFlat) event.getGestureSource();
-					
-					Point2D world = modelViewerFlat.unproject(event);
 
 					// TODO snap toggle!
 					world = modelViewerFlat.grid.snap(world);
@@ -484,6 +494,24 @@ public class EditorScene extends Scene {
 	
 					event.consume();
 				}
+			} else if (event.getGestureSource() instanceof SegmentViewerFlat) {
+				demandPreviewVisible.set(false);
+
+				Demand demand = new Demand();
+				
+				demand.size.set(1);
+
+				demand.pick.location.segment.set(demandPreviewPickLoc.segment.get());
+				demand.pick.location.distance.set(demandPreviewPickLoc.distance.get());
+
+				demand.drop.location.segment.set(demandPreviewDropLoc.segment.get());
+				demand.drop.location.distance.set(demandPreviewDropLoc.distance.get());
+
+				model.demands.add(demand);
+
+				select(modelViewerFlat.demandViewers.get(demand));
+
+				event.consume();
 			}
 		});
 		
@@ -553,7 +581,6 @@ public class EditorScene extends Scene {
 			if (event.getGestureSource() instanceof IntersectionViewerFlat && event.getGestureSource() != viewer) {
 				if (event.isControlDown()) {
 					viewer.selected.set(false);
-
 					event.consume();
 				}
 			}
@@ -623,7 +650,13 @@ public class EditorScene extends Scene {
 
 			Segment.Projection projection = viewer.entity.project(world.getX(), world.getY());
 
-			dragDemandDot = projection.dot;
+			demandPreviewPickLoc.segment.set(viewer.entity);
+			demandPreviewPickLoc.distance.set(projection.dot);
+
+			demandPreviewDropLoc.segment.set(viewer.entity);
+			demandPreviewDropLoc.distance.set(projection.dot);
+
+			demandPreviewVisible.set(true);
 			
 			viewer.startFullDrag();
 
@@ -631,21 +664,17 @@ public class EditorScene extends Scene {
 		});
 		viewer.setOnMouseDragReleased(event -> {
 			if (event.getGestureSource() instanceof SegmentViewerFlat) {
-				SegmentViewerFlat other = (SegmentViewerFlat) event.getGestureSource();
-
-				Point2D world = modelViewerFlat.unproject(event);
-
-				Segment.Projection projection = viewer.entity.project(world.getX(), world.getY());
+				demandPreviewVisible.set(false);
 				
 				Demand demand = new Demand();
 				
 				demand.size.set(1);
 				
-				demand.pick.location.segment.set(other.entity);
-				demand.pick.location.distance.set(dragDemandDot);
+				demand.pick.location.segment.set(demandPreviewPickLoc.segment.get());
+				demand.pick.location.distance.set(demandPreviewPickLoc.distance.get());
 				
-				demand.drop.location.segment.set(viewer.entity);
-				demand.drop.location.distance.set(projection.dot);
+				demand.drop.location.segment.set(demandPreviewDropLoc.segment.get());
+				demand.drop.location.distance.set(demandPreviewDropLoc.distance.get());
 				
 				model.demands.add(demand);
 				
