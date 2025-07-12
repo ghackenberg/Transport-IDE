@@ -54,6 +54,9 @@ flowchart LR
   Location --> Segment
   Segment --start--> Intersection
   Segment --end--> Intersection
+
+  style Location fill:white
+  style LocationTime fill:white
 ```
 
 ## Requirements
