@@ -335,8 +335,9 @@ public class EditorScene extends Scene {
 			if (event.isStillSincePress()) {
 				Point2D world = modelViewerFlat.unproject(event);
 
-				// TODO snap toggle!
-				world = modelViewerFlat.grid.snap(world);
+				if (!event.isAltDown()) {
+					world = modelViewerFlat.grid.snap(world);
+				}
 				
 				Intersection intersection = new Intersection();
 				intersection.name.set("Intersection " + (model.intersections.size() + 1));
@@ -368,8 +369,9 @@ public class EditorScene extends Scene {
 			if (event.getGestureSource() instanceof IntersectionViewerFlat) {
 				IntersectionViewerFlat viewer = (IntersectionViewerFlat) event.getGestureSource();
 
-				// TODO snap toggle!
-				world = modelViewerFlat.grid.snap(world);
+				if (!event.isAltDown()) {
+					world = modelViewerFlat.grid.snap(world);
+				}
 
 				if (event.isControlDown()) {
 					segmentPreviewEndX.set(world.getX());
@@ -471,8 +473,9 @@ public class EditorScene extends Scene {
 				if (event.isControlDown()) {
 					IntersectionViewerFlat viewer = (IntersectionViewerFlat) event.getGestureSource();
 
-					// TODO snap toggle!
-					world = modelViewerFlat.grid.snap(world);
+					if (!event.isAltDown()) {
+						world = modelViewerFlat.grid.snap(world);
+					}
 	
 					Intersection other = new Intersection();
 					
