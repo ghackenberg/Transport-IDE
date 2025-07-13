@@ -91,6 +91,8 @@ public class Model {
 	
 	// Methods
 
+	// - Project
+
 	public class Projection {
 		public final Segment seg;
 		public final double dot;
@@ -121,6 +123,110 @@ public class Model {
 
 		return new Projection(minSeg, minDot, minLen);
 	}
+
+	// - Get
+	
+	public Intersection getIntersection(String name) {
+		for (Intersection intersection : intersections) {
+			if (intersection.name.get().equals(name)) {
+				return intersection;
+			}
+		}
+		return null;
+	}
+	
+	public Segment getSegment(Intersection start, Intersection end) {
+		for (Segment segment : segments) {
+			if (segment.start == start && segment.end == end) {
+				return segment;
+			}
+		}
+		return null;
+	}
+	
+	public Vehicle getVehicle(String name) {
+		for (Vehicle vehicle : vehicles) {
+			if (vehicle.name.get().equals(name)) {
+				return vehicle;
+			}
+		}
+		return null;
+	}
+
+	// - Delete
+	
+	public void delete(Intersection intersection) {
+		while (intersection.incoming.size() > 0) {
+			delete(intersection.incoming.get(0));
+		}
+		
+		while (intersection.outgoing.size() > 0) {
+			delete(intersection.outgoing.get(0));
+		}
+		
+		intersections.remove(intersection);
+	}
+	
+	public void delete(Segment segment) {
+		for (int i = 0; i < stations.size(); i++) {
+			Station station = stations.get(i);
+			if (station.location.segment.get() == segment) {
+				stations.remove(i--);
+			}
+		}
+		
+		for (int i = 0; i < vehicles.size(); i++) {
+			Vehicle vehicle = vehicles.get(i);
+			if (vehicle.initialLocation.segment.get() == segment) {
+				vehicles.remove(i--);
+			}
+		}
+		
+		for (int i = 0; i < demands.size(); i++) {
+			Demand demand = demands.get(i);
+			if (demand.pick.location.segment.get() == segment || demand.drop.location.segment.get() == segment) {
+				demands.remove(i--);
+			}
+		}
+		
+		segment.start.outgoing.remove(segment);
+		segment.end.incoming.remove(segment);
+		
+		segments.remove(segment);
+	}
+	
+	public void delete(Station station) {
+		stations.remove(station);
+	}
+	
+	public void delete(Vehicle vehicle) {
+		vehicles.remove(vehicle);
+	}
+	
+	public void delete(Demand demand) {
+		demands.remove(demand);
+	}
+
+	// - Initialize
+	
+	public void initialize() {
+		state.set(new State());
+		
+		for (Segment segment : segments) {
+			segment.state.set(segment.new State());
+		}
+		for (Station station : stations) {
+			station.state.set(station.new State());
+		}
+		for (Vehicle vehicle : vehicles) {
+			vehicle.state.set(vehicle.new State());
+		}
+		for (Demand demand : demands) {
+			demand.state.set(demand.new State());
+		}
+	}
+	
+	// - Recompute
 	
 	private void recompute() {
 		// X
@@ -182,102 +288,6 @@ public class Model {
 		this.maxZ.set(maxZ);
 		
 		deltaZ.set(maxZ - minZ);
-	}
-	
-	public Intersection getIntersection(String name) {
-		for (Intersection intersection : intersections) {
-			if (intersection.name.get().equals(name)) {
-				return intersection;
-			}
-		}
-		return null;
-	}
-	
-	public Segment getSegment(Intersection start, Intersection end) {
-		for (Segment segment : segments) {
-			if (segment.start == start && segment.end == end) {
-				return segment;
-			}
-		}
-		return null;
-	}
-	
-	public Vehicle getVehicle(String name) {
-		for (Vehicle vehicle : vehicles) {
-			if (vehicle.name.get().equals(name)) {
-				return vehicle;
-			}
-		}
-		return null;
-	}
-	
-	public void delete(Intersection intersection) {
-		while (intersection.incoming.size() > 0) {
-			delete(intersection.incoming.get(0));
-		}
-		
-		while (intersection.outgoing.size() > 0) {
-			delete(intersection.outgoing.get(0));
-		}
-		
-		intersections.remove(intersection);
-	}
-	
-	public void delete(Segment segment) {
-		for (int i = 0; i < stations.size(); i++) {
-			Station station = stations.get(i);
-			if (station.location.segment.get() == segment) {
-				stations.remove(i--);
-			}
-		}
-		
-		for (int i = 0; i < vehicles.size(); i++) {
-			Vehicle vehicle = vehicles.get(i);
-			if (vehicle.initialLocation.segment.get() == segment) {
-				vehicles.remove(i--);
-			}
-		}
-		
-		for (int i = 0; i < demands.size(); i++) {
-			Demand demand = demands.get(i);
-			if (demand.pick.location.segment.get() == segment || demand.drop.location.segment.get() == segment) {
-				demands.remove(i--);
-			}
-		}
-		
-		segment.start.outgoing.remove(segment);
-		segment.end.incoming.remove(segment);
-		
-		segments.remove(segment);
-	}
-	
-	public void delete(Station station) {
-		stations.remove(station);
-	}
-	
-	public void delete(Vehicle vehicle) {
-		vehicles.remove(vehicle);
-	}
-	
-	public void delete(Demand demand) {
-		demands.remove(demand);
-	}
-	
-	public void initialize() {
-		state.set(new State());
-		
-		for (Segment segment : segments) {
-			segment.state.set(segment.new State());
-		}
-		for (Station station : stations) {
-			station.state.set(station.new State());
-		}
-		for (Vehicle vehicle : vehicles) {
-			vehicle.state.set(vehicle.new State());
-		}
-		for (Demand demand : demands) {
-			demand.state.set(demand.new State());
-		}
 	}
 	
 }

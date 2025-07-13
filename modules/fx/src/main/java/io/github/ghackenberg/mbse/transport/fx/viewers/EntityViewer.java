@@ -5,7 +5,6 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.scene.DepthTest;
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
 
@@ -27,7 +26,6 @@ public abstract class EntityViewer<T> extends Group {
 		this.entity = entity;
 		
 		setManaged(false);
-		setDepthTest(DepthTest.ENABLE);
 	}
 	
 	public EntityViewer(Model model, T entity, Color colorDefault, Color colorSelected) {

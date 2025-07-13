@@ -12,7 +12,6 @@ import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
 import io.github.ghackenberg.mbse.transport.fx.helpers.GenericListChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.DepthTest;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
@@ -70,12 +69,6 @@ public abstract class ModelViewer<I extends IntersectionViewer, Se extends Segme
 		deltaY = model.intersections.size() > 0 ? model.deltaY.get() + 6 : 30;
 		deltaZ = model.intersections.size() > 0 ? model.deltaZ.get() + 6 : 30;
 		
-		intersectionLayer.setDepthTest(DepthTest.ENABLE);
-		segmentLayer.setDepthTest(DepthTest.ENABLE);
-		stationLayer.setDepthTest(DepthTest.ENABLE);
-		vehicleLayer.setDepthTest(DepthTest.ENABLE);
-		demandLayer.setDepthTest(DepthTest.ENABLE);
-		
 		setStyle("-fx-background-color: white;");
 
 		clip.widthProperty().bind(widthProperty());
@@ -83,8 +76,6 @@ public abstract class ModelViewer<I extends IntersectionViewer, Se extends Segme
 		
 		getChildren().add(canvas);
 		getChildren().add(time);
-		
-		setDepthTest(DepthTest.ENABLE);
 		
 		setClip(clip);
 		
