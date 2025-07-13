@@ -95,10 +95,10 @@ Technically, the software modules are implemented as Java Jigsaw and Apache Mave
 ```mermaid
 flowchart RL
     
-    core["<code>mbse.transport.core</code><br/>Core functionality"]
-    cli["<code>mbse.transport.cli</code><br/>Command line interface"]
-    fx["<code>mbse.transport.fx</code><br/>New JavaFX-based GUI"]
-    swing["<code>mbse.transport.swing</code><br/>Old Swing-based GUI"]
+    core["<b>mbse.transport.core</b><br/>Core functionality"]
+    cli["<b>mbse.transport.cli</b><br/>Command line interface"]
+    fx["<b>mbse.transport.fx</b><br/>New JavaFX-based GUI"]
+    swing["<b>mbse.transport.swing</b><br/>Old Swing-based GUI"]
 
     cli --> core
     fx --> core
