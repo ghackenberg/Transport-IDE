@@ -43,7 +43,7 @@ Feel free to request new features via GitHub issues!
 The following diagram provides an overview of the modeling concepts:
 
 ```mermaid
-flowchart LR
+flowchart TB
   Station["<b>Station</b><br/>Energy charge point"]
   Vehicle["<b>Vehicle</b><br/>Transport means"]
   Demand["<b>Demand</b><br/>Transport request"]
