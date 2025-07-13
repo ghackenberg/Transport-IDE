@@ -44,6 +44,14 @@ The following diagram provides an overview of the modeling concepts:
 
 ```mermaid
 flowchart LR
+  Station["<b>Station</b><br/>Energy charge point"]
+  Vehicle["<b>Vehicle</b><br/>Transport means"]
+  Demand["<b>Demand</b><br/>Transport request"]
+  Segment["<b>Segment</b><br/>Road section"]
+  Intersection["<b>Intersection</b><br/>Road crossing"]
+  Location["<b>Location</b><br/>Distance on segment"]
+  LocationTime["<b>LocationTime</b><br/>Location and timepoint"]
+
   Station --> Location
   Station --current--> Vehicle
   Vehicle --initial--> Location
