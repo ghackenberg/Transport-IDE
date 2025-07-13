@@ -45,12 +45,14 @@ The following diagram provides an overview of the modeling concepts:
 ```mermaid
 flowchart LR
   Station --> Location
+  Station --current--> Vehicle
   Vehicle --initial--> Location
   Vehicle --current--> Location
+  LocationTime --> Location
+  Demand --current--> Vehicle
   Demand --pick--> LocationTime
   Demand --drop--> LocationTime
   Demand --current--> Location
-  LocationTime --> Location
   Location --> Segment
   Segment --start--> Intersection
   Segment --end--> Intersection
