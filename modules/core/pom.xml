@@ -16,7 +16,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.openjfx</groupId>
-			<artifactId>javafx-base</artifactId>
+			<artifactId>javafx-graphics</artifactId>
 			<version>21.0.7</version>
 		</dependency>
 		<dependency>

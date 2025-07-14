@@ -2,6 +2,7 @@ package io.github.ghackenberg.mbse.transport.core.structures;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.geometry.Point3D;
 
 public class Vector {
 	
@@ -21,6 +22,18 @@ public class Vector {
 		this.x.set(x);
 		this.y.set(y);
 		this.z.set(z);
+	}
+
+	// Methods
+
+	public Point3D toPoint3D() {
+		return new Point3D(x.get(), y.get(), z.get());
+	}
+
+	public void assign(Point3D point) {
+		x.set(point.getX());
+		y.set(point.getY());
+		z.set(point.getZ());
 	}
 	
 }

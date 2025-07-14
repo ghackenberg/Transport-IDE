@@ -1,14 +1,14 @@
 package io.github.ghackenberg.mbse.transport.core;
 
+import io.github.ghackenberg.mbse.transport.core.entities.Camera;
 import io.github.ghackenberg.mbse.transport.core.entities.Demand;
 import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
 import io.github.ghackenberg.mbse.transport.core.entities.Station;
 import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
+import io.github.ghackenberg.mbse.transport.core.structures.Vector;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -35,58 +35,115 @@ public class Model {
 	
 	public final StringProperty name = new SimpleStringProperty();
 	
-	public final DoubleProperty minX = new SimpleDoubleProperty();
-	public final DoubleProperty minY = new SimpleDoubleProperty();
-	public final DoubleProperty minZ = new SimpleDoubleProperty();
-	
-	public final DoubleProperty maxX = new SimpleDoubleProperty();
-	public final DoubleProperty maxY = new SimpleDoubleProperty();
-	public final DoubleProperty maxZ = new SimpleDoubleProperty();
-	
-	public final DoubleProperty deltaX = new SimpleDoubleProperty();
-	public final DoubleProperty deltaY = new SimpleDoubleProperty();
-	public final DoubleProperty deltaZ = new SimpleDoubleProperty();
-	
 	// Structures
+	
+	public final Vector min = new Vector();
+	public final Vector max = new Vector();
+	public final Vector size = new Vector();
+	public final Vector center = new Vector();
 	
 	public ObservableList<Intersection> intersections = FXCollections.observableArrayList();
 	public ObservableList<Segment> segments = FXCollections.observableArrayList();
 	public ObservableList<Station> stations = FXCollections.observableArrayList();
 	public ObservableList<Vehicle> vehicles = FXCollections.observableArrayList();
 	public ObservableList<Demand> demands = FXCollections.observableArrayList();
+	public ObservableList<Camera> cameras = FXCollections.observableArrayList();
 	
 	// Constructors
 	
 	public Model() {
-		final InvalidationListener listener = new InvalidationListener() {
+		// Min and max
+
+		final InvalidationListener boundsListener = new InvalidationListener() {
 			@Override
 			public void invalidated(Observable observable) {
-				recompute();	
+				recomputeBounds();	
 			}
 		};
+
 		intersections.addListener(new ListChangeListener<>() {
 			@Override
 			public void onChanged(Change<? extends Intersection> c) {
 				while (c.next()) {
 					for (Intersection intersection : c.getRemoved()) {
-						intersection.lanes.removeListener(listener);
+						intersection.lanes.removeListener(boundsListener);
 						
-						intersection.coordinate.x.removeListener(listener);
-						intersection.coordinate.y.removeListener(listener);
-						intersection.coordinate.z.removeListener(listener);
+						intersection.coordinate.x.removeListener(boundsListener);
+						intersection.coordinate.y.removeListener(boundsListener);
+						intersection.coordinate.z.removeListener(boundsListener);
 					}
 					for (Intersection intersection : c.getAddedSubList()) {
-						intersection.lanes.addListener(listener);
+						intersection.lanes.addListener(boundsListener);
 						
-						intersection.coordinate.x.addListener(listener);
-						intersection.coordinate.y.addListener(listener);
-						intersection.coordinate.z.addListener(listener);
+						intersection.coordinate.x.addListener(boundsListener);
+						intersection.coordinate.y.addListener(boundsListener);
+						intersection.coordinate.z.addListener(boundsListener);
 					}
 				}
-				recompute();
+				recomputeBounds();
+				recomputeClips();
 			}
 		});
-		recompute();
+
+		// Near and far
+
+		final InvalidationListener clipsListener = new InvalidationListener() {
+			@Override
+			public void invalidated(Observable observable) {
+				recomputeClips();
+			}
+		};
+
+		cameras.addListener(new ListChangeListener<>() {
+			@Override
+			public void onChanged(Change<? extends Camera> c) {
+				while (c.next()) {
+					for (Camera camera : c.getRemoved()) {
+						camera.eye.x.removeListener(clipsListener);
+						camera.eye.y.removeListener(clipsListener);
+						camera.eye.z.removeListener(clipsListener);
+
+						camera.direction.x.removeListener(clipsListener);
+						camera.direction.y.removeListener(clipsListener);
+						camera.direction.z.removeListener(clipsListener);
+					}
+					for (Camera camera : c.getAddedSubList()) {
+						camera.eye.x.addListener(clipsListener);
+						camera.eye.y.addListener(clipsListener);
+						camera.eye.z.addListener(clipsListener);
+
+						camera.direction.x.addListener(clipsListener);
+						camera.direction.y.addListener(clipsListener);
+						camera.direction.z.addListener(clipsListener);
+					}
+				}
+				recomputeClips();
+			}
+		});
+
+		// Size
+
+		size.x.bind(max.x.subtract(min.x));
+		size.y.bind(max.y.subtract(min.y));
+		size.z.bind(max.z.subtract(min.z));
+
+		size.x.addListener(event -> recomputeClips());
+		size.y.addListener(event -> recomputeClips());
+		size.z.addListener(event -> recomputeClips());
+
+		// Center
+
+		center.x.bind(min.x.add(size.x.divide(2)));
+		center.y.bind(min.y.add(size.y.divide(2)));
+		center.z.bind(min.z.add(size.z.divide(2)));
+
+		center.x.addListener(event -> recomputeClips());
+		center.y.addListener(event -> recomputeClips());
+		center.z.addListener(event -> recomputeClips());
+
+		// Recompute
+
+		recomputeBounds();
 	}
 	
 	// Methods
@@ -228,7 +285,7 @@ public class Model {
 	
 	// - Recompute
 	
-	private void recompute() {
+	private void recomputeBounds() {
 		// X
 		
 		double minX = +Double.MAX_VALUE;
@@ -244,10 +301,8 @@ public class Model {
 			maxX = 0;
 		}
 		
-		this.minX.set(minX);
-		this.maxX.set(maxX);
-		
-		deltaX.set(maxX - minX);
+		min.x.set(minX);
+		max.x.set(maxX);
 		
 		// Y
 		
@@ -264,10 +319,8 @@ public class Model {
 			maxY = 0;
 		}
 		
-		this.minY.set(minY);
-		this.maxY.set(maxY);
-		
-		deltaY.set(maxY - minY);
+		min.y.set(minY);
+		max.y.set(maxY);
 		
 		// Z
 		
@@ -284,10 +337,26 @@ public class Model {
 			maxZ = 0;
 		}
 		
-		this.minZ.set(minZ);
-		this.maxZ.set(maxZ);
-		
-		deltaZ.set(maxZ - minZ);
+		min.z.set(minZ);
+		max.z.set(maxZ);
+	}
+
+	private void recomputeClips() {
+		for (Camera camera : cameras) {
+			double distance = center.toPoint3D().subtract(camera.eye.toPoint3D()).magnitude();
+
+			double x = size.x.get() / 2;
+			double y = size.y.get() / 2;
+			double z = size.z.get() / 2;
+
+			double radius = Math.sqrt(x * x + y * y + z * z) * 1.05;
+
+			double near = Math.max(distance - radius, 0.01);
+			double far = Math.max(distance + radius, 0.02);
+
+			camera.near.set(near);
+			camera.far.set(far);
+		}
 	}
 	
 }

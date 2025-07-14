@@ -61,13 +61,13 @@ public abstract class ModelViewer<I extends IntersectionViewer, Se extends Segme
 		
 		this.canvas = canvas;
 		
-		minX = model.intersections.size() > 0 ? model.minX.get() - 3 : -15;
-		minY = model.intersections.size() > 0 ? model.minY.get() - 3 : -15;
-		minZ = model.intersections.size() > 0 ? model.minZ.get() - 3 : -15;
+		minX = model.intersections.size() > 0 ? model.min.x.get() - 3 : -15;
+		minY = model.intersections.size() > 0 ? model.min.y.get() - 3 : -15;
+		minZ = model.intersections.size() > 0 ? model.min.z.get() - 3 : -15;
 		
-		deltaX = model.intersections.size() > 0 ? model.deltaX.get() + 6 : 30;
-		deltaY = model.intersections.size() > 0 ? model.deltaY.get() + 6 : 30;
-		deltaZ = model.intersections.size() > 0 ? model.deltaZ.get() + 6 : 30;
+		deltaX = model.intersections.size() > 0 ? model.size.x.get() + 6 : 30;
+		deltaY = model.intersections.size() > 0 ? model.size.y.get() + 6 : 30;
+		deltaZ = model.intersections.size() > 0 ? model.size.z.get() + 6 : 30;
 		
 		setStyle("-fx-background-color: white;");
 
