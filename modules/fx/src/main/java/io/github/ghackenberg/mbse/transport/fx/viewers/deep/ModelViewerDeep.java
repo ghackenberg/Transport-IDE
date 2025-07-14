@@ -155,11 +155,15 @@ public class ModelViewerDeep extends ModelViewer<IntersectionViewerDeep, Segment
 			if (event.isPrimaryButtonDown()) {
 				base.setVisible(false);
 			}
+
+			event.consume();
 		});
 		setOnMouseDragEntered(event -> {
 			if (event.isPrimaryButtonDown()) {
 				base.setVisible(true);
 			}
+
+			event.consume();
 		});
 		setOnMouseDragReleased(event -> {
 			base.setVisible(false);
