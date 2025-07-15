@@ -8,10 +8,13 @@ import javafx.beans.binding.DoubleBinding;
 import javafx.geometry.VPos;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
+import javafx.beans.binding.Bindings;
+
 
 public class DemandViewerFlat extends DemandViewer {
 	
@@ -40,18 +43,20 @@ public class DemandViewerFlat extends DemandViewer {
 	public DemandViewerFlat(Model model, Demand demand) {
 		super(model, demand);
 		
-//		// Line
-//		
-//		line = new Line();
-//		
-//		line.startXProperty().bind(start.x);
-//		line.startYProperty().bind(start.y);
-//		
-//		line.endXProperty().bind(dx);
-//		line.endYProperty().bind(dy);
-//		
-//		line.strokeProperty().bind(color);
-//		line.strokeWidthProperty().bind(demand.size.divide(10));
+		// Line
+		
+		line = new Line();
+		
+		line.startXProperty().bind(start.x);
+		line.startYProperty().bind(start.y);
+		
+		line.endXProperty().bind(end.x);
+		line.endYProperty().bind(end.y);
+		
+		line.strokeProperty().bind(color);
+		line.strokeWidthProperty().bind(demand.size.divide(10));
+
+		
 				
 		// Source
 		
@@ -77,37 +82,23 @@ public class DemandViewerFlat extends DemandViewer {
 		
 		// Arrow in line
 		halfLine = new Line();
+		
 		halfLine.startXProperty().bind(start.x);
 		halfLine.startYProperty().bind(start.y);
 		
-		dy = end.y.subtract(start.y).divide(2);
-		dx = end.x.subtract(start.x).divide(2);
+		halfLine.endXProperty().bind(start.x.add((end.x.subtract(start.x)).divide(2)));
+		halfLine.endYProperty().bind(start.y.add((end.y.subtract(start.y)).divide(2)));
 		
-//		halfLineEnd.x = halfLine.startXProperty().add(dx);
-//		halfLineEnd.y = halfLine.startYProperty().add(dy);
-		
-		halfLine.endXProperty().bind(dx);
-		halfLine.endYProperty().bind(dy);
+
 		
 		arrow = new Circle();
-		arrow.radiusProperty().bind(demand.size.divide(10));
+		arrow.radiusProperty().bind(demand.size.divide(2));
 		arrow.centerXProperty().bind(halfLine.endXProperty());
 		arrow.centerYProperty().bind(halfLine.endYProperty());
 		arrow.fillProperty().bind(color);
 		
-		// Line
 		
-		line = new Line();
-		
-		line.startXProperty().bind(start.x);
-		line.startYProperty().bind(start.y);
-		
-		line.endXProperty().bind(dx);
-		line.endYProperty().bind(dy);
-		
-		line.strokeProperty().bind(color);
-		line.strokeWidthProperty().bind(demand.size.divide(10));
-		
+
 		// Source text
 		
 		sourceText = new Text("S");
@@ -142,6 +133,7 @@ public class DemandViewerFlat extends DemandViewer {
 		
 		getChildren().add(source);
 		getChildren().add(target);
+		getChildren().add(arrow);
 		
 		getChildren().add(sourceText);
 		getChildren().add(targetText);
