@@ -24,9 +24,9 @@ public abstract class ModelViewer<I extends IntersectionViewer, Se extends Segme
 	protected double minY;
 	protected double minZ;
 	
-	protected double deltaX;
-	protected double deltaY;
-	protected double deltaZ;
+	protected double sizeX;
+	protected double sizeY;
+	protected double sizeZ;
 
 	public final Model model;
 	public final Model.State modelState;
@@ -65,9 +65,9 @@ public abstract class ModelViewer<I extends IntersectionViewer, Se extends Segme
 		minY = model.intersections.size() > 0 ? model.min.y.get() - 3 : -15;
 		minZ = model.intersections.size() > 0 ? model.min.z.get() - 3 : -15;
 		
-		deltaX = model.intersections.size() > 0 ? model.size.x.get() + 6 : 30;
-		deltaY = model.intersections.size() > 0 ? model.size.y.get() + 6 : 30;
-		deltaZ = model.intersections.size() > 0 ? model.size.z.get() + 6 : 30;
+		sizeX = model.intersections.size() > 0 ? model.size.x.get() + 6 : 30;
+		sizeY = model.intersections.size() > 0 ? model.size.y.get() + 6 : 30;
+		sizeZ = model.intersections.size() > 0 ? model.size.z.get() + 6 : 30;
 		
 		setStyle("-fx-background-color: white;");
 

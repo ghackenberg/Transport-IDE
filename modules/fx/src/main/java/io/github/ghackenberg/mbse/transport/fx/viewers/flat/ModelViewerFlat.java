@@ -52,8 +52,8 @@ public class ModelViewerFlat extends ModelViewer<IntersectionViewerFlat, Segment
 		
 		setOnScroll(event -> {
 			try {
-				double scrollX = -event.getDeltaX() * Math.max(deltaX, deltaY) * 0.005;
-				double scrollY = -event.getDeltaY() * Math.max(deltaX, deltaY) * 0.005;
+				double scrollX = -event.getDeltaX() * Math.max(sizeX, sizeY) * 0.005;
+				double scrollY = -event.getDeltaY() * Math.max(sizeX, sizeY) * 0.005;
 				
 				if (event.isShiftDown()) {
 					// Horizontal scroll
@@ -65,16 +65,16 @@ public class ModelViewerFlat extends ModelViewer<IntersectionViewerFlat, Segment
 					
 					minY += scrollY;
 					
-				} else if (deltaX + scrollY > 0 && deltaY + scrollY > 0) {
+				} else if (sizeX + scrollY > 0 && sizeY + scrollY > 0) {
 					// Pan and zoom
 					
-					deltaX += scrollY;
-					deltaY += scrollY;
+					sizeX += scrollY;
+					sizeY += scrollY;
 					
 					Point2D point = canvas.getLocalToSceneTransform().createInverse().transform(event.getSceneX(), event.getSceneY());
 					
-					minX -= scrollY * (point.getX() - minX) / deltaX;
-					minY -= scrollY * (point.getY() - minY) / deltaY;
+					minX -= scrollY * (point.getX() - minX) / sizeX;
+					minY -= scrollY * (point.getY() - minY) / sizeY;
 				}
 				
 				updateTransform();
@@ -134,10 +134,10 @@ public class ModelViewerFlat extends ModelViewer<IntersectionViewerFlat, Segment
 		double width = getWidth();
 		double height = getHeight();
 		
-		double factor = Math.min(width / deltaX, height / deltaY);
+		double factor = Math.min(width / sizeX, height / sizeY);
 		
-		canvas.setTranslateX(- minX * factor + (width - deltaX * factor) / 2);
-		canvas.setTranslateY(- minY * factor + (height - deltaY * factor) / 2);
+		canvas.setTranslateX(- minX * factor + (width - sizeX * factor) / 2);
+		canvas.setTranslateY(- minY * factor + (height - sizeY * factor) / 2);
 		
 		canvas.setScaleX(factor);
 		canvas.setScaleY(factor);

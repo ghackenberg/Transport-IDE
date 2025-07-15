@@ -17,9 +17,9 @@ public class Camera {
 
     public final Vector base = new Vector(0, 0, 0);
 
-    public final DoubleProperty distance = new SimpleDoubleProperty(30);
+    public final DoubleProperty distance = new SimpleDoubleProperty(1);
     public final DoubleProperty azimuth = new SimpleDoubleProperty(0);
-    public final DoubleProperty zenith = new SimpleDoubleProperty(60);
+    public final DoubleProperty zenith = new SimpleDoubleProperty(0);
 
     public final DoubleProperty near = new SimpleDoubleProperty(0.01);
     public final DoubleProperty far = new SimpleDoubleProperty(100);
