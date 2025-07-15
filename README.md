@@ -36,7 +36,7 @@ Here is a list of currently supported features of Transport-IDE:
   - **Monte-Carlo experiments** for statistical behavior analysis
   - **Multi-threaded executions** for maximum computation speeds
 
-Feel free to request new features via GitHub issues!
+Feel free to request new features via our [GitHub issues](https://github.com/ghackenberg/Transport-IDE/issues)!
 
 ## Concepts
 
