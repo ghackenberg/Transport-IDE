@@ -2,7 +2,9 @@ package io.github.ghackenberg.mbse.transport.fx.viewers.flat;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Demand;
+import io.github.ghackenberg.mbse.transport.core.structures.Vector;
 import io.github.ghackenberg.mbse.transport.fx.viewers.DemandViewer;
+import javafx.beans.binding.DoubleBinding;
 import javafx.geometry.VPos;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -21,22 +23,36 @@ public class DemandViewerFlat extends DemandViewer {
 	public final Text sourceText;
 	public final Text targetText;
 	
+	
+	// Arrow in the middle of the line
+	public final Circle arrow;
+	
+	private Line halfLine;
+	private Vector halfLineEnd;
+
+	private DoubleBinding dy;
+
+	private DoubleBinding dx;
+
+
+	
+	
 	public DemandViewerFlat(Model model, Demand demand) {
 		super(model, demand);
 		
-		// Line
-		
-		line = new Line();
-		
-		line.startXProperty().bind(start.x);
-		line.startYProperty().bind(start.y);
-		
-		line.endXProperty().bind(end.x);
-		line.endYProperty().bind(end.y);
-		
-		line.strokeProperty().bind(color);
-		line.strokeWidthProperty().bind(demand.size.divide(10));
-		
+//		// Line
+//		
+//		line = new Line();
+//		
+//		line.startXProperty().bind(start.x);
+//		line.startYProperty().bind(start.y);
+//		
+//		line.endXProperty().bind(dx);
+//		line.endYProperty().bind(dy);
+//		
+//		line.strokeProperty().bind(color);
+//		line.strokeWidthProperty().bind(demand.size.divide(10));
+				
 		// Source
 		
 		source = new Circle();
@@ -58,6 +74,39 @@ public class DemandViewerFlat extends DemandViewer {
 		target.centerYProperty().bind(end.y);
 		
 		target.fillProperty().bind(color);
+		
+		// Arrow in line
+		halfLine = new Line();
+		halfLine.startXProperty().bind(start.x);
+		halfLine.startYProperty().bind(start.y);
+		
+		dy = end.y.subtract(start.y).divide(2);
+		dx = end.x.subtract(start.x).divide(2);
+		
+//		halfLineEnd.x = halfLine.startXProperty().add(dx);
+//		halfLineEnd.y = halfLine.startYProperty().add(dy);
+		
+		halfLine.endXProperty().bind(dx);
+		halfLine.endYProperty().bind(dy);
+		
+		arrow = new Circle();
+		arrow.radiusProperty().bind(demand.size.divide(10));
+		arrow.centerXProperty().bind(halfLine.endXProperty());
+		arrow.centerYProperty().bind(halfLine.endYProperty());
+		arrow.fillProperty().bind(color);
+		
+		// Line
+		
+		line = new Line();
+		
+		line.startXProperty().bind(start.x);
+		line.startYProperty().bind(start.y);
+		
+		line.endXProperty().bind(dx);
+		line.endYProperty().bind(dy);
+		
+		line.strokeProperty().bind(color);
+		line.strokeWidthProperty().bind(demand.size.divide(10));
 		
 		// Source text
 		
