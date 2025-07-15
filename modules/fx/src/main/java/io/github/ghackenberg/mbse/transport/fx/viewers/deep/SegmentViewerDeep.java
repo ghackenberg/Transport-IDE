@@ -34,6 +34,8 @@ public class SegmentViewerDeep extends SegmentViewer {
 		entity.end.coordinate.x.addListener(event -> recompute());
 		entity.end.coordinate.y.addListener(event -> recompute());
 		entity.end.coordinate.z.addListener(event -> recompute());
+
+		entity.lanes.addListener(event -> recompute());
 		
 		// Material
 		
