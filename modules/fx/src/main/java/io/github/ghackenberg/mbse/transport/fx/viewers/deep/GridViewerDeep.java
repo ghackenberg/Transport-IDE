@@ -29,11 +29,11 @@ public class GridViewerDeep extends Group {
     private void updateGrid() {
         getChildren().clear();
 
-        double minX = Math.floor(model.min.x.get());
-        double minY = + Math.floor(model.min.y.get());
+        double minX = Math.ceil(model.min.x.get() - 1.5);
+        double minY = + Math.ceil(model.min.y.get() - 1.5);
 
-        double maxX = Math.ceil(model.max.x.get());
-        double maxY = Math.ceil(model.max.y.get());
+        double maxX = Math.floor(model.max.x.get() + 1.5);
+        double maxY = Math.floor(model.max.y.get() + 1.5);
 
         for (double x = minX; x <= maxX; x++) {
             Color color = x % 100 == 0 ? Color.BLACK : (x % 10 == 0 ? Color.GRAY : Color.LIGHTGRAY);
