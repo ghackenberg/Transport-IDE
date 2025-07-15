@@ -349,7 +349,7 @@ public class Model {
 			double y = size.y.get() / 2;
 			double z = size.z.get() / 2;
 
-			double radius = Math.sqrt(x * x + y * y + z * z) * 1.05;
+			double radius = Math.sqrt(x * x + y * y + z * z) * 1.5;
 
 			double near = Math.max(distance - radius, 0.01);
 			double far = Math.max(distance + radius, 0.02);

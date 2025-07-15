@@ -47,6 +47,8 @@ public class ModelViewerDeep extends ModelViewer<IntersectionViewerDeep, Segment
 	public ModelViewerDeep(Model model) {
 		super(model, new SubScene(new Group(), 300, 300, true, SceneAntialiasing.BALANCED), true);
 
+		double radius = Math.sqrt(sizeX * sizeX + sizeY * sizeY + sizeZ * sizeZ);
+
 		// Control
 
 		Camera control = new Camera();
@@ -55,16 +57,20 @@ public class ModelViewerDeep extends ModelViewer<IntersectionViewerDeep, Segment
 		control.base.y.set(model.center.y.get());
 		control.base.z.set(model.center.z.get());
 
+		control.distance.set(radius * 2);
+		control.azimuth.set(-10);
+		control.zenith.set(60);
+
+		control.apply(camera);
+		control.apply(point);
+
 		model.cameras.add(control);
 		
 		// Camera
 		
-		control.apply(camera);
+		camera.nearClipProperty().bind(control.near);
+		camera.farClipProperty().bind(control.far);
 		
-		// Point
-		
-		control.apply(point);
-
 		// Sphere
 
 		center.radiusProperty().bind(control.distance.divide(200));
