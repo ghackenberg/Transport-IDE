@@ -34,6 +34,8 @@ public class ModelViewerDeep extends ModelViewer<IntersectionViewerDeep, Segment
 	public final Cylinder yAxis = new Cylinder(0, 0);
 	public final Cylinder xAxis = new Cylinder(0, 0);
 	public final Cylinder zAxis = new Cylinder(0, 0);
+
+	private final GridViewerDeep grid;
 	
 	public final Group base = new Group(center, yAxis, xAxis, zAxis);
 	public final Group main = new Group();
@@ -96,9 +98,14 @@ public class ModelViewerDeep extends ModelViewer<IntersectionViewerDeep, Segment
 		base.translateZProperty().bind(control.base.z);
 
 		base.setVisible(false);
+
+		// Grid
+
+		grid = new GridViewerDeep(model);
 		
 		// Main
 		
+		main.getChildren().add(grid);
 		main.getChildren().add(segmentLayer);
 		main.getChildren().add(intersectionLayer);
 		main.getChildren().add(stationLayer);
