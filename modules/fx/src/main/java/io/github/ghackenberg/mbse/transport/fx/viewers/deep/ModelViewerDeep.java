@@ -107,7 +107,7 @@ public class ModelViewerDeep extends ModelViewer<IntersectionViewerDeep, Segment
 
 		// Grid
 
-		grid = new GridViewerDeep(model);
+		grid = new GridViewerDeep(model, control);
 		
 		// Main
 		
