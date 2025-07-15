@@ -50,7 +50,7 @@ public class GridViewerDeep extends Group {
         Point3D direction = camera.direction.toPoint3D();
         Point3D center = eye.add(direction.multiply(-eye.getZ() / direction.getZ()));
 
-        System.out.println("Center = " + center.getX() + " " + center.getY() + " " + center.getZ());
+        //System.out.println("Center = " + center.getX() + " " + center.getY() + " " + center.getZ());
 
         double distance = center.subtract(eye).magnitude();
 
