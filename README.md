@@ -16,6 +16,7 @@ In particular, we think that transportation system engineers must be supported b
 Here are some screenshots of Transport-IDE in action:
 
 <img src="./modules/fx/doc/editor-flat.png" width="33.33%"/><img src="./modules/fx/doc/editor-deep.png" width="33.33%"/><img src="./modules/fx/doc/simulator.png" width="33.33%"/>
+![](https://github.com/user-attachments/assets/4285cd96-357c-4b53-8bb3-7f5e071987a7)
 
 ## Features
 
