@@ -90,7 +90,7 @@ public class DemandViewerFlat extends DemandViewer {
 		halfLine.endYProperty().bind(start.y.add((end.y.subtract(start.y)).divide(2)));
 		
 
-		
+		// TODO use polygon instead of circle for arrow
 		arrow = new Circle();
 		arrow.radiusProperty().bind(demand.size.divide(2));
 		arrow.centerXProperty().bind(halfLine.endXProperty());
