@@ -2,14 +2,19 @@ package io.github.ghackenberg.mbse.transport.fx.viewers.flat;
 
 import io.github.ghackenberg.mbse.transport.core.Model;
 import io.github.ghackenberg.mbse.transport.core.entities.Demand;
+import io.github.ghackenberg.mbse.transport.core.structures.Vector;
 import io.github.ghackenberg.mbse.transport.fx.viewers.DemandViewer;
+import javafx.beans.binding.DoubleBinding;
 import javafx.geometry.VPos;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
+import javafx.beans.binding.Bindings;
+
 
 public class DemandViewerFlat extends DemandViewer {
 	
@@ -20,6 +25,20 @@ public class DemandViewerFlat extends DemandViewer {
 	
 	public final Text sourceText;
 	public final Text targetText;
+	
+	
+	// Arrow in the middle of the line
+	public final Circle arrow;
+	
+	private Line halfLine;
+	private Vector halfLineEnd;
+
+	private DoubleBinding dy;
+
+	private DoubleBinding dx;
+
+
+	
 	
 	public DemandViewerFlat(Model model, Demand demand) {
 		super(model, demand);
@@ -36,7 +55,9 @@ public class DemandViewerFlat extends DemandViewer {
 		
 		line.strokeProperty().bind(color);
 		line.strokeWidthProperty().bind(demand.size.divide(10));
+
 		
+				
 		// Source
 		
 		source = new Circle();
@@ -59,6 +80,25 @@ public class DemandViewerFlat extends DemandViewer {
 		
 		target.fillProperty().bind(color);
 		
+		// Arrow in line
+		halfLine = new Line();
+		
+		halfLine.startXProperty().bind(start.x);
+		halfLine.startYProperty().bind(start.y);
+		
+		halfLine.endXProperty().bind(start.x.add((end.x.subtract(start.x)).divide(2)));
+		halfLine.endYProperty().bind(start.y.add((end.y.subtract(start.y)).divide(2)));
+		
+
+		// TODO use polygon instead of circle for arrow
+		arrow = new Circle();
+		arrow.radiusProperty().bind(demand.size.divide(2));
+		arrow.centerXProperty().bind(halfLine.endXProperty());
+		arrow.centerYProperty().bind(halfLine.endYProperty());
+		arrow.fillProperty().bind(color);
+		
+		
+
 		// Source text
 		
 		sourceText = new Text("S");
@@ -93,6 +133,7 @@ public class DemandViewerFlat extends DemandViewer {
 		
 		getChildren().add(source);
 		getChildren().add(target);
+		getChildren().add(arrow);
 		
 		getChildren().add(sourceText);
 		getChildren().add(targetText);
