@@ -5,6 +5,15 @@ import io.github.ghackenberg.mbse.transport.core.entities.Camera;
 import io.github.ghackenberg.mbse.transport.core.entities.Demand;
 import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
+import io.github.ghackenberg.mbse.transport.core.entities.Incominggoods;
+import io.github.ghackenberg.mbse.transport.core.entities.Outcominggoods;
+import io.github.ghackenberg.mbse.transport.core.entities.Packaging;
+import io.github.ghackenberg.mbse.transport.core.entities.Warehouse;
+import io.github.ghackenberg.mbse.transport.core.entities.Batterychargingstation;
+import io.github.ghackenberg.mbse.transport.core.entities.Installationsite;
+import io.github.ghackenberg.mbse.transport.core.entities.Machinery;
+import io.github.ghackenberg.mbse.transport.core.entities.Buffer;
+import io.github.ghackenberg.mbse.transport.core.entities.Workshop;
 import io.github.ghackenberg.mbse.transport.core.entities.Station;
 import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
 import io.github.ghackenberg.mbse.transport.fx.viewers.ModelViewer;
@@ -22,7 +31,7 @@ import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Rotate;
 
-public class ModelViewerDeep extends ModelViewer<IntersectionViewerDeep, SegmentViewerDeep, StationViewerDeep, VehicleViewerDeep, DemandViewerDeep, SubScene> {
+public class ModelViewerDeep extends ModelViewer<IntersectionViewerDeep, SegmentViewerDeep, StationViewerDeep, IncominggoodsViewerDeep, OutcominggoodsViewerDeep ,  PackagingViewerDeep, WarehouseViewerDeep, BatterychargingstationViewerDeep, InstallationsiteViewerDeep, MachineryViewerDeep, BufferViewerDeep, WorkshopViewerDeep,VehicleViewerDeep, DemandViewerDeep, SubScene> {
 	
 	public final PerspectiveCamera camera = new PerspectiveCamera(true);
 	
@@ -115,6 +124,15 @@ public class ModelViewerDeep extends ModelViewer<IntersectionViewerDeep, Segment
 		main.getChildren().add(segmentLayer);
 		main.getChildren().add(intersectionLayer);
 		main.getChildren().add(stationLayer);
+		main.getChildren().add(incominggoodsLayer);
+		main.getChildren().add(outcominggoodsLayer);
+		main.getChildren().add(packagingLayer);
+		main.getChildren().add(warehouseLayer);
+		main.getChildren().add(batterychargingstationLayer);
+		main.getChildren().add(installationsiteLayer);
+		main.getChildren().add(machineryLayer);
+		main.getChildren().add(bufferLayer);
+		main.getChildren().add(workshopLayer);
 		main.getChildren().add(vehicleLayer);
 		main.getChildren().add(demandLayer);
 		
@@ -200,6 +218,51 @@ public class ModelViewerDeep extends ModelViewer<IntersectionViewerDeep, Segment
 	@Override
 	protected StationViewerDeep create(Station station) {
 		return new StationViewerDeep(model, station);
+	}
+
+	@Override
+	protected IncominggoodsViewerDeep create(Incominggoods incominggoods) {
+		return new IncominggoodsViewerDeep(model, incominggoods);
+	}
+
+	@Override
+	protected OutcominggoodsViewerDeep create(Outcominggoods outcominggoods) {
+    	return new OutcominggoodsViewerDeep(model, outcominggoods);
+	}
+
+	@Override
+	protected PackagingViewerDeep create(Packaging packaging) {
+    	return new PackagingViewerDeep(model, packaging);
+	}
+
+	@Override
+	protected WarehouseViewerDeep create(Warehouse warehouse) {
+   		return new WarehouseViewerDeep(model, warehouse);
+	}
+
+	@Override
+	protected BatterychargingstationViewerDeep create(Batterychargingstation batterychargingstation) {
+    	return new BatterychargingstationViewerDeep(model, batterychargingstation);
+	}
+
+	@Override
+	protected InstallationsiteViewerDeep create(Installationsite installationsite) {
+    	return new InstallationsiteViewerDeep(model, installationsite);
+	}
+
+	@Override
+	protected MachineryViewerDeep create(Machinery machinery) {
+    	return new MachineryViewerDeep(model, machinery);
+	}
+
+	@Override
+	protected BufferViewerDeep create(Buffer buffer) {
+    	return new BufferViewerDeep(model, buffer);
+	}
+
+	@Override
+	protected WorkshopViewerDeep create(Workshop workshop) {
+    	return new WorkshopViewerDeep(model, workshop);
 	}
 
 	@Override

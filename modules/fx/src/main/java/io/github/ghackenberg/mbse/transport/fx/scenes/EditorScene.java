@@ -9,7 +9,16 @@ import io.github.ghackenberg.mbse.transport.core.Parser;
 import io.github.ghackenberg.mbse.transport.core.Serializer;
 import io.github.ghackenberg.mbse.transport.core.entities.Demand;
 import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
+import io.github.ghackenberg.mbse.transport.core.entities.Outcominggoods;
+import io.github.ghackenberg.mbse.transport.core.entities.Packaging;
+import io.github.ghackenberg.mbse.transport.core.entities.Warehouse;
+import io.github.ghackenberg.mbse.transport.core.entities.Batterychargingstation;
+import io.github.ghackenberg.mbse.transport.core.entities.Installationsite;
+import io.github.ghackenberg.mbse.transport.core.entities.Machinery;
+import io.github.ghackenberg.mbse.transport.core.entities.Buffer;
+import io.github.ghackenberg.mbse.transport.core.entities.Workshop;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
+import io.github.ghackenberg.mbse.transport.core.entities.Incominggoods;
 import io.github.ghackenberg.mbse.transport.core.entities.Station;
 import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
 import io.github.ghackenberg.mbse.transport.core.exceptions.DirectoryException;
@@ -25,6 +34,15 @@ import io.github.ghackenberg.mbse.transport.fx.viewers.flat.DemandViewerFlat;
 import io.github.ghackenberg.mbse.transport.fx.viewers.flat.IntersectionViewerFlat;
 import io.github.ghackenberg.mbse.transport.fx.viewers.flat.ModelViewerFlat;
 import io.github.ghackenberg.mbse.transport.fx.viewers.flat.SegmentViewerFlat;
+import io.github.ghackenberg.mbse.transport.fx.viewers.flat.IncominggoodsViewerFlat;
+import io.github.ghackenberg.mbse.transport.fx.viewers.flat.OutcominggoodsViewerFlat;
+import io.github.ghackenberg.mbse.transport.fx.viewers.flat.PackagingViewerFlat;
+import io.github.ghackenberg.mbse.transport.fx.viewers.flat.WarehouseViewerFlat;
+import io.github.ghackenberg.mbse.transport.fx.viewers.flat.BatterychargingstationViewerFlat;
+import io.github.ghackenberg.mbse.transport.fx.viewers.flat.InstallationsiteViewerFlat;
+import io.github.ghackenberg.mbse.transport.fx.viewers.flat.MachineryViewerFlat;
+import io.github.ghackenberg.mbse.transport.fx.viewers.flat.BufferViewerFlat;
+import io.github.ghackenberg.mbse.transport.fx.viewers.flat.WorkshopViewerFlat;
 import io.github.ghackenberg.mbse.transport.fx.viewers.flat.StationViewerFlat;
 import io.github.ghackenberg.mbse.transport.fx.viewers.flat.VehicleViewerFlat;
 import javafx.beans.property.BooleanProperty;
@@ -40,7 +58,6 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToolBar;
@@ -54,6 +71,15 @@ import javafx.scene.shape.StrokeLineCap;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
+
+
+
+
 
 /**
  * Editor scene providing a toolbar on top, a property grid on the right, and the 2D and 3D viewers in the center.
@@ -65,7 +91,48 @@ public class EditorScene extends Scene {
 	private File modelRunsFolder = new File("runs");
 	
 	private Model model = new Model();
+
+	private final GridPane commandGrid = new GridPane();
+
 	
+	/**
+ 	* Enum zur Verwaltung des aktuellen Benutzer-Werkzeugs.
+ 	* Definiert, welches Objekt als nächstes per Mausklick platziert wird.
+ 	*/
+	private enum Tool {
+    	SELECT,                         // Standardmodus (nur Auswahl)
+    	PLACE_STATION,                  // Station platzieren
+    	PLACE_INCOMINGGOODS,            // Incominggoods platzieren
+    	PLACE_OUTCOMINGGOODS,           // Outcominggoods platzieren
+    	PLACE_PACKAGE,                  // Package platzieren
+    	PLACE_WAREHOUSE,                // Warehouse platzieren
+    	PLACE_BATTERYCHARGINGSTATION,   // Batterychargingstation platzieren
+    	PLACE_INSTALLATIONSITE,         // Installationsite platzieren
+    	PLACE_MACHINERY,                // Machinery platzieren
+    	PLACE_BUFFER,                   // Buffer platzieren
+    	PLACE_WORKSHOP                  // Workshop platzieren
+	}
+
+	/**
+ 	* Speichert das aktuell ausgewählte Werkzeug.
+ 	* Wird über Tastenkombinationen gesetzt und nach Platzierung zurückgesetzt.
+ 	*/
+	private Tool currentTool = Tool.SELECT;
+	
+/**
+	 * Zeigt an, welches Werkzeug aktuell ausgewählt ist.
+	 * Dadurch erkennt der Benutzer, welches Element beim nächsten Klick platziert wird.
+	 */
+	private final Label currentToolLabel = new Label("Aktuelles Werkzeug: Keines Ausgewählt");
+
+
+	/**
+	 * Container für Werkzeuganzeige und Legende.
+	 * Wird im unteren Bereich der rechten Seitenleiste fixiert,
+	 * sodass er beim Vergrößern des Fensters immer unten sichtbar bleibt.
+	 */
+	private final VBox toolInfoBox = new VBox(10,new Label("Bedienung:"),commandGrid);
+
 	private Node dragDemandNode;
 
 	// - Previews
@@ -114,7 +181,7 @@ public class EditorScene extends Scene {
 	// - Panes
 	
 	private final GridPane grid = new GridPane();
-	private final ScrollPane right = new ScrollPane(grid);
+	private final BorderPane right = new BorderPane();
 	private final BorderPane root = new BorderPane(null, top, right, bottom, null);
 
 	// Constructors
@@ -122,6 +189,46 @@ public class EditorScene extends Scene {
 	public EditorScene() {
 		super(new Label("Loading ..."), 800, 600);
 		
+	/**
+	 * Registrierung der Tastenkombinationen.
+	 * Jede Tastenkombination aktiviert ein Werkzeug für die nächste Platzierung.
+	 */
+	getAccelerators().put(new KeyCodeCombination(KeyCode.S, KeyCombination.ALT_DOWN),
+		() -> setTool(Tool.PLACE_STATION));
+
+	getAccelerators().put(new KeyCodeCombination(KeyCode.I, KeyCombination.ALT_DOWN),
+		() -> setTool(Tool.PLACE_INCOMINGGOODS));
+
+	getAccelerators().put(new KeyCodeCombination(KeyCode.O, KeyCombination.ALT_DOWN),
+		() -> setTool(Tool.PLACE_OUTCOMINGGOODS));
+
+	getAccelerators().put(new KeyCodeCombination(KeyCode.P, KeyCombination.ALT_DOWN),
+		() -> setTool(Tool.PLACE_PACKAGE));
+
+	getAccelerators().put(new KeyCodeCombination(KeyCode.W, KeyCombination.ALT_DOWN),
+		() -> setTool(Tool.PLACE_WAREHOUSE));
+
+	getAccelerators().put(new KeyCodeCombination(KeyCode.B, KeyCombination.ALT_DOWN),
+		() -> setTool(Tool.PLACE_BATTERYCHARGINGSTATION));
+
+	getAccelerators().put(new KeyCodeCombination(KeyCode.N, KeyCombination.ALT_DOWN),
+		() -> setTool(Tool.PLACE_INSTALLATIONSITE));
+
+	getAccelerators().put(new KeyCodeCombination(KeyCode.M, KeyCombination.ALT_DOWN),
+		() -> setTool(Tool.PLACE_MACHINERY));
+
+	getAccelerators().put(new KeyCodeCombination(KeyCode.V, KeyCombination.ALT_DOWN),
+		() -> setTool(Tool.PLACE_BUFFER));
+
+	getAccelerators().put(new KeyCodeCombination(KeyCode.U, KeyCombination.ALT_DOWN),
+		() -> setTool(Tool.PLACE_WORKSHOP));
+
+	/**
+	 * Mit ESC wird der aktuelle Platziermodus verlassen.
+	 */
+	getAccelerators().put(new KeyCodeCombination(KeyCode.ESCAPE),
+		() -> setTool(Tool.SELECT));
+
 		if (!modelRunsFolder.exists()) {
 			modelRunsFolder.mkdirs();
 		}
@@ -248,9 +355,106 @@ public class EditorScene extends Scene {
 		grid.getColumnConstraints().add(GridHelper.createColumnConstraints(false, Priority.NEVER));
 		grid.getColumnConstraints().add(GridHelper.createColumnConstraints(true, Priority.ALWAYS));
 		
-		right.setFitToWidth(true);
-		right.setFitToHeight(true);
 		
+		right.setCenter(grid);
+		right.setBottom(toolInfoBox);	
+
+		commandGrid.setHgap(20);
+		commandGrid.setVgap(4);
+		commandGrid.setPadding(new Insets(8));
+
+		int row = 0;
+
+		Label befehlHeader = new Label("Befehl");
+		befehlHeader.setStyle("-fx-font-weight: bold;");
+
+		Label funktionHeader = new Label("Funktion");
+		funktionHeader.setStyle("-fx-font-weight: bold;");
+
+		Label farbeHeader = new Label("Farbe");
+		farbeHeader.setStyle("-fx-font-weight: bold;");
+
+		commandGrid.add(befehlHeader, 0, row);
+		commandGrid.add(funktionHeader, 1, row);
+		commandGrid.add(farbeHeader, 2, row++);
+
+		commandGrid.add(new Label("Linksklick freie Fläche"), 0, row);
+		commandGrid.add(new Label("Intersection platzieren"), 1, row++);
+
+		commandGrid.add(new Label("STRG + Ziehen"), 0, row);
+		commandGrid.add(new Label("Verbindung erstellen"), 1, row++);
+
+		commandGrid.add(new Label("SHIFT + Klick Segment"), 0, row);
+		commandGrid.add(new Label("Vehicle platzieren"), 1, row++);
+
+		commandGrid.add(currentToolLabel, 0, row, 3, 1);
+		row++;
+		row++;
+
+		row++;
+
+		commandGrid.add(new Label("Alt + S"), 0, row);
+		commandGrid.add(new Label("Station"), 1, row);
+		commandGrid.add(colorBox(Color.DARKVIOLET), 2, row++);
+
+		commandGrid.add(new Label("Alt + I"), 0, row);
+		commandGrid.add(new Label("Incominggoods"), 1, row);
+		commandGrid.add(colorBox(Color.BLUE), 2, row++);
+
+		commandGrid.add(new Label("Alt + O"), 0, row);
+		commandGrid.add(new Label("Outcominggoods"), 1, row);
+		commandGrid.add(colorBox(Color.RED), 2, row++);
+
+		commandGrid.add(new Label("Alt + P"), 0, row);
+		commandGrid.add(new Label("Packaging"), 1, row);
+		commandGrid.add(colorBox(Color.HOTPINK), 2, row++);
+
+		commandGrid.add(new Label("Alt + W"), 0, row);
+		commandGrid.add(new Label("Warehouse"), 1, row);
+		commandGrid.add(colorBox(Color.BLACK), 2, row++);
+
+		commandGrid.add(new Label("Alt + B"), 0, row);
+		commandGrid.add(new Label("Batterychargingstation"), 1, row);
+		commandGrid.add(colorBox(Color.YELLOW), 2, row++);
+
+		commandGrid.add(new Label("Alt + N"), 0, row);
+		commandGrid.add(new Label("Installationsite"), 1, row);
+		commandGrid.add(colorBox(Color.ORANGE), 2, row++);
+
+		commandGrid.add(new Label("Alt + M"), 0, row);
+		commandGrid.add(new Label("Machinery"), 1, row);
+		commandGrid.add(colorBox(Color.GREEN), 2, row++);
+
+		commandGrid.add(new Label("Alt + V"), 0, row);
+		commandGrid.add(new Label("Buffer"), 1, row);
+		commandGrid.add(colorBox(Color.BROWN), 2, row++);
+
+		commandGrid.add(new Label("Alt + U"), 0, row);
+		commandGrid.add(new Label("Workshop"), 1, row);
+		commandGrid.add(colorBox(Color.TURQUOISE), 2, row++);
+
+		row++;
+
+		commandGrid.add(new Label("ESC"), 0, row);
+		commandGrid.add(new Label("Auswahl abbrechen"), 1, row);
+		
+		/**
+		 * Konfiguration der Anzeige für aktuelles Werkzeug und Tastenkombinationen.
+		 * Die VBox sorgt dafür, dass beide Elemente untereinander dargestellt werden.
+		 */
+		toolInfoBox.setStyle("-fx-padding: 8;");
+		toolInfoBox.setFillWidth(true);
+		
+		/**
+		 * Gestaltung des Werkzeug-Indikators und der Legende.
+		 * Beide Elemente werden in der rechten Seitenleiste angezeigt.
+		 */
+		currentToolLabel.setStyle(
+			"-fx-font-weight: bold;" +
+			"-fx-padding: 8;" +
+			"-fx-background-color: #eeeeee;"
+		);
+
 		// Center
 
 		// - Segment preview
@@ -327,6 +531,15 @@ public class EditorScene extends Scene {
 		
 		setup(modelViewerFlat.intersections, this::detach, this::attach);
 		setup(modelViewerFlat.segments, this::detach, this::attach);
+		setup(modelViewerFlat.incominggoods, this::detach, this::attach);
+		setup(modelViewerFlat.outcominggoods, this::detach, this::attach);
+		setup(modelViewerFlat.packaging, this::detach, this::attach);
+		setup(modelViewerFlat.warehouses, this::detach, this::attach);
+		setup(modelViewerFlat.batterychargingstations, this::detach, this::attach);
+		setup(modelViewerFlat.installationsites, this::detach, this::attach);
+		setup(modelViewerFlat.machineries, this::detach, this::attach);
+		setup(modelViewerFlat.buffers, this::detach, this::attach);
+		setup(modelViewerFlat.workshops, this::detach, this::attach);
 		setup(modelViewerFlat.stations, this::detach, this::attach);
 		setup(modelViewerFlat.vehicles, this::detach, this::attach);
 		setup(modelViewerFlat.demands, this::detach, this::attach);
@@ -366,51 +579,102 @@ public class EditorScene extends Scene {
 		modelViewerFlat.setOnMouseDragOver(event -> {
 			Point2D world = modelViewerFlat.unproject(event);
 			
-			if (event.getGestureSource() instanceof IntersectionViewerFlat) {
-				IntersectionViewerFlat viewer = (IntersectionViewerFlat) event.getGestureSource();
+		if (event.getGestureSource() instanceof IntersectionViewerFlat) {
+			IntersectionViewerFlat viewer = (IntersectionViewerFlat) event.getGestureSource();
 
-				if (!event.isAltDown()) {
-					world = modelViewerFlat.grid.snap(world);
+			if (!event.isAltDown()) {
+				world = modelViewerFlat.grid.snap(world);
+			}
+
+			if (event.isControlDown()) {
+				segmentPreviewEndX.set(world.getX());
+				segmentPreviewEndY.set(world.getY());
+			} else {
+				Map<Station, Double> stationDist = new HashMap<>();
+				Map<Incominggoods, Double> incominggoodsDist = new HashMap<>();
+				Map<Vehicle, Double> vehicleDist = new HashMap<>();
+
+				for (Station station : model.stations) {
+					stationDist.put(
+						station,
+						station.location.distance.get()
+							/ station.location.segment.get().length.get()
+					);
 				}
 
-				if (event.isControlDown()) {
-					segmentPreviewEndX.set(world.getX());
-					segmentPreviewEndY.set(world.getY());
-				} else {
-					Map<Station, Double> stationDist = new HashMap<>();
-					Map<Vehicle, Double> vehicleDist = new HashMap<>();
-					
-					for (Station station : model.stations) {
-						stationDist.put(station, station.location.distance.get() / station.location.segment.get().length.get());
-					}
-					for (Vehicle vehicle : model.vehicles) {
-						vehicleDist.put(vehicle, vehicle.initialLocation.distance.get() / vehicle.initialLocation.segment.get().length.get());
-					}
-					
-					Map<Demand, Double> demandPickDist = new HashMap<>();
-					Map<Demand, Double> demandDropDist = new HashMap<>();
-
-					for (Demand demand : model.demands) {
-						demandPickDist.put(demand, demand.pick.location.distance.get() / demand.pick.location.segment.get().length.get());
-						demandDropDist.put(demand, demand.drop.location.distance.get() / demand.drop.location.segment.get().length.get());
-					}
-						
-					viewer.entity.coordinate.x.set(world.getX());
-					viewer.entity.coordinate.y.set(world.getY());
-					
-					for (Station station : model.stations) {
-						station.location.distance.set(stationDist.get(station) * station.location.segment.get().length.get());
-					}
-					for (Vehicle vehicle : model.vehicles) {
-						vehicle.initialLocation.distance.set(vehicleDist.get(vehicle) * vehicle.initialLocation.segment.get().length.get());
-					}
-					for (Demand demand : model.demands) {
-						demand.pick.location.distance.set(demandPickDist.get(demand) * demand.pick.location.segment.get().length.get());
-						demand.drop.location.distance.set(demandDropDist.get(demand) * demand.drop.location.segment.get().length.get());
-					}
+				for (Incominggoods incominggoods : model.incominggoods) {
+					incominggoodsDist.put(
+						incominggoods,
+						incominggoods.location.distance.get()
+							/ incominggoods.location.segment.get().length.get()
+					);
 				}
 
-				event.consume();
+				for (Vehicle vehicle : model.vehicles) {
+					vehicleDist.put(
+						vehicle,
+						vehicle.initialLocation.distance.get()
+							/ vehicle.initialLocation.segment.get().length.get()
+					);
+				}
+
+				Map<Demand, Double> demandPickDist = new HashMap<>();
+				Map<Demand, Double> demandDropDist = new HashMap<>();
+
+				for (Demand demand : model.demands) {
+					demandPickDist.put(
+						demand,
+						demand.pick.location.distance.get()
+							/ demand.pick.location.segment.get().length.get()
+					);
+
+					demandDropDist.put(
+						demand,
+						demand.drop.location.distance.get()
+							/ demand.drop.location.segment.get().length.get()
+					);
+				}
+
+				viewer.entity.coordinate.x.set(world.getX());
+				viewer.entity.coordinate.y.set(world.getY());
+
+				for (Station station : model.stations) {
+					station.location.distance.set(
+						stationDist.get(station)
+							* station.location.segment.get().length.get()
+					);
+				}
+
+				for (Incominggoods incominggoods : model.incominggoods) {
+					incominggoods.location.distance.set(
+						incominggoodsDist.get(incominggoods)
+							* incominggoods.location.segment.get().length.get()
+					);
+				}
+
+				for (Vehicle vehicle : model.vehicles) {
+					vehicle.initialLocation.distance.set(
+						vehicleDist.get(vehicle)
+							* vehicle.initialLocation.segment.get().length.get()
+					);
+				}
+
+				for (Demand demand : model.demands) {
+					demand.pick.location.distance.set(
+						demandPickDist.get(demand)
+							* demand.pick.location.segment.get().length.get()
+					);
+
+					demand.drop.location.distance.set(
+						demandDropDist.get(demand)
+							* demand.drop.location.segment.get().length.get()
+					);
+				}
+			}
+
+			event.consume();
+					
+
 			} else if (event.getGestureSource() instanceof SegmentViewerFlat) {
 				Model.Projection projection = model.project(world.getX(), world.getY());
 
@@ -420,6 +684,115 @@ public class EditorScene extends Scene {
 				}
 
 				event.consume();
+				
+			} else if (event.getGestureSource() instanceof IncominggoodsViewerFlat) {
+				IncominggoodsViewerFlat viewer = (IncominggoodsViewerFlat) event.getGestureSource();
+				
+				Model.Projection projection = model.project(world.getX(), world.getY());
+				
+				if (projection.seg != null) {
+					viewer.entity.location.segment.set(projection.seg);
+					viewer.entity.location.distance.set(projection.dot);
+				}
+				
+				event.consume();
+
+			} else if (event.getGestureSource() instanceof OutcominggoodsViewerFlat) {
+				OutcominggoodsViewerFlat viewer = (OutcominggoodsViewerFlat) event.getGestureSource();
+
+				Model.Projection projection = model.project(world.getX(), world.getY());
+
+				if (projection.seg != null) {
+					viewer.entity.location.segment.set(projection.seg);
+					viewer.entity.location.distance.set(projection.dot);
+				}
+
+				event.consume();
+
+			} else if (event.getGestureSource() instanceof PackagingViewerFlat) {
+				PackagingViewerFlat viewer = (PackagingViewerFlat) event.getGestureSource();
+
+				Model.Projection projection = model.project(world.getX(), world.getY());
+
+				if (projection.seg != null) {
+					viewer.entity.location.segment.set(projection.seg);
+					viewer.entity.location.distance.set(projection.dot);
+				}
+
+				event.consume();
+
+			} else if (event.getGestureSource() instanceof WarehouseViewerFlat) {
+				WarehouseViewerFlat viewer = (WarehouseViewerFlat) event.getGestureSource();
+
+				Model.Projection projection = model.project(world.getX(), world.getY());
+
+				if (projection.seg != null) {
+					viewer.entity.location.segment.set(projection.seg);
+					viewer.entity.location.distance.set(projection.dot);
+				}
+
+				event.consume();
+
+			} else if (event.getGestureSource() instanceof BatterychargingstationViewerFlat) {
+				BatterychargingstationViewerFlat viewer = (BatterychargingstationViewerFlat) event.getGestureSource();
+
+				Model.Projection projection = model.project(world.getX(), world.getY());
+
+				if (projection.seg != null) {
+					viewer.entity.location.segment.set(projection.seg);
+					viewer.entity.location.distance.set(projection.dot);
+				}
+
+				event.consume();
+
+			} else if (event.getGestureSource() instanceof InstallationsiteViewerFlat) {
+				InstallationsiteViewerFlat viewer = (InstallationsiteViewerFlat) event.getGestureSource();
+
+				Model.Projection projection = model.project(world.getX(), world.getY());
+
+				if (projection.seg != null) {
+					viewer.entity.location.segment.set(projection.seg);
+					viewer.entity.location.distance.set(projection.dot);
+				}
+
+				event.consume();
+
+			} else if (event.getGestureSource() instanceof MachineryViewerFlat) {
+				MachineryViewerFlat viewer = (MachineryViewerFlat) event.getGestureSource();
+
+				Model.Projection projection = model.project(world.getX(), world.getY());
+
+				if (projection.seg != null) {
+					viewer.entity.location.segment.set(projection.seg);
+					viewer.entity.location.distance.set(projection.dot);
+				}
+
+				event.consume();
+
+			} else if (event.getGestureSource() instanceof BufferViewerFlat) {
+				BufferViewerFlat viewer = (BufferViewerFlat) event.getGestureSource();
+
+				Model.Projection projection = model.project(world.getX(), world.getY());
+
+				if (projection.seg != null) {
+					viewer.entity.location.segment.set(projection.seg);
+					viewer.entity.location.distance.set(projection.dot);
+				}
+
+				event.consume();
+
+			} else if (event.getGestureSource() instanceof WorkshopViewerFlat) {
+				WorkshopViewerFlat viewer = (WorkshopViewerFlat) event.getGestureSource();
+
+				Model.Projection projection = model.project(world.getX(), world.getY());
+
+				if (projection.seg != null) {
+					viewer.entity.location.segment.set(projection.seg);
+					viewer.entity.location.distance.set(projection.dot);
+				}
+
+				event.consume();	
+				
 			} else if (event.getGestureSource() instanceof StationViewerFlat) {
 				StationViewerFlat viewer = (StationViewerFlat) event.getGestureSource();
 				
@@ -617,16 +990,136 @@ public class EditorScene extends Scene {
 
 				Segment.Projection projection = viewer.entity.project(world.getX(), world.getY());
 				
-				if (event.isControlDown()) {
-					Station station = new Station();
+				if (currentTool == Tool.PLACE_STATION) {
+
+            		// Erstellung einer Station an der berechneten Position
+            		Station station = new Station();
+            		station.speed.set(1);
+            		station.location.segment.set(viewer.entity);
+            		station.location.distance.set(projection.dot);
+
+            		model.stations.add(station);
+            		select(modelViewerFlat.stationViewers.get(station));
+
+            		setTool(Tool.SELECT); // Rücksetzen
+
+        		} else if (currentTool == Tool.PLACE_INCOMINGGOODS) {
+
+            		// Erstellung eines Incominggoods-Objekts an der geklickten Segmentposition
+            		Incominggoods incominggoods = new Incominggoods();
+            		incominggoods.speed.set(1);
+            		incominggoods.location.segment.set(viewer.entity);
+            		incominggoods.location.distance.set(projection.dot);
+
+            		model.incominggoods.add(incominggoods);
+            		select(modelViewerFlat.incominggoodsViewers.get(incominggoods));
+
+            		setTool(Tool.SELECT);
+
+        		} else if (currentTool == Tool.PLACE_OUTCOMINGGOODS) {
+
+					// Erstellung eines Outcominggoods-Objekts an der geklickten Segmentposition
+   					Outcominggoods outcominggoods = new Outcominggoods();
+    				outcominggoods.speed.set(1);
+    				outcominggoods.location.segment.set(viewer.entity);
+    				outcominggoods.location.distance.set(projection.dot);
+
+    				model.outcominggoods.add(outcominggoods);
+    				select(modelViewerFlat.outcominggoodsViewers.get(outcominggoods));
+
+    				setTool(Tool.SELECT);
+
+        		} else if (currentTool == Tool.PLACE_PACKAGE) {
 					
-					station.speed.set(1);
-					station.location.segment.set(viewer.entity);
-					station.location.distance.set(projection.dot);
+					// Erstellung eines Packaging-Objekts an der geklickten Segmentposition
+					Packaging packaging = new Packaging();
+					packaging.speed.set(1);
+					packaging.location.segment.set(viewer.entity);
+					packaging.location.distance.set(projection.dot);
+
+					model.packaging.add(packaging);
+					select(modelViewerFlat.packagingViewers.get(packaging));
+
+					setTool(Tool.SELECT);
+
+				} else if (currentTool == Tool.PLACE_WAREHOUSE) {
 					
-					model.stations.add(station);
-					
-					select(modelViewerFlat.stationViewers.get(station));
+					// Erstellung eines Warehouse-Objekts an der geklickten Segmentposition
+					Warehouse warehouse = new Warehouse();
+					warehouse.speed.set(1);
+					warehouse.location.segment.set(viewer.entity);
+					warehouse.location.distance.set(projection.dot);
+
+					model.warehouse.add(warehouse);
+					select(modelViewerFlat.warehouseViewers.get(warehouse));
+
+					setTool(Tool.SELECT);
+
+				} else if (currentTool == Tool.PLACE_BATTERYCHARGINGSTATION) {
+
+					// Erstellung eines Batterychargingstation-Objekts an der geklickten Segmentposition
+					Batterychargingstation b = new Batterychargingstation();
+					b.speed.set(1);
+					b.location.segment.set(viewer.entity);
+					b.location.distance.set(projection.dot);
+
+					model.batterychargingstation.add(b);
+					select(modelViewerFlat.batterychargingstationViewers.get(b));
+
+					setTool(Tool.SELECT);
+
+				} else if (currentTool == Tool.PLACE_INSTALLATIONSITE) {
+
+					// Erstellung eines Installationsite-Objekts an der geklickten Segmentposition
+					Installationsite i = new Installationsite();
+					i.speed.set(1);
+					i.location.segment.set(viewer.entity);
+					i.location.distance.set(projection.dot);
+
+					model.installationsite.add(i);
+					select(modelViewerFlat.installationsiteViewers.get(i));
+
+					setTool(Tool.SELECT);
+
+				} else if (currentTool == Tool.PLACE_MACHINERY) {
+
+					// Erstellung eines Machinery-Objekts an der geklickten Segmentposition
+					Machinery m = new Machinery();
+					m.speed.set(1);
+					m.location.segment.set(viewer.entity);
+					m.location.distance.set(projection.dot);
+
+					model.machinery.add(m);
+					select(modelViewerFlat.machineryViewers.get(m));
+
+					setTool(Tool.SELECT);
+
+				} else if (currentTool == Tool.PLACE_BUFFER) {
+
+					// Erstellung eines Buffer-Objekts an der geklickten Segmentposition
+					Buffer b = new Buffer();
+					b.speed.set(1);
+					b.location.segment.set(viewer.entity);
+					b.location.distance.set(projection.dot);
+
+					model.buffer.add(b);
+					select(modelViewerFlat.bufferViewers.get(b));
+
+					setTool(Tool.SELECT);
+
+				} else if (currentTool == Tool.PLACE_WORKSHOP) {
+
+					// Erstellung eines Workshop-Objekts an der geklickten Segmentposition
+					Workshop w = new Workshop();
+					w.speed.set(1);
+					w.location.segment.set(viewer.entity);
+					w.location.distance.set(projection.dot);
+
+					model.workshop.add(w);
+					select(modelViewerFlat.workshopViewers.get(w));
+
+					setTool(Tool.SELECT);
+
 				} else if (event.isShiftDown()) {
 					Vehicle vehicle = new Vehicle();
 					
@@ -648,6 +1141,7 @@ public class EditorScene extends Scene {
 				event.consume();
 			}
 		});
+
 		viewer.setOnDragDetected(event -> {
 			Point2D world = modelViewerFlat.unproject(event);
 
@@ -685,6 +1179,123 @@ public class EditorScene extends Scene {
 				
 				event.consume();
 			}
+		});
+	}
+
+	private void attach(IncominggoodsViewerFlat viewer) {
+		viewer.setOnMouseClicked(event -> {
+			if (event.isStillSincePress()) {
+				select(viewer);
+				event.consume();
+			}
+		});
+		viewer.setOnDragDetected(event -> {
+			viewer.startFullDrag();
+			event.consume();
+		});
+	}
+
+	private void attach(OutcominggoodsViewerFlat viewer) {
+    	viewer.setOnMouseClicked(event -> {
+        	if (event.isStillSincePress()) {
+            	select(viewer);
+            	event.consume();
+        	}
+    	});
+    	viewer.setOnDragDetected(event -> {
+        	viewer.startFullDrag();
+        	event.consume();
+    	});
+	}
+
+	private void attach(PackagingViewerFlat viewer) {
+		viewer.setOnMouseClicked(event -> {
+			if (event.isStillSincePress()) {
+				select(viewer);
+				event.consume();
+			}
+		});
+		viewer.setOnDragDetected(event -> {
+			viewer.startFullDrag();
+			event.consume();
+		});
+	}
+
+	private void attach(WarehouseViewerFlat viewer) {
+		viewer.setOnMouseClicked(event -> {
+			if (event.isStillSincePress()) {
+				select(viewer);
+				event.consume();
+			}
+		});
+		viewer.setOnDragDetected(event -> {
+			viewer.startFullDrag();
+			event.consume();
+		});
+	}
+
+	private void attach(BatterychargingstationViewerFlat viewer) {
+		viewer.setOnMouseClicked(event -> {
+			if (event.isStillSincePress()) {
+				select(viewer);
+				event.consume();
+			}
+		});
+		viewer.setOnDragDetected(event -> {
+			viewer.startFullDrag();
+			event.consume();
+		});
+	}
+
+	private void attach(InstallationsiteViewerFlat viewer) {
+		viewer.setOnMouseClicked(event -> {
+			if (event.isStillSincePress()) {
+				select(viewer);
+				event.consume();
+			}
+		});
+		viewer.setOnDragDetected(event -> {
+			viewer.startFullDrag();
+			event.consume();
+		});
+	}
+
+	private void attach(MachineryViewerFlat viewer) {
+		viewer.setOnMouseClicked(event -> {
+			if (event.isStillSincePress()) {
+				select(viewer);
+				event.consume();
+			}
+		});
+		viewer.setOnDragDetected(event -> {
+			viewer.startFullDrag();
+			event.consume();
+		});
+	}
+
+	private void attach(BufferViewerFlat viewer) {
+		viewer.setOnMouseClicked(event -> {
+			if (event.isStillSincePress()) {
+				select(viewer);
+				event.consume();
+			}
+		});
+		viewer.setOnDragDetected(event -> {
+			viewer.startFullDrag();
+			event.consume();
+		});
+	}
+
+	private void attach(WorkshopViewerFlat viewer) {
+		viewer.setOnMouseClicked(event -> {
+			if (event.isStillSincePress()) {
+				select(viewer);
+				event.consume();
+			}
+		});
+		viewer.setOnDragDetected(event -> {
+			viewer.startFullDrag();
+			event.consume();
 		});
 	}
 
@@ -750,6 +1361,51 @@ public class EditorScene extends Scene {
 		viewer.setOnDragDetected(null);
 	}
 
+	private void detach(IncominggoodsViewerFlat viewer) {
+		viewer.setOnMouseClicked(null);
+		viewer.setOnDragDetected(null);
+	}
+
+	private void detach(OutcominggoodsViewerFlat viewer) {
+    	viewer.setOnMouseClicked(null);
+   		viewer.setOnDragDetected(null);
+	}
+
+	private void detach(PackagingViewerFlat viewer) {
+    	viewer.setOnMouseClicked(null);
+   		viewer.setOnDragDetected(null);
+	}
+
+	private void detach(WarehouseViewerFlat viewer) {
+    	viewer.setOnMouseClicked(null);
+   		viewer.setOnDragDetected(null);
+	}
+
+	private void detach(BatterychargingstationViewerFlat viewer) {
+    	viewer.setOnMouseClicked(null);
+   		viewer.setOnDragDetected(null);
+	}
+
+	private void detach(InstallationsiteViewerFlat viewer) {
+    	viewer.setOnMouseClicked(null);
+   		viewer.setOnDragDetected(null);
+	}
+
+	private void detach(MachineryViewerFlat viewer) {
+    	viewer.setOnMouseClicked(null);
+   		viewer.setOnDragDetected(null);
+	}
+
+	private void detach(BufferViewerFlat viewer) {
+    	viewer.setOnMouseClicked(null);
+   		viewer.setOnDragDetected(null);
+	}
+
+	private void detach(WorkshopViewerFlat viewer) {
+    	viewer.setOnMouseClicked(null);
+   		viewer.setOnDragDetected(null);
+	}
+
 	private void detach(VehicleViewerFlat viewer) {
 		viewer.setOnMouseClicked(null);
 		viewer.setOnDragDetected(null);
@@ -778,6 +1434,24 @@ public class EditorScene extends Scene {
 				show((IntersectionViewerFlat) viewer);
 			} else if (viewer instanceof SegmentViewerFlat) {
 				show((SegmentViewerFlat) viewer);
+			} else if (viewer instanceof IncominggoodsViewerFlat) {
+				show((IncominggoodsViewerFlat) viewer);
+			} else if (viewer instanceof OutcominggoodsViewerFlat) {
+    			show((OutcominggoodsViewerFlat) viewer);
+			} else if (viewer instanceof PackagingViewerFlat) {
+				show((PackagingViewerFlat) viewer);
+			} else if (viewer instanceof WarehouseViewerFlat) {
+				show((WarehouseViewerFlat) viewer);
+			} else if (viewer instanceof BatterychargingstationViewerFlat) {
+				show((BatterychargingstationViewerFlat) viewer);
+			} else if (viewer instanceof InstallationsiteViewerFlat) {
+				show((InstallationsiteViewerFlat) viewer);
+			} else if (viewer instanceof MachineryViewerFlat) {
+				show((MachineryViewerFlat) viewer);
+			} else if (viewer instanceof BufferViewerFlat) {
+				show((BufferViewerFlat) viewer);
+			} else if (viewer instanceof WorkshopViewerFlat) {
+				show((WorkshopViewerFlat) viewer);
 			} else if (viewer instanceof StationViewerFlat) {
 				show((StationViewerFlat) viewer);
 			} else if (viewer instanceof VehicleViewerFlat) {
@@ -924,6 +1598,249 @@ public class EditorScene extends Scene {
 		grid.add(delete, 1, 2);
 	}
 	
+	private void show(IncominggoodsViewerFlat viewer) {
+		TextField type = new TextField("Incominggoods");
+		type.setDisable(true);
+	
+		TextField speed = new TextField("" + viewer.entity.speed.get());
+		speed.setOnAction(event -> {
+			viewer.entity.speed.set(Double.parseDouble(speed.getText()));
+		});
+		speed.focusedProperty().addListener(event -> {
+			viewer.entity.speed.set(Double.parseDouble(speed.getText()));
+		});
+	
+		Button delete = new Button("Delete");
+		delete.setOnAction(event -> {
+			model.delete(viewer.entity);
+			select(null);
+		});
+	
+		grid.add(new Label("Type"), 0, 0);
+		grid.add(type, 1, 0);
+	
+		grid.add(new Label("Speed"), 0, 1);
+		grid.add(speed, 1, 1);
+	
+		grid.add(delete, 1, 2);
+	}
+
+	private void show(OutcominggoodsViewerFlat viewer) {
+    	TextField type = new TextField("Outcominggoods");
+    	type.setDisable(true);
+
+    	TextField speed = new TextField("" + viewer.entity.speed.get());
+   		speed.setOnAction(event -> {
+        	viewer.entity.speed.set(Double.parseDouble(speed.getText()));
+    	});
+    	speed.focusedProperty().addListener(event -> {
+        	viewer.entity.speed.set(Double.parseDouble(speed.getText()));
+    	});
+
+    	Button delete = new Button("Delete");
+    	delete.setOnAction(event -> {
+        	model.delete(viewer.entity);
+        	select(null);
+    	});
+
+    	grid.add(new Label("Type"), 0, 0);
+    	grid.add(type, 1, 0);
+
+    	grid.add(new Label("Speed"), 0, 1);
+    	grid.add(speed, 1, 1);
+
+    	grid.add(delete, 1, 2);
+	}
+
+	private void show(PackagingViewerFlat viewer) {
+    	TextField type = new TextField("Packaging");
+    	type.setDisable(true);
+
+    	TextField speed = new TextField("" + viewer.entity.speed.get());
+   		speed.setOnAction(event -> {
+        	viewer.entity.speed.set(Double.parseDouble(speed.getText()));
+    	});
+    	speed.focusedProperty().addListener(event -> {
+        	viewer.entity.speed.set(Double.parseDouble(speed.getText()));
+    	});
+
+    	Button delete = new Button("Delete");
+    	delete.setOnAction(event -> {
+        	model.delete(viewer.entity);
+        	select(null);
+    	});
+
+    	grid.add(new Label("Type"), 0, 0);
+    	grid.add(type, 1, 0);
+
+    	grid.add(new Label("Speed"), 0, 1);
+    	grid.add(speed, 1, 1);
+
+    	grid.add(delete, 1, 2);
+	}
+
+	private void show(WarehouseViewerFlat viewer) {
+    	TextField type = new TextField("Warehouse");
+    	type.setDisable(true);
+
+    	TextField speed = new TextField("" + viewer.entity.speed.get());
+   		speed.setOnAction(event -> {
+        	viewer.entity.speed.set(Double.parseDouble(speed.getText()));
+    	});
+    	speed.focusedProperty().addListener(event -> {
+        	viewer.entity.speed.set(Double.parseDouble(speed.getText()));
+    	});
+
+    	Button delete = new Button("Delete");
+    	delete.setOnAction(event -> {
+        	model.delete(viewer.entity);
+        	select(null);
+    	});
+
+    	grid.add(new Label("Type"), 0, 0);
+    	grid.add(type, 1, 0);
+
+    	grid.add(new Label("Speed"), 0, 1);
+    	grid.add(speed, 1, 1);
+
+    	grid.add(delete, 1, 2);
+	}
+
+	private void show(BatterychargingstationViewerFlat viewer) {
+    	TextField type = new TextField("Batterychargingstation");
+    	type.setDisable(true);
+
+    	TextField speed = new TextField("" + viewer.entity.speed.get());
+   		speed.setOnAction(event -> {
+        	viewer.entity.speed.set(Double.parseDouble(speed.getText()));
+    	});
+    	speed.focusedProperty().addListener(event -> {
+        	viewer.entity.speed.set(Double.parseDouble(speed.getText()));
+    	});
+
+    	Button delete = new Button("Delete");
+    	delete.setOnAction(event -> {
+        	model.delete(viewer.entity);
+        	select(null);
+    	});
+
+    	grid.add(new Label("Type"), 0, 0);
+    	grid.add(type, 1, 0);
+
+    	grid.add(new Label("Speed"), 0, 1);
+    	grid.add(speed, 1, 1);
+
+    	grid.add(delete, 1, 2);
+	}
+
+	private void show(InstallationsiteViewerFlat viewer) {
+    	TextField type = new TextField("Installationsite");
+    	type.setDisable(true);
+
+    	TextField speed = new TextField("" + viewer.entity.speed.get());
+   		speed.setOnAction(event -> {
+        	viewer.entity.speed.set(Double.parseDouble(speed.getText()));
+    	});
+    	speed.focusedProperty().addListener(event -> {
+        	viewer.entity.speed.set(Double.parseDouble(speed.getText()));
+    	});
+
+    	Button delete = new Button("Delete");
+    	delete.setOnAction(event -> {
+        	model.delete(viewer.entity);
+        	select(null);
+    	});
+
+    	grid.add(new Label("Type"), 0, 0);
+    	grid.add(type, 1, 0);
+
+    	grid.add(new Label("Speed"), 0, 1);
+    	grid.add(speed, 1, 1);
+
+    	grid.add(delete, 1, 2);
+	}
+
+	private void show(MachineryViewerFlat viewer) {
+    	TextField type = new TextField("Machinery");
+    	type.setDisable(true);
+
+    	TextField speed = new TextField("" + viewer.entity.speed.get());
+   		speed.setOnAction(event -> {
+        	viewer.entity.speed.set(Double.parseDouble(speed.getText()));
+    	});
+    	speed.focusedProperty().addListener(event -> {
+        	viewer.entity.speed.set(Double.parseDouble(speed.getText()));
+    	});
+
+    	Button delete = new Button("Delete");
+    	delete.setOnAction(event -> {
+        	model.delete(viewer.entity);
+        	select(null);
+    	});
+
+    	grid.add(new Label("Type"), 0, 0);
+    	grid.add(type, 1, 0);
+
+    	grid.add(new Label("Speed"), 0, 1);
+    	grid.add(speed, 1, 1);
+
+    	grid.add(delete, 1, 2);
+	}
+
+	private void show(BufferViewerFlat viewer) {
+    	TextField type = new TextField("Buffer");
+    	type.setDisable(true);
+
+    	TextField speed = new TextField("" + viewer.entity.speed.get());
+   		speed.setOnAction(event -> {
+        	viewer.entity.speed.set(Double.parseDouble(speed.getText()));
+    	});
+    	speed.focusedProperty().addListener(event -> {
+        	viewer.entity.speed.set(Double.parseDouble(speed.getText()));
+    	});
+
+    	Button delete = new Button("Delete");
+    	delete.setOnAction(event -> {
+        	model.delete(viewer.entity);
+        	select(null);
+    	});
+
+    	grid.add(new Label("Type"), 0, 0);
+    	grid.add(type, 1, 0);
+
+    	grid.add(new Label("Speed"), 0, 1);
+    	grid.add(speed, 1, 1);
+
+    	grid.add(delete, 1, 2);
+	}
+
+	private void show(WorkshopViewerFlat viewer) {
+    	TextField type = new TextField("Workshop");
+    	type.setDisable(true);
+
+    	TextField speed = new TextField("" + viewer.entity.speed.get());
+   		speed.setOnAction(event -> {
+        	viewer.entity.speed.set(Double.parseDouble(speed.getText()));
+    	});
+    	speed.focusedProperty().addListener(event -> {
+        	viewer.entity.speed.set(Double.parseDouble(speed.getText()));
+    	});
+
+    	Button delete = new Button("Delete");
+    	delete.setOnAction(event -> {
+        	model.delete(viewer.entity);
+        	select(null);
+    	});
+
+    	grid.add(new Label("Type"), 0, 0);
+    	grid.add(type, 1, 0);
+
+    	grid.add(new Label("Speed"), 0, 1);
+    	grid.add(speed, 1, 1);
+
+    	grid.add(delete, 1, 2);
+	}
+
 	private void show(VehicleViewerFlat viewer) {
 		TextField type = new TextField("Vehicle");
 		type.setDisable(true);
@@ -1049,5 +1966,74 @@ public class EditorScene extends Scene {
 		
 		grid.add(delete, 1, 4);
 	}
+
+
+
+		/**
+	 * Setzt das aktuelle Werkzeug und aktualisiert die Anzeige in der Oberfläche.
+	 *
+	 * @param tool Werkzeug, das ausgewählt werden soll
+	 */
+	private void setTool(Tool tool) {
+		currentTool = tool;
+		updateToolLabel();
+	}
 	
+		/**
+	 * Aktualisiert den Text des Werkzeug-Indikators.
+	 * Der Benutzer sieht dadurch jederzeit, welches Element aktuell aktiv ist.
+	 */
+	private void updateToolLabel() {
+		switch (currentTool) {
+			case PLACE_STATION:
+				currentToolLabel.setText("Aktuelles Werkzeug: Station");
+				break;
+			case PLACE_INCOMINGGOODS:
+				currentToolLabel.setText("Aktuelles Werkzeug: Incominggoods");
+				break;
+			case PLACE_OUTCOMINGGOODS:
+				currentToolLabel.setText("Aktuelles Werkzeug: Outcominggoods");
+				break;
+			case PLACE_PACKAGE:
+				currentToolLabel.setText("Aktuelles Werkzeug: Packaging");
+				break;
+			case PLACE_WAREHOUSE:
+				currentToolLabel.setText("Aktuelles Werkzeug: Warehouse");
+				break;
+			case PLACE_BATTERYCHARGINGSTATION:
+				currentToolLabel.setText("Aktuelles Werkzeug: Batterychargingstation");
+				break;
+			case PLACE_INSTALLATIONSITE:
+				currentToolLabel.setText("Aktuelles Werkzeug: Installationsite");
+				break;
+			case PLACE_MACHINERY:
+				currentToolLabel.setText("Aktuelles Werkzeug: Machinery");
+				break;
+			case PLACE_BUFFER:
+				currentToolLabel.setText("Aktuelles Werkzeug: Buffer");
+				break;
+			case PLACE_WORKSHOP:
+				currentToolLabel.setText("Aktuelles Werkzeug: Workshop");
+				break;
+			default:
+				currentToolLabel.setText("Aktuelles Werkzeug: Keines Ausgewählt");
+				break;
+		}
+	}
+
+
+	private Rectangle colorBox(Color color) {
+		Rectangle rectangle = new Rectangle(14, 14);
+		rectangle.setFill(color);
+		rectangle.setStroke(Color.BLACK);
+		return rectangle;
+	}
+
+
 }
+
+
+
+
+
+

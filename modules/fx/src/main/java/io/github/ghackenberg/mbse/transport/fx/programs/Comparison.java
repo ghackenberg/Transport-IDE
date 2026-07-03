@@ -202,7 +202,8 @@ public class Comparison extends Application {
 				index--;
 				continue;
 			}
-			
+		
+
 			// Process models
 
 			for (Model model : models) {

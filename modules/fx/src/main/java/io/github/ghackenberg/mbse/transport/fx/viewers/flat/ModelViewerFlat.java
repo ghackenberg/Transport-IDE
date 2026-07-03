@@ -5,6 +5,15 @@ import io.github.ghackenberg.mbse.transport.core.entities.Demand;
 import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
 import io.github.ghackenberg.mbse.transport.core.entities.Station;
+import io.github.ghackenberg.mbse.transport.core.entities.Incominggoods;
+import io.github.ghackenberg.mbse.transport.core.entities.Outcominggoods;
+import io.github.ghackenberg.mbse.transport.core.entities.Packaging;
+import io.github.ghackenberg.mbse.transport.core.entities.Warehouse;
+import io.github.ghackenberg.mbse.transport.core.entities.Batterychargingstation;
+import io.github.ghackenberg.mbse.transport.core.entities.Installationsite;
+import io.github.ghackenberg.mbse.transport.core.entities.Machinery;
+import io.github.ghackenberg.mbse.transport.core.entities.Buffer;
+import io.github.ghackenberg.mbse.transport.core.entities.Workshop;
 import io.github.ghackenberg.mbse.transport.core.entities.Vehicle;
 import io.github.ghackenberg.mbse.transport.fx.viewers.ModelViewer;
 import javafx.geometry.Point2D;
@@ -12,7 +21,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.transform.NonInvertibleTransformException;
 
-public class ModelViewerFlat extends ModelViewer<IntersectionViewerFlat, SegmentViewerFlat, StationViewerFlat, VehicleViewerFlat, DemandViewerFlat, Pane> {
+public class ModelViewerFlat extends ModelViewer<IntersectionViewerFlat, SegmentViewerFlat, StationViewerFlat, IncominggoodsViewerFlat, OutcominggoodsViewerFlat, PackagingViewerFlat, WarehouseViewerFlat, BatterychargingstationViewerFlat, InstallationsiteViewerFlat, MachineryViewerFlat, BufferViewerFlat, WorkshopViewerFlat,VehicleViewerFlat, DemandViewerFlat, Pane> {
 
 	public final GridViewerFlat grid = new GridViewerFlat();
 	
@@ -40,6 +49,15 @@ public class ModelViewerFlat extends ModelViewer<IntersectionViewerFlat, Segment
 		canvas.getChildren().add(segmentLayer);
 		canvas.getChildren().add(intersectionLayer);
 		canvas.getChildren().add(stationLayer);
+		canvas.getChildren().add(incominggoodsLayer);
+		canvas.getChildren().add(outcominggoodsLayer);
+		canvas.getChildren().add(packagingLayer);
+		canvas.getChildren().add(warehouseLayer);
+		canvas.getChildren().add(batterychargingstationLayer);
+		canvas.getChildren().add(installationsiteLayer);
+		canvas.getChildren().add(machineryLayer);
+		canvas.getChildren().add(bufferLayer);
+		canvas.getChildren().add(workshopLayer);
 		canvas.getChildren().add(vehicleLayer);
 		canvas.getChildren().add(demandLayer);
 
@@ -116,6 +134,51 @@ public class ModelViewerFlat extends ModelViewer<IntersectionViewerFlat, Segment
 	@Override
 	protected StationViewerFlat create(Station station) {
 		return new StationViewerFlat(model, station);
+	}
+
+	@Override
+	protected IncominggoodsViewerFlat create(Incominggoods incominggoods) {
+    	return new IncominggoodsViewerFlat(model, incominggoods);
+	}
+
+	@Override
+	protected OutcominggoodsViewerFlat create(Outcominggoods outcominggoods) {
+    	return new OutcominggoodsViewerFlat(model, outcominggoods);
+	}
+
+	@Override
+	protected PackagingViewerFlat create(Packaging packaging) {
+    	return new PackagingViewerFlat(model, packaging);
+	}
+
+	@Override
+	protected WarehouseViewerFlat create(Warehouse warehouse) {
+    	return new WarehouseViewerFlat(model, warehouse);
+	}
+
+	@Override
+	protected BatterychargingstationViewerFlat create(Batterychargingstation batterychargingstation) {
+    	return new BatterychargingstationViewerFlat(model, batterychargingstation);
+	}
+
+	@Override
+	protected InstallationsiteViewerFlat create(Installationsite installationsite) {
+    	return new InstallationsiteViewerFlat(model, installationsite);
+	}
+
+	@Override
+	protected MachineryViewerFlat create(Machinery machinery) {
+    	return new MachineryViewerFlat(model, machinery);
+	}
+
+	@Override
+	protected BufferViewerFlat create(Buffer buffer) {
+    	return new BufferViewerFlat(model, buffer);
+	}
+
+	@Override
+	protected WorkshopViewerFlat create(Workshop workshop) {
+    	return new WorkshopViewerFlat(model, workshop);
 	}
 
 	@Override

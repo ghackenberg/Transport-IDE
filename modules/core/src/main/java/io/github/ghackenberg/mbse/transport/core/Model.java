@@ -2,6 +2,15 @@ package io.github.ghackenberg.mbse.transport.core;
 
 import io.github.ghackenberg.mbse.transport.core.entities.Camera;
 import io.github.ghackenberg.mbse.transport.core.entities.Demand;
+import io.github.ghackenberg.mbse.transport.core.entities.Incominggoods;
+import io.github.ghackenberg.mbse.transport.core.entities.Outcominggoods;
+import io.github.ghackenberg.mbse.transport.core.entities.Packaging;
+import io.github.ghackenberg.mbse.transport.core.entities.Warehouse;
+import io.github.ghackenberg.mbse.transport.core.entities.Batterychargingstation;
+import io.github.ghackenberg.mbse.transport.core.entities.Installationsite;
+import io.github.ghackenberg.mbse.transport.core.entities.Machinery;
+import io.github.ghackenberg.mbse.transport.core.entities.Buffer;
+import io.github.ghackenberg.mbse.transport.core.entities.Workshop;
 import io.github.ghackenberg.mbse.transport.core.entities.Intersection;
 import io.github.ghackenberg.mbse.transport.core.entities.Segment;
 import io.github.ghackenberg.mbse.transport.core.entities.Station;
@@ -45,6 +54,15 @@ public class Model {
 	public ObservableList<Intersection> intersections = FXCollections.observableArrayList();
 	public ObservableList<Segment> segments = FXCollections.observableArrayList();
 	public ObservableList<Station> stations = FXCollections.observableArrayList();
+	public ObservableList<Incominggoods> incominggoods = FXCollections.observableArrayList();
+	public ObservableList<Outcominggoods> outcominggoods = FXCollections.observableArrayList();
+	public ObservableList<Packaging> packaging = FXCollections.observableArrayList();
+	public ObservableList<Warehouse> warehouse = FXCollections.observableArrayList();
+	public ObservableList<Batterychargingstation> batterychargingstation = FXCollections.observableArrayList();
+	public ObservableList<Installationsite> installationsite = FXCollections.observableArrayList();
+	public ObservableList<Machinery> machinery = FXCollections.observableArrayList();
+	public ObservableList<Buffer> buffer = FXCollections.observableArrayList();
+	public ObservableList<Workshop> workshop = FXCollections.observableArrayList();
 	public ObservableList<Vehicle> vehicles = FXCollections.observableArrayList();
 	public ObservableList<Demand> demands = FXCollections.observableArrayList();
 	public ObservableList<Camera> cameras = FXCollections.observableArrayList();
@@ -232,6 +250,69 @@ public class Model {
 			}
 		}
 		
+		for (int i = 0; i < incominggoods.size(); i++) {
+			Incominggoods entity = incominggoods.get(i);
+			if (entity.location.segment.get() == segment) {
+				incominggoods.remove(i--);
+			}
+		}
+
+		for (int i = 0; i < outcominggoods.size(); i++) {
+			Outcominggoods entity = outcominggoods.get(i);
+			if (entity.location.segment.get() == segment) {
+				outcominggoods.remove(i--);
+			}
+		}
+
+		for (int i = 0; i < packaging.size(); i++) {
+			Packaging entity = packaging.get(i);
+			if (entity.location.segment.get() == segment) {
+				packaging.remove(i--);
+			}
+		}
+		
+		for (int i = 0; i < warehouse.size(); i++) {
+			Warehouse entity = warehouse.get(i);
+			if (entity.location.segment.get() == segment) {
+				warehouse.remove(i--);
+			}
+		}
+
+		for (int i = 0; i < batterychargingstation.size(); i++) {
+			Batterychargingstation entity = batterychargingstation.get(i);
+			if (entity.location.segment.get() == segment) {
+				batterychargingstation.remove(i--);
+			}
+		}
+
+		for (int i = 0; i < installationsite.size(); i++) {
+			Installationsite entity = installationsite.get(i);
+			if (entity.location.segment.get() == segment) {
+				installationsite.remove(i--);
+			}
+		}
+
+		for (int i = 0; i < machinery.size(); i++) {
+			Machinery entity = machinery.get(i);
+			if (entity.location.segment.get() == segment) {
+				machinery.remove(i--);
+			}
+		}
+
+		for (int i = 0; i < buffer.size(); i++) {
+			Buffer entity = buffer.get(i);
+			if (entity.location.segment.get() == segment) {
+				buffer.remove(i--);
+			}
+		}
+
+		for (int i = 0; i < workshop.size(); i++) {
+			Workshop entity = workshop.get(i);
+			if (entity.location.segment.get() == segment) {
+				workshop.remove(i--);
+			}
+		}
+
 		for (int i = 0; i < vehicles.size(); i++) {
 			Vehicle vehicle = vehicles.get(i);
 			if (vehicle.initialLocation.segment.get() == segment) {
@@ -256,6 +337,51 @@ public class Model {
 		stations.remove(station);
 	}
 	
+	public void delete(Incominggoods incominggoods) {
+		this.incominggoods.remove(incominggoods);
+	
+	}
+
+	public void delete(Outcominggoods outcominggoods) {
+		this.outcominggoods.remove(outcominggoods);
+	
+	}
+
+	public void delete(Packaging packaging) {
+		this.packaging.remove(packaging);
+	
+	}
+
+	public void delete(Warehouse warehouse) {
+		this.warehouse.remove(warehouse);
+	
+	}
+
+	public void delete(Batterychargingstation batterychargingstation) {
+		this.batterychargingstation.remove(batterychargingstation);
+	
+	}
+
+	public void delete(Installationsite installationsite) {
+		this.installationsite.remove(installationsite);
+	
+	}
+
+	public void delete(Machinery machinery) {
+		this.machinery.remove(machinery);
+	
+	}
+
+	public void delete(Buffer buffer) {
+		this.buffer.remove(buffer);
+	
+	}
+
+	public void delete(Workshop workshop) {
+		this.workshop.remove(workshop);
+	
+	}
+
 	public void delete(Vehicle vehicle) {
 		vehicles.remove(vehicle);
 	}
@@ -274,6 +400,33 @@ public class Model {
 		}
 		for (Station station : stations) {
 			station.state.set(station.new State());
+		}
+		for (Incominggoods entity : incominggoods) {
+			entity.state.set(entity.new State());
+		}
+		for (Outcominggoods entity : outcominggoods) {
+			entity.state.set(entity.new State());
+		}
+		for (Packaging entity : packaging) {
+			entity.state.set(entity.new State());
+		}
+		for (Warehouse entity : warehouse) {
+			entity.state.set(entity.new State());
+		}
+		for (Batterychargingstation entity : batterychargingstation) {
+			entity.state.set(entity.new State());
+		}
+		for (Installationsite entity : installationsite) {
+			entity.state.set(entity.new State());
+		}
+		for (Machinery entity : machinery) {
+			entity.state.set(entity.new State());
+		}
+		for (Buffer entity : buffer) {
+			entity.state.set(entity.new State());
+		}
+		for (Workshop entity : workshop) {
+			entity.state.set(entity.new State());
 		}
 		for (Vehicle vehicle : vehicles) {
 			vehicle.state.set(vehicle.new State());
